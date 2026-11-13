@@ -45,6 +45,7 @@ await writeFile(
   outPath,
   JSON.stringify({
     source: "Robert Shiller, Irrational Exuberance dataset (shillerdata.com), via github.com/datasets/s-and-p-500. Monthly averages of daily closes; annual is the mean of the months.",
+    licence: "Robert Shiller's data is free to use with credit. The index levels belong to S&P Dow Jones Indices, so chart them with credit but do not hand the file out: npm run data:publish leaves it out of public/data. The github.com/datasets copy says PDDL, which cannot cover S&P's rights.",
     series,
   }) + "\n",
 );

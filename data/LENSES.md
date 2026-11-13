@@ -8,7 +8,7 @@ Three things are true across every lens, so read them first.
 - **Every UK and European salon series mixes hair and beauty.** The official industry code (SIC and NACE 96.02) is "hairdressing and other beauty treatment". Nail bars cannot be split out. Only the US counts nail salons on their own, and only as jobs.
 - **"Direct" below means the series measures the thing the lens asks about.** "Stand-in" means it measures something nearby and the chart must say so.
 
-All files are served at `https://build40for40.com/chipped/data/<file>` once published.
+All files are served at `https://build40for40.com/chipped/data/<file>` once published. `nail-imports-by-country.json` holds only the per-woman figure, because UN Comtrade's licence restricts republishing its import values unchanged.
 
 ## Lens 1. Pride: nail salons vs births, women managers and dating
 
@@ -73,7 +73,7 @@ Gaps:
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | `covid-by-country.json` | Confirmed cases per 100,000 by year end, mean and peak lockdown stringency (0 to 100) | 236 countries and territories, 181 with a stringency score | 2020 and 2021 | One row per country | Our World in Data (WHO, Oxford tracker) | CC BY 4.0 | Direct |
 | `lens-pageviews.json` (`byLanguage`) | Wikipedia views in 2019 and 2020 of 9 home hobbies (nail polish, manicure, knitting, crochet, baking, sourdough, jigsaw puzzle, yoga, gardening) and 7 outdoor ones (hiking, camping, cycling, running, jogging, angling, surfing) | 25 language editions, each mapped to one country | 2019 and 2020 | One row per language | Wikimedia, Wikidata | CC0 | Stand-in for interest |
-| `nail-imports-by-country.json` | Imports of manicure and pedicure preparations, in dollars and per woman | About 180 countries | 2018 to 2023 | Yearly | UN Comtrade, Our World in Data | Free with credit, CC BY 4.0 | Stand-in for polish bought, to compare 2019 with 2020 |
+| `nail-imports-by-country.json` | Imports of manicure and pedicure preparations per woman | About 180 countries | 2018 to 2023 | Yearly | UN Comtrade, Our World in Data | Comtrade: derived figures only, with credit. OWID: CC BY 4.0 | Stand-in for polish bought, to compare 2019 with 2020 |
 
 Gaps:
 
@@ -88,7 +88,7 @@ Gaps:
 
 | File | What it is | Country | Years | Grain | Source | Licence | Direct or stand-in |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| `nail-imports-by-country.json` (`imports_usd_per_woman`) | Imports of manicure and pedicure preparations divided by the female population | About 180 countries | 2018 to 2023 | Yearly | UN Comtrade, Our World in Data | Free with credit, CC BY 4.0 | Stand-in for polish bought per woman |
+| `nail-imports-by-country.json` (`imports_usd_per_woman`) | Imports of manicure and pedicure preparations divided by the female population | About 180 countries | 2018 to 2023 | Yearly | UN Comtrade, Our World in Data | Comtrade: derived figures only, with credit. OWID: CC BY 4.0 | Stand-in for polish bought per woman |
 | `eating-styles.json` | Whether people mostly eat with hands, chopsticks or cutlery, with the Wikipedia article each row rests on | 14 countries | Undated | One row per country | Hand-coded from Wikipedia | CC BY-SA 4.0 for the articles | Hand-coded, not a dataset |
 
 Gaps:

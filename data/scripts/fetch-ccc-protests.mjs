@@ -62,7 +62,7 @@ console.log(`last event ${last}; women's rights events by year`, JSON.stringify(
 
 await writePart("us-protests.json", {
   source: "Crowd Counting Consortium US protest event data, phases 1 to 3 (Harvard Dataverse, doi:10.7910/DVN/6OPP7H, 9MMYDI and RI9JFU).",
-  licence: "CC0 1.0",
+  licence: "CC0 1.0, Harvard Dataverse's default, which we could not confirm on the dataset pages. Either way, credit the Crowd Counting Consortium as they ask.",
   note: `United States only, 2017-01-01 to ${last}. events_* count protest events; people_* add up the consortium's size_mean estimate, which is blank for many events, so it undercounts. *_women are events tagged "women's rights" or "reproductive rights": protests about women's issues, not a count of women attending. weekly keys are the Monday that starts the week. The last year, month and week are incomplete.`,
   through: last,
   fetched: new Date().toISOString().slice(0, 10),

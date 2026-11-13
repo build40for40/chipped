@@ -1,7 +1,9 @@
 #!/usr/bin/env node
 // Fetches each country's imports of manicure and pedicure preparations (HS 330430) from UN Comtrade's keyless
 // preview API, one call per year, plus population and the female share of it from Our World in Data, and writes
-// data/parts/nail-imports-by-country.json: one row per country with imports in US dollars and per woman.
+// data/parts/nail-imports-by-country.json: one row per country with imports per woman.
+// UN Comtrade's licence does not let us republish its figures as they are, so the part keeps only the derived
+// per-woman figure. The raw responses stay in the git-ignored data/raw/ cache.
 // Imports are a stand-in for nail polish bought. They miss anything made at home (big for France, the US, China)
 // and count goods that are shipped on again (big for the Netherlands, Hong Kong, Singapore).
 // Run: node data/scripts/fetch-comtrade-nail-imports.mjs   (add --fresh to ignore the data/raw/ cache)
@@ -33,27 +35,21 @@ for (const year of YEARS) {
   for (const r of body.data) {
     const known = iso[r.reporterCode];
     if (!known) continue;
-    const row = (byIso[known[0]] ??= { iso3: known[0], country: known[1], imports_usd: {}, imports_kg: {}, population: {}, female_share_pct: {}, imports_usd_per_woman: {} });
-    row.imports_usd[year] = Math.round(r.primaryValue);
-    if (r.netWgt != null && !r.isNetWgtEstimated) row.imports_kg[year] = Math.round(r.netWgt);
+    const row = (byIso[known[0]] ??= { iso3: known[0], country: known[1], imports_usd_per_woman: {} });
     const pop = population[known[0]]?.[year];
     const share = femaleShare[known[0]]?.[year];
-    if (pop && share) {
-      row.population[year] = pop;
-      row.female_share_pct[year] = round(share, 5);
-      row.imports_usd_per_woman[year] = round(r.primaryValue / ((pop * share) / 100), 4);
-    }
+    if (pop && share) row.imports_usd_per_woman[year] = round(r.primaryValue / ((pop * share) / 100), 4);
   }
   console.log(`${year}: ${body.data.length} reporters`);
   await sleep(4000);
 }
-const countries = Object.values(byIso).sort((a, b) => a.iso3.localeCompare(b.iso3));
+const countries = Object.values(byIso).filter((c) => Object.keys(c.imports_usd_per_woman).length).sort((a, b) => a.iso3.localeCompare(b.iso3));
 
 await writePart("nail-imports-by-country.json", {
   source:
     "UN Comtrade (comtradeapi.un.org public preview), HS 330430 manicure or pedicure preparations, imports from the world, as reported by each country. Population from Our World in Data (UN World Population Prospects) and female share of population from the World Bank via Our World in Data.",
-  licence: "UN Comtrade: free to reuse with credit to UN Comtrade. Our World in Data: CC BY 4.0.",
-  note: "imports_usd is the reported import value in US dollars for the year; imports_kg is net weight where the country reported it (estimated weights are left out). imports_usd_per_woman is derived: imports_usd divided by (population x female_share_pct / 100), women and girls of all ages. Imports are not purchases: they miss home production and include re-exports. A country missing a year did not report it.",
+  licence: "Derived from UN Comtrade, whose licence restricts republishing its data unchanged, so only our derived per-woman figure is kept here. Credit: UN Comtrade Database. Our World in Data: CC BY 4.0.",
+  note: "imports_usd_per_woman is derived: the import value each country reported for the year, in US dollars, divided by its female population (women and girls of all ages). Imports are not purchases: they miss home production and include re-exports. A country missing a year did not report it, or has no population figure.",
   years: YEARS,
   fetched: new Date().toISOString().slice(0, 10),
   countries,

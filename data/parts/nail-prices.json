@@ -1,5 +1,6 @@
 {
   "source": "Daniel E. Sichel, The Price of Nails since 1695: A Window into Economic Change, NBER Working Paper 29617 (December 2021), Table 1, column 1",
+  "licence": "Figures quoted from the paper's Table 1, with credit. Facts and short quotations, not the paper itself.",
   "url": "https://www.nber.org/papers/w29617",
   "note": "eras is the paper’s average yearly percent change in the real price of nails (relative to consumer prices). index compounds those into six points, 1790 = 100. It is not a yearly series: the year-by-year prices from 1695 are in the paper’s replication package on openICPSR, which needs a login.",
   "eras": [

@@ -35,6 +35,7 @@ await writeFile(
   outPath,
   JSON.stringify({
     source: "FRED, Federal Reserve Bank of St. Louis (fred.stlouisfed.org). Monthly and annual means of each series.",
+    licence: "Credit FRED, Federal Reserve Bank of St. Louis, and each series' source. UNRATE, APU0000718311 and WPU10881201 are from the BLS and IPG3344S from the Federal Reserve Board, all public domain; USREC is FRED's own. VIXCLS is copyrighted by Cboe: chart it with credit, but npm run data:publish leaves it out of the public copy.",
     series,
   }) + "\n",
 );
