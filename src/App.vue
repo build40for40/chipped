@@ -2,7 +2,6 @@
 import DealFacts from './exhibits/DealFacts.vue'
 import ErRoom from './exhibits/ErRoom.vue'
 import TrueCost from './exhibits/TrueCost.vue'
-import Lenses from './lenses/Lenses.vue'
 </script>
 
 <template>
@@ -16,5 +15,4 @@ import Lenses from './lenses/Lenses.vue'
     <DealFacts />
     <ErRoom />
   </main>
-  <Lenses />
 </template>
