@@ -15,6 +15,7 @@
   --nude: #efcfc3;
   --chrome: #bba9a5;
   --gold: #c58d4e;
+  --cool: #0f86a8;
   color-scheme: light;
 }
 
@@ -152,6 +153,29 @@ body {
 
 .chart text.hot {
   fill: var(--lacquer);
+}
+
+.chart text.cool {
+  fill: var(--cool);
+}
+
+.chart text.big {
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+/* A dashed outline of the first year's object, standing behind each later one. */
+.chart .ghost * {
+  fill: none !important;
+  stroke: var(--ink);
+  stroke-width: 1.5;
+  stroke-dasharray: 5 4;
+  opacity: 0.4;
+}
+
+.chart .ghost .pin {
+  display: none;
 }
 
 .charthead {
