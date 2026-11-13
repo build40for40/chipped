@@ -1,0 +1,4 @@
+# Copied to dist/_headers at build time: Cloudflare reads it from the root of the assets directory.
+# Lets visualisations on other sites (Claude artifacts, CodePen, localhost) fetch the open data.
+/chipped/data/*
+  Access-Control-Allow-Origin: *
