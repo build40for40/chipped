@@ -9,7 +9,7 @@ export const DAY = 480
 export interface Row {
   label: string
   minutes: number
-  kind: 'year' | 'latest' | 'you'
+  kind: 'year' | 'latest'
 }
 
 const esc = (s: string | number) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;')
@@ -20,7 +20,7 @@ export function clock(minutes: number) {
 }
 export const share = (minutes: number) => `${Math.round((minutes / DAY) * 100)}%`
 
-const DEFS = `<defs>${(['year', 'latest', 'you'] as const)
+const DEFS = `<defs>${(['year', 'latest'] as const)
   .map(
     (k) =>
       `<linearGradient id="chip-${k}" x1="0" x2="1" y1="0" y2="0"><stop offset="0" style="stop-color:var(--chip-${k}-deep)"/><stop offset=".38" style="stop-color:var(--chip-${k})"/><stop offset=".7" style="stop-color:var(--chip-${k})"/><stop offset="1" style="stop-color:var(--chip-${k}-deep)"/></linearGradient>`,
@@ -63,13 +63,10 @@ function nail(cx: number, base: number, len: number, w: number, chip: number, ki
 
 /** On a phone there is room for about seven nails, so keep the first, the last and an even spread between. */
 export function thin(rows: Row[], room: number) {
-  const fixed = rows.filter((r) => r.kind === 'year' || r.kind === 'latest')
-  const you = rows.filter((r) => r.kind === 'you')
-  const want = room - you.length
-  if (fixed.length <= want) return rows
-  const stride = Math.ceil((fixed.length - 1) / (want - 1))
-  const last = fixed.length - 1
-  return [...fixed.filter((_, i) => i === last || (i % stride === 0 && last - i >= stride / 2)), ...you]
+  if (rows.length <= room) return rows
+  const stride = Math.ceil((rows.length - 1) / (room - 1))
+  const last = rows.length - 1
+  return rows.filter((_, i) => i === last || (i % stride === 0 && last - i >= stride / 2))
 }
 
 /**
@@ -97,7 +94,7 @@ export function drawChips(w: number, all: Row[], reference: { minutes: number; l
   rows.forEach((r, i) => {
     const cx = m.l + step * (i + 0.5)
     const change = Math.round(r.minutes) - Math.round(reference.minutes)
-    const versus = r.kind === 'you' ? 'Your own numbers' : change === 0 ? `The ${reference.label} level` : `${Math.abs(change)} minutes ${change < 0 ? 'less' : 'more'} than ${reference.label}`
+    const versus = change === 0 ? `The ${reference.label} level` : `${Math.abs(change)} minutes ${change < 0 ? 'less' : 'more'} than ${reference.label}`
     s += nail(cx, base, H, nw, px(r.minutes), r.kind, `${r.label}\n${clock(r.minutes)} chipped off, ${share(r.minutes)} of the day\n${versus}`)
     s += `<text class="strong${r.kind === 'latest' ? ' hot' : ''}" x="${cx}" y="${top - 10}" text-anchor="middle">${Math.round(r.minutes)}</text>`
     s += `<text x="${cx}" y="${h - 12}" text-anchor="middle">${esc(r.label)}</text>`

@@ -2,10 +2,10 @@
 // The manicure index as one exhibit: how much of a working day a manicure chips off.
 // Real UK numbers from src/lenses/data.json (built by data/scripts/build-lenses.mjs). Other countries are
 // not shown because only the UK publishes real manicure prices we could use; see data/LENSES.md.
-import { computed, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue'
+import { onBeforeUnmount, onMounted, reactive, ref } from 'vue'
 
 import { data } from '@/lenses/data'
-import { clock, DAY, drawChips, share, type Row } from './chip'
+import { clock, drawChips, share, type Row } from './chip'
 
 const { years, values } = data.manicure.minutes
 const first = { year: years[0]!, minutes: values[0]! }
@@ -19,20 +19,7 @@ const cards = [
   { big: clock(lowest.minutes), small: `the smallest chip, in ${lowest.year}` },
 ]
 
-const price = ref<number | ''>('')
-const pay = ref<number | ''>('')
-const yours = computed(() => {
-  const p = Number(price.value)
-  const e = Number(pay.value)
-  return p > 0 && e > 0 ? (p / e) * 60 : null
-})
-// More than a whole day almost always means the two numbers are in different money.
-const tooLong = computed(() => yours.value !== null && yours.value > DAY)
-
-const rows = computed<Row[]>(() => {
-  const base: Row[] = years.map((year, i) => ({ label: String(year), minutes: values[i]!, kind: i === years.length - 1 ? 'latest' : 'year' }))
-  return yours.value !== null && !tooLong.value ? [...base, { label: 'You', minutes: yours.value, kind: 'you' }] : base
-})
+const rows: Row[] = years.map((year, i) => ({ label: String(year), minutes: values[i]!, kind: i === years.length - 1 ? 'latest' : 'year' }))
 
 const plot = ref<HTMLElement | null>(null)
 const svg = ref('')
@@ -41,9 +28,8 @@ const tip = reactive({ text: '', x: 0, y: 0, show: false })
 // Drawn at the width it actually gets, so labels stay readable on a phone.
 function draw() {
   const width = Math.max(260, Math.floor(plot.value?.clientWidth ?? 0) || 640)
-  svg.value = drawChips(width, rows.value, { minutes: first.minutes, label: String(first.year) })
+  svg.value = drawChips(width, rows, { minutes: first.minutes, label: String(first.year) })
 }
-watch(rows, draw)
 
 let observer: ResizeObserver | undefined
 onMounted(() => {
@@ -85,7 +71,6 @@ function onFocus(e: FocusEvent) {
       <span><i class="bare" />Chipped off for a manicure</span>
       <span><i class="line" />The {{ first.year }} chip</span>
       <span><i class="latest" />{{ last.year }}</span>
-      <span><i class="you" />You</span>
     </p>
     <!-- The SVG is built in chip.ts from our own numbers, with every label escaped there. -->
     <div ref="plot" class="chart" v-html="svg" />
@@ -93,22 +78,6 @@ function onFocus(e: FocusEvent) {
     <div class="cards">
       <div v-for="c in cards" :key="c.small" class="card"><b>{{ c.big }}</b><span>{{ c.small }}</span></div>
     </div>
-
-    <form class="yours" @submit.prevent>
-      <p class="charthead">Chip your own day</p>
-      <div class="fields">
-        <label for="chip-price">What a manicure costs you<input id="chip-price" v-model="price" type="number" inputmode="decimal" min="0" step="any" placeholder="25" /></label>
-        <label for="chip-pay">What you earn in an hour, in the same money<input id="chip-pay" v-model="pay" type="number" inputmode="decimal" min="0" step="any" placeholder="17" /></label>
-      </div>
-      <p class="verdict" aria-live="polite">
-        <template v-if="yours === null">Type both and your nail joins the row. Nothing you type leaves this page.</template>
-        <template v-else-if="tooLong">That is <b>{{ clock(yours) }}</b> of work, which is more than a whole day. Check the two numbers are in the same money.</template>
-        <template v-else>
-          A manicure chips <b>{{ clock(yours) }}</b> off your day, which is {{ share(yours) }} of it.
-          {{ yours < last.minutes ? 'A smaller chip than' : yours > last.minutes ? 'A bigger chip than' : 'The same chip as' }} the UK in {{ last.year }}.
-        </template>
-      </p>
-    </form>
 
     <p class="source">
       Shop prices for a basic manicure collected by the Office for National Statistics for the inflation figures, about 120 a month, against the middle
@@ -121,11 +90,10 @@ function onFocus(e: FocusEvent) {
 
 <style scoped>
 /* Uses the page's tokens from styles/base.css. These are the only extra colours: glossy black for the years,
-   the page's lacquer red for the latest, gold for you, and a bare nail for the chip. */
+   the page's lacquer red for the latest, and a bare nail for the chip. */
 .chipday {
   --chip-year: #3a3033; --chip-year-deep: #120d0e;
   --chip-latest: var(--lacquer); --chip-latest-deep: var(--lacquer-deep);
-  --chip-you: #dfae6f; --chip-you-deep: #9a6a32;
   --chip-bare: #f8e4dc;
 }
 .key { display: flex; flex-wrap: wrap; gap: 0.4rem 1rem; margin: 0; font-size: 0.8rem; color: var(--muted); }
@@ -135,15 +103,6 @@ function onFocus(e: FocusEvent) {
 .key .bare { background: var(--chip-bare); border: 1px solid var(--chrome); }
 .key .line { width: 16px; height: 0; border-radius: 0; border-top: 2px dashed var(--ink); }
 .key .latest { background: var(--lacquer); }
-.key .you { background: var(--chip-you); }
-.yours { display: grid; gap: 0.6rem; padding-top: 1rem; border-top: 1px solid var(--rule); }
-.yours .charthead { margin: 0; }
-.fields { display: flex; flex-wrap: wrap; gap: 0.75rem; }
-.fields label { display: grid; gap: 0.25rem; flex: 1 1 11rem; min-width: 0; font-size: 0.8rem; color: var(--muted); }
-.fields input { width: 100%; padding: 0.55rem 0.85rem; border: 1px solid var(--rule); border-radius: 14px; background: var(--bg); color: var(--ink); font: inherit; }
-.fields input:focus-visible { outline: 3px solid var(--gold); outline-offset: 2px; }
-.verdict { min-height: 1.6em; margin: 0; font-size: 0.9rem; color: var(--muted); }
-.verdict b { color: var(--ink); }
 .tip { position: fixed; z-index: 20; max-width: 240px; padding: 0.4rem 0.7rem; border-radius: 12px; background: var(--ink); color: #fff; font-size: 0.8rem; white-space: pre-line; pointer-events: none; transform: translateY(-100%); }
 /* The chart arrives through v-html, so scoped styles need :deep to reach it. */
 .chart :deep(.nail) { outline: none; }

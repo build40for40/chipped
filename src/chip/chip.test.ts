@@ -28,11 +28,10 @@ describe('the chip in your day', () => {
     for (const svg of [wide, phone]) expect(svg).not.toMatch(/NaN|undefined|Infinity/)
   })
 
-  it('always keeps the first year, the latest year and your own nail when thinning', () => {
-    const kept = thin([...rows, { label: 'You', minutes: 80, kind: 'you' }], 7)
+  it('always keeps the first year and the latest year when thinning', () => {
+    const kept = thin(rows, 7)
     expect(kept[0]!.label).toBe('2010')
-    expect(kept.map((r) => r.label)).toContain('2025')
-    expect(kept[kept.length - 1]!.label).toBe('You')
+    expect(kept[kept.length - 1]!.label).toBe('2025')
     expect(kept.length).toBeLessThanOrEqual(7)
   })
 
@@ -47,27 +46,13 @@ describe('the chip in your day', () => {
 })
 
 describe('ChipDay', () => {
-  it('states the real UK figures and adds your nail from two numbers', async () => {
+  it('states the real UK figures, with no inputs on the exhibit', async () => {
     const wrapper = mount(ChipDay)
     await flushPromises()
     const { years, values } = data.manicure.minutes
     expect(wrapper.find('h2').text()).toContain(`A manicure chips ${clock(values[values.length - 1]!)} off a British woman's working day`)
     expect(wrapper.find('h2').text()).toContain(`In ${years[0]} it took ${clock(values[0]!)}`)
-    expect(wrapper.find('.chart').html()).not.toContain('>You<')
-
-    await wrapper.find('#chip-price').setValue(30)
-    await wrapper.find('#chip-pay').setValue(20)
-    await flushPromises()
-    expect(wrapper.find('.verdict').text()).toContain('1 hr 30 min')
-    expect(wrapper.find('.chart').html()).toContain('>You<')
-  })
-
-  it('questions a manicure that costs more than a whole day', async () => {
-    const wrapper = mount(ChipDay)
-    await wrapper.find('#chip-price').setValue(900)
-    await wrapper.find('#chip-pay').setValue(10)
-    await flushPromises()
-    expect(wrapper.find('.verdict').text()).toContain('more than a whole day')
-    expect(wrapper.find('.chart').html()).not.toContain('>You<')
+    expect(wrapper.findAll('input')).toHaveLength(0)
+    expect(wrapper.findAll('.nail').length).toBeGreaterThan(0)
   })
 })
