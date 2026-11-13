@@ -13,8 +13,21 @@ Everything "chip" and "nail", as JSON you can chart. `npm run data:publish` copi
 | `parts/events.json` | https://build40for40.com/chipped/data/events.json | 19 dated events for annotating charts, each with its source: `thread` is nails, chips, polish or sp500 |
 | `parts/neiss.json` | https://build40for40.com/chipped/data/neiss.json | US ER visits by year from CPSC NEISS, by keyword on case notes: nail guns, nail cosmetics, potato chips, wood chippers, poker chips. `estimate` is national, `cases` is raw. Indicative, not official totals |
 | `../research/samples/bls-ces-nail-vs-hair-salons-1990-2026.json` | https://build40for40.com/chipped/data/bls-salons.json | BLS jobs in thousands, monthly 1990–Sep 2026: `CEU8081211301` nail salons, `CEU8081211201` hair salons |
+| `parts/uk-nail-trade.json` | https://build40for40.com/chipped/data/uk-nail-trade.json | UK imports and exports of manicure and pedicure preparations (HMRC commodity 33043000), monthly from Jan 2000. `series.imports_gbp`, `imports_kg`, `exports_gbp`, `exports_kg`, each with `.monthly["YYYY-MM"]` and `.annual["YYYY"]` (sum of a full year). Trade, not sales |
+| `parts/nail-imports-by-country.json` | https://build40for40.com/chipped/data/nail-imports-by-country.json | Imports of manicure and pedicure preparations (HS 330430) by country, 2018–2023, from UN Comtrade. `countries[]` rows with `iso3`, `imports_usd[year]`, `imports_kg[year]`, `population[year]`, `female_share_pct[year]` and the derived `imports_usd_per_woman[year]` |
+| `parts/covid-by-country.json` | https://build40for40.com/chipped/data/covid-by-country.json | One row per country for 2020 and 2021: confirmed Covid cases per 100,000 by year end, and the mean and peak of the Oxford lockdown stringency index. `countries[]` keyed by `iso3` |
+| `parts/lens-pageviews.json` | https://build40for40.com/chipped/data/lens-pageviews.json | Wikipedia pageviews for the lenses. `byLanguage[]`: 25 language editions mapped to a country, with 2019 and 2020 views of 16 home and outdoor hobby articles. `series[title]`: English monthly and yearly views for dating and self-care topics, from Jul 2015 |
+| `parts/uk-women-work.json` | https://build40for40.com/chipped/data/uk-women-work.json | UK women's employment from Eurostat's Labour Force Survey, to 2019. `industries[]`: women employed and their share in each industry section, 2008–2019. `series`: women by occupation group from 1992, including managers (`OC1`) and manual occupations |
+| `parts/births-marriage-management.json` | https://build40for40.com/chipped/data/births-marriage-management.json | UK and US yearly births, birth rate, fertility rate, marriage rate and women's share of management jobs, via Our World in Data. `series[<measure>_<GBR or USA>].annual` |
+| `parts/uk-selfcare-business.json` | https://build40for40.com/chipped/data/uk-selfcare-business.json | UK turnover, enterprises, value added and employment costs for hair and beauty (SIC 96.02), spas and massage (96.04) and fitness facilities (93.13), yearly 2008–2024, from the ONS Annual Business Survey. `series[sic<code>_<measure>].annual` |
+| `parts/uk-nomis.json` | https://build40for40.com/chipped/data/uk-nomis.json | From Nomis. `series[sic<code>_enterprises].annual`: number of UK businesses in hair and beauty (96020), spas and massage (96040) and fitness facilities (93130), 2010–2026. `industries[]`: jobs held by women and by everyone in each industry section, each June 1996–2026. `series[women_...]`: women employed by major occupation group (managers, manual groups and the rest), yearly 2006–2025 |
+| `parts/eu-selfcare-business.json` | https://build40for40.com/chipped/data/eu-selfcare-business.json | The same three industries in 33 European countries plus the EU total, 2021–2024, from Eurostat: enterprises, people employed and turnover. `countries[].industries[code][measure][year]`. No UK |
+| `parts/england-women-sport.json` | https://build40for40.com/chipped/data/england-women-sport.json | Share and number of women and men in England who are active, fairly active or inactive, yearly 2016–2025, from Sport England's Active Lives Adult Survey. `series[women_active_pct].annual` and friends |
+| `parts/uk-grooming-prices.json` | https://build40for40.com/chipped/data/uk-grooming-prices.json | ONS consumer price index for hairdressing and personal grooming (`D7EY`, 2015 = 100), monthly from 1988 |
+| `parts/us-protests.json` | https://build40for40.com/chipped/data/us-protests.json | US protest events and estimated crowds from the Crowd Counting Consortium, Jan 2017 to May 2026: `events_all`, `people_all`, and `events_women`, `people_women` for protests tagged women's rights or reproductive rights. Each has `.weekly` (keyed by the Monday), `.monthly` and `.annual` |
+| `parts/eating-styles.json` | https://build40for40.com/chipped/data/eating-styles.json | **Hand-coded, not fetched.** 14 countries sorted into hands, chopsticks or cutlery, each with the Wikipedia article it rests on |
 
-Every entry is keyed by the same `id` across files. The baseline everything is compared against is `chipped-nails`.
+Every entry is keyed by the same `id` across files. The lens files above are not entries: [`LENSES.md`](LENSES.md) says which of the seven lenses each one serves, what is a stand-in, and what is still missing. The baseline everything is compared against is `chipped-nails`.
 
 ## Refreshing
 
@@ -24,6 +37,20 @@ node data/scripts/fetch-pageviews.mjs
 node data/scripts/fetch-fred.mjs
 node data/scripts/fetch-sp500.mjs
 node data/scripts/summarise.mjs 1960    # ranks correlations with chipped nails
+# The lens datasets (see LENSES.md). Each caches its downloads in data/raw/; add --fresh to refetch.
+node data/scripts/fetch-uk-nail-trade.mjs
+node data/scripts/fetch-comtrade-nail-imports.mjs
+node data/scripts/fetch-owid-covid.mjs            # downloads about 98 MB
+node data/scripts/fetch-lens-pageviews.mjs        # about 400 calls, slow when Wikimedia rate-limits
+node data/scripts/fetch-eurostat-lfs.mjs
+node data/scripts/fetch-owid-births-work.mjs
+node data/scripts/fetch-ons-abs.mjs
+node data/scripts/fetch-eurostat-sbs.mjs
+node data/scripts/fetch-nomis.mjs
+node data/scripts/fetch-sport-england.mjs        # finds the newest workbook on Sport England's data tables page
+node data/scripts/fetch-ons-cpi.mjs
+node data/scripts/fetch-ccc-protests.mjs          # downloads about 200 MB
+node data/scripts/fetch-bls-selfcare.mjs          # not run yet: writes bls-selfcare.json, needs 4 of the 25 keyless BLS calls a day
 npm run data:publish
 ```
 
@@ -41,4 +68,4 @@ npm run data:publish
 
 ## Licences
 
-Ngram CC BY 3.0 (credit Google Books Ngram Viewer). Wikipedia pageviews CC0. FRED: credit the Federal Reserve Bank of St. Louis and each series' source. BLS and NEISS: US government, public domain. S&P 500: Robert Shiller's dataset via `datasets/s-and-p-500` (Open Data Commons PDDL). Nail prices: figures from Sichel, NBER Working Paper 29617, Table 1. Events: Sichel's data appendix and Wikipedia (CC BY-SA 4.0), reworded.
+Ngram CC BY 3.0 (credit Google Books Ngram Viewer). Wikipedia pageviews CC0. FRED: credit the Federal Reserve Bank of St. Louis and each series' source. BLS and NEISS: US government, public domain. S&P 500: Robert Shiller's dataset via `datasets/s-and-p-500` (Open Data Commons PDDL). Nail prices: figures from Sichel, NBER Working Paper 29617, Table 1. Events: Sichel's data appendix and Wikipedia (CC BY-SA 4.0), reworded. Lens files: HMRC and ONS under the Open Government Licence v3.0; Eurostat and Our World in Data CC BY 4.0; UN Comtrade free with credit; Crowd Counting Consortium CC0; Sport England with credit; each file's `source` and `licence` fields have the detail.
