@@ -12,6 +12,7 @@
   --rule: #eddcd8;
   --lacquer: #c9405b;
   --lacquer-deep: #8c2539;
+  --nude: #efcfc3;
   --chrome: #bba9a5;
   --gold: #c58d4e;
   color-scheme: light;
@@ -23,7 +24,8 @@ body {
 }
 
 body {
-  font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+  font-family: 'Bricolage Grotesque Variable', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  font-optical-sizing: auto;
   font-size: 16px;
   line-height: 1.5;
   overflow-x: hidden;
@@ -39,7 +41,7 @@ body {
 }
 
 .masthead {
-  padding-block: 3rem 1.5rem;
+  padding-block: 2rem 1.5rem;
 }
 
 .masthead h1 {
