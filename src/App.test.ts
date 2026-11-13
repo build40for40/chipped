@@ -12,7 +12,7 @@ describe('App', () => {
 
   it('switches the true cost chart to another thing', async () => {
     const wrapper = mount(App)
-    const chips = wrapper.findAll('.pill').find((b) => b.text() === 'Potato chips')!
+    const chips = wrapper.findAll('.tc-row').find((b) => b.text().startsWith('Potato chips'))!
     await chips.trigger('click')
     expect(chips.attributes('aria-pressed')).toBe('true')
     expect(wrapper.text()).toContain('a bag in 1980, which is $7.97 in 2025 money')

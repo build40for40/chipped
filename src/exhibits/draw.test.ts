@@ -26,6 +26,23 @@ describe('exhibits', () => {
     expect(svg).toContain('1790')
   })
 
+  it('labels later objects by their change and ghosts the first one behind them', () => {
+    const svg = objectsSvg(item('salon'), undefined, 3)
+    expect(svg.match(/class="ghost"/g)).toHaveLength(2)
+    expect(svg).toContain('+108%')
+    expect(svg).not.toContain('index')
+  })
+
+  it('puts the dearer-or-cheaper bars either side of zero', async () => {
+    const { barSpan, signed } = await import('./draw')
+    const zero = barSpan(0).left
+    expect(barSpan(-100)).toEqual({ left: 0, width: zero })
+    expect(barSpan(50).left).toBe(zero)
+    expect(barSpan(500).left + barSpan(500).width).toBe(100)
+    expect(signed(-2.54)).toBe('−2.5%')
+    expect(signed(108.4)).toBe('+108%')
+  })
+
   it('draws one ER chair per 250 visits', () => {
     const svg = erSvg({ manicure: 1000, nailGun: 500 })
     expect(svg.match(/<g /g)).toHaveLength(6)

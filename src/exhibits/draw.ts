@@ -65,70 +65,59 @@ export function icon(kind: Icon, cx: number, base: number, s: number): string {
         `<ellipse cx="${f(cx)}" cy="${f(base - H * 0.05)}" rx="${f(w * 0.42)}" ry="${f(H * 0.06)}" ${fill('chrome')}/>`
     }
     case 'chip': {
-      const w = H * 0.8
+      const w = H * 0.7
       const y0 = base - w
       let pins = ''
-      for (let i = 0; i < 5; i++) pins += `<rect x="${f(cx - w * 0.6)}" y="${f(y0 + w * (0.14 + i * 0.18))}" width="${f(w * 1.2)}" height="${f(Math.max(1, w * 0.06))}" ${fill('chrome')}/>`
+      for (let i = 0; i < 5; i++) pins += `<rect class="pin" x="${f(cx - w * 0.6)}" y="${f(y0 + w * (0.14 + i * 0.18))}" width="${f(w * 1.2)}" height="${f(Math.max(1, w * 0.06))}" ${fill('chrome')}/>`
       return pins + `<rect x="${f(cx - w / 2)}" y="${f(y0)}" width="${f(w)}" height="${f(w)}" rx="${f(w * 0.08)}" ${fill('ink')}/>` +
         `<rect x="${f(cx - w * 0.25)}" y="${f(y0 + w * 0.25)}" width="${f(w * 0.5)}" height="${f(w * 0.5)}" rx="${f(w * 0.04)}" ${fill('gold')}/>`
     }
   }
 }
 
-// Up to six points spread evenly from first to last.
+// Up to n points spread evenly from first to last.
 export function pick<T>(points: T[], n = 6): T[] {
   if (points.length <= n) return points
   return Array.from({ length: n }, (_, i) => points[Math.round((i * (points.length - 1)) / (n - 1))]!)
 }
 
 // The chosen thing drawn at several years, each object's area in proportion to its real price.
-export function objectsSvg(item: PriceItem, todayPrice?: number): string {
-  const shown = pick(item.points)
+// Over every later object sits a dashed ghost of the first one, so growth or shrinkage reads at a glance.
+export function objectsSvg(item: PriceItem, todayPrice?: number, n = 6): string {
+  const shown = pick(item.points, n)
   const maxV = Math.max(...shown.map((p) => p[1]))
-  const W = 900
-  const base = 220
+  const W = 150 * shown.length
+  const base = 206
   const bw = W / shown.length
   const kind = ICONS[item.key] ?? 'nail'
-  let out = ''
+  const v0 = shown[0]![1]
+  let out = `<line x1="0" x2="${W}" y1="${base + 1}" y2="${base + 1}" style="stroke:var(--rule);stroke-width:2"/>`
   shown.forEach(([year, v], i) => {
     const cx = bw * i + bw / 2
     out += icon(kind, cx, base, Math.sqrt(v / maxV))
-    out += `<text x="${f(cx)}" y="${base + 22}" text-anchor="middle" class="strong">${year}</text>`
-    const label = todayPrice !== undefined ? `$${((todayPrice * v) / 100).toFixed(2)} today` : `index ${Math.round(v)}`
-    out += `<text x="${f(cx)}" y="${base + 40}" text-anchor="middle">${label}</text>`
+    if (i > 0) out += `<g class="ghost">${icon(kind, cx, base, Math.sqrt(v0 / maxV))}</g>`
+    out += `<text x="${f(cx)}" y="${base + 24}" text-anchor="middle" class="strong">${year}</text>`
+    const d = (v / v0) * 100 - 100
+    const label = todayPrice !== undefined ? `$${((todayPrice * v) / 100).toFixed(2)} today` : i === 0 ? 'the start' : signed(d)
+    const cls = todayPrice !== undefined || i === 0 ? '' : ` class="big ${d >= 0 ? 'hot' : 'cool'}"`
+    out += `<text x="${f(cx)}" y="${base + 46}" text-anchor="middle"${cls}>${label}</text>`
   })
-  return `<svg viewBox="0 0 ${W} 270" role="img" aria-label="${item.label} drawn at its inflation-adjusted price">${out}</svg>`
+  return `<svg viewBox="0 0 ${W} ${base + 56}" role="img" aria-label="${item.label} drawn at its inflation-adjusted price">${out}</svg>`
 }
 
-// Every price series on one log scale, first year = 100, with the chosen one in red.
-export function linesSvg(items: PriceItem[], current: string): string {
-  const W = 900
-  const H = 210
-  const right = W - 170
-  const x = (yr: number) => 40 + ((yr - 1965) * (right - 40)) / (2025 - 1965)
-  const hi = Math.log10(400)
-  const y = (v: number) => 10 + (1 - Math.log10(Math.max(v, 1)) / hi) * (H - 20)
-  let out = ''
-  for (const t of [1, 10, 100, 300]) {
-    out += `<line x1="40" x2="${right}" y1="${f(y(t))}" y2="${f(y(t))}" style="stroke:var(--rule)"/>`
-    out += `<text x="34" y="${f(y(t) + 4)}" text-anchor="end">${t}</text>`
-  }
-  for (const yr of [1970, 1980, 1990, 2000, 2010, 2020]) out += `<text x="${f(x(yr))}" y="${H + 14}" text-anchor="middle">${yr}</text>`
-  const shown = items.filter((it) => it.points[0]![0] >= 1900)
-  // Draw the chosen line last so it sits on top.
-  for (const it of [...shown.filter((i) => i.key !== current), ...shown.filter((i) => i.key === current)]) {
-    const on = it.key === current
-    out += `<polyline points="${it.points.map(([yr, v]) => `${f(x(yr))},${f(y(v))}`).join(' ')}" fill="none" style="stroke:var(--${on ? 'lacquer' : 'chrome'});stroke-width:${on ? 3 : 1.4}" stroke-linecap="round"/>`
-  }
-  // Labels sit in the right margin, nudged apart so none overlap, with a short leader to their line's end.
-  const labels = shown.map((it) => ({ it, end: y(last(it.points)[1]), at: y(last(it.points)[1]) })).sort((a, b) => a.end - b.end)
-  for (let i = 1; i < labels.length; i++) labels[i]!.at = Math.max(labels[i]!.at, labels[i - 1]!.at + 15)
-  for (const l of labels) {
-    const on = l.it.key === current
-    out += `<line x1="${right + 4}" x2="${right + 14}" y1="${f(l.end)}" y2="${f(l.at)}" style="stroke:var(--rule)"/>`
-    out += `<text x="${right + 18}" y="${f(l.at + 4)}"${on ? ' class="hot"' : ''}>${l.it.label.replace(' & beauty products', '')}</text>`
-  }
-  return `<svg viewBox="0 0 ${W} ${H + 20}" role="img" aria-label="Inflation-adjusted price of each thing, first year = 100, log scale">${out}</svg>`
+// +108%, −2.5%: one decimal under 10 so small moves don't round away.
+export function signed(n: number): string {
+  return `${n >= 0 ? '+' : '−'}${Math.abs(n).toFixed(Math.abs(n) < 10 ? 1 : 0)}%`
+}
+
+// Where a real change sits on the dearer-or-cheaper bars: −100% at the left edge, +120% at the right.
+export const BAR_MIN = -100
+export const BAR_MAX = 120
+export function barSpan(pct: number): { left: number; width: number } {
+  const at = (p: number) => ((Math.min(Math.max(p, BAR_MIN), BAR_MAX) - BAR_MIN) / (BAR_MAX - BAR_MIN)) * 100
+  const zero = at(0)
+  const end = at(pct)
+  return { left: Math.min(zero, end), width: Math.abs(end - zero) }
 }
 
 // Two waiting rooms, one chair per 250 ER visits a year.
