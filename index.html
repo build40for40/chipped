@@ -2,7 +2,7 @@
 <html lang="en-GB">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <meta name="description" content="Nail polish floating on still water: drag it like a puddle, or switch on Paint to marble your own design. With music and a breathing guide.">
 <title>Chipped</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -22,13 +22,16 @@
   --body: "Instrument Sans", "Helvetica Neue", system-ui, sans-serif;
   color-scheme: light;
 }
-html, body { height: 100%; margin: 0; }
+html, body { height: 100%; margin: 0; overscroll-behavior: none; }
+[hidden] { display: none !important; }
 body {
   background: var(--nail);
   color: var(--ink);
   font-family: var(--body);
   overflow: hidden;
   -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+  touch-action: manipulation;
   user-select: none;
   -webkit-user-select: none;
 }
@@ -52,30 +55,6 @@ body.painting canvas#pool { cursor: crosshair; }
 }
 
 /* Corners */
-.mark {
-  position: fixed;
-  top: calc(14px + env(safe-area-inset-top, 0px));
-  left: max(16px, env(safe-area-inset-left, 0px));
-  display: flex;
-  align-items: baseline;
-  gap: 0.5rem;
-  padding: 0.45rem 0.8rem;
-  border-radius: 999px;
-  font-family: var(--display);
-  font-weight: 700;
-  font-size: 1rem;
-  letter-spacing: -0.02em;
-  color: var(--ink);
-  text-decoration: none;
-  transition: opacity 1.2s ease;
-}
-.mark small {
-  font-family: var(--body);
-  font-weight: 500;
-  font-size: 0.72rem;
-  letter-spacing: 0.02em;
-  color: var(--ink-soft);
-}
 .dot {
   display: inline-block;
   width: 0.24em;
@@ -100,6 +79,7 @@ button {
 }
 button:focus-visible { outline: 2px solid var(--lacquer); outline-offset: 3px; }
 .icon {
+  position: relative;
   width: 2.5rem;
   height: 2.5rem;
   display: grid;
@@ -145,9 +125,11 @@ button:focus-visible { outline: 2px solid var(--lacquer); outline-offset: 3px; }
 /* Paint tray: shades and a fresh start, only while painting */
 .tray {
   position: fixed;
-  left: 50%;
+  left: 0;
+  right: 0;
   bottom: calc(18px + env(safe-area-inset-bottom, 0px));
-  transform: translate(-50%, 0);
+  width: fit-content;
+  margin-inline: auto;
   display: flex;
   align-items: center;
   gap: 0.35rem;
@@ -158,28 +140,7 @@ button:focus-visible { outline: 2px solid var(--lacquer); outline-offset: 3px; }
   scrollbar-width: none;
   transition: opacity 0.5s ease, transform 0.5s ease;
 }
-.tray[hidden] { display: flex !important; opacity: 0; pointer-events: none; transform: translate(-50%, 12px); }
-.shade {
-  display: flex;
-  align-items: center;
-  gap: 0.45rem;
-  flex: none;
-  height: 2.3rem;
-  padding: 0 0.8rem 0 0.4rem;
-  border: 0;
-  border-radius: 999px;
-  background: transparent;
-  font-size: 0.8rem;
-  font-weight: 500;
-  white-space: nowrap;
-}
-.shade[aria-pressed="true"] { background: rgb(255 255 255 / 0.85); box-shadow: 0 1px 6px rgb(80 20 35 / 0.12); }
-.swatch {
-  width: 1.5rem;
-  height: 1.5rem;
-  border-radius: 50%;
-  box-shadow: inset 0 0 0 1px rgb(0 0 0 / 0.08);
-}
+.tray[hidden] { display: flex !important; opacity: 0; pointer-events: none; transform: translateY(12px); }
 .sep { width: 1px; height: 1.4rem; background: rgb(59 26 34 / 0.15); flex: none; }
 .plain {
   flex: none;
@@ -192,14 +153,123 @@ button:focus-visible { outline: 2px solid var(--lacquer); outline-offset: 3px; }
   font-weight: 600;
   white-space: nowrap;
 }
-.plain:hover, .shade:hover { background: rgb(255 255 255 / 0.6); }
+.plain:hover, .step:hover { background: rgb(255 255 255 / 0.6); }
+
+/* The year picker: each year paints with its most searched colours */
+.step {
+  flex: none;
+  width: 2.3rem;
+  height: 2.3rem;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  font-size: 1.35rem;
+  line-height: 1;
+}
+.step:disabled { opacity: 0.3; cursor: default; }
+.year {
+  flex: none;
+  display: grid;
+  min-width: 6.5rem;
+  line-height: 1.15;
+  text-align: center;
+}
+.year b { font-family: var(--display); font-size: 1.15rem; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; }
+.year span { font-size: 0.68rem; color: var(--ink-soft); white-space: nowrap; }
+.dots { flex: none; display: flex; gap: 0.3rem; padding-inline: 0.3rem; }
+.dots i { width: 1.1rem; height: 1.1rem; border-radius: 50%; background: var(--c); box-shadow: inset 0 0 0 1px rgb(0 0 0 / 0.1); }
+.dots i.coty { box-shadow: 0 0 0 2px #fff, 0 0 0 3.5px var(--ink); }
+.caption {
+  position: fixed;
+  left: 50%;
+  bottom: calc(76px + env(safe-area-inset-bottom, 0px));
+  width: min(40rem, calc(100% - 32px));
+  transform: translateX(-50%);
+  text-align: center;
+  font-size: 0.75rem;
+  line-height: 1.45;
+  color: #fff;
+  text-shadow: 0 1px 10px rgb(60 10 25 / 0.75), 0 0 2px rgb(60 10 25 / 0.4);
+  pointer-events: none;
+  text-wrap: balance;
+}
+
+/* Little hands: the top-left button, its hold ring, and the lock */
+.kid {
+  position: fixed;
+  top: calc(14px + env(safe-area-inset-top, 0px));
+  left: max(16px, env(safe-area-inset-left, 0px));
+  z-index: 30;
+  transition: opacity 1.2s ease;
+}
+.icon .ring { position: absolute; inset: -5px; width: calc(100% + 10px); height: calc(100% + 10px); transform: rotate(-90deg); pointer-events: none; }
+.icon .ring circle { fill: none; stroke: var(--lacquer); stroke-width: 2.5; stroke-dasharray: 126; stroke-dashoffset: 126; }
+.kid.holding .ring circle { stroke-dashoffset: 0; transition: stroke-dashoffset 3s linear; }
+.kid .heart { fill: var(--lacquer); stroke: none; }
+.kid[aria-pressed="true"] .lock-body { fill: var(--lacquer); stroke: var(--lacquer); }
+.kid[aria-pressed="true"] .heart { fill: #fff; }
+
+/* The polish-bottle timer: the lacquer drains as the session runs */
+.icon .bottle-fill { stroke: none; transition: fill 1s ease; }
+.icon .bottle-cap { fill: var(--ink); stroke: none; }
+.icon .bottle-glint { stroke: #fff; stroke-width: 1.2; opacity: 0.8; }
+
+/* Sheets: frosted cards that rise from the bottom */
+.sheet {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  display: grid;
+  place-items: end center;
+  padding-block: 24px calc(24px + env(safe-area-inset-bottom, 0px));
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  background: rgb(40 8 18 / 0.2);
+}
+.sheet .card { width: min(24rem, 100%); gap: 0.9rem; }
+.eyebrow { margin: 0; font-size: 0.72rem; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-soft); }
+.card h2 { margin: 0; font-family: var(--display); font-weight: 700; font-size: 1.6rem; line-height: 1.05; letter-spacing: -0.03em; text-wrap: balance; }
+.card .note { font-size: 0.8rem; }
+.dial { display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
+.dial output { font-family: var(--display); font-weight: 700; font-size: 3.2rem; line-height: 1; letter-spacing: -0.04em; font-variant-numeric: tabular-nums; }
+.dial output small { font-family: var(--body); font-size: 1rem; font-weight: 500; letter-spacing: 0; color: var(--ink-soft); }
+.round { width: 3rem; height: 3rem; border-radius: 50%; border: 1px solid rgb(59 26 34 / 0.15); background: rgb(255 255 255 / 0.6); font-size: 1.4rem; line-height: 1; }
+.picks { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+.pick { display: flex; align-items: center; gap: 0.45rem; height: 2.2rem; padding: 0 0.85rem 0 0.55rem; border: 0; border-radius: 999px; background: rgb(255 255 255 / 0.5); font-weight: 600; font-size: 0.85rem; }
+.pick i { width: 0.8rem; height: 0.8rem; border-radius: 50%; background: var(--c); box-shadow: inset 0 0 0 1px rgb(0 0 0 / 0.1); }
+.pick[aria-pressed="true"] { background: #fff; box-shadow: 0 1px 6px rgb(80 20 35 / 0.15); }
+.running .dial, .running .picks { display: none; }
+.left { font-family: var(--display); font-weight: 700; font-size: 2.6rem; line-height: 1; letter-spacing: -0.04em; font-variant-numeric: tabular-nums; }
+.swatches { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.75rem; padding-block: 0.3rem; }
+.swatches button { width: 3rem; height: 3rem; border-radius: 50%; border: 3px solid #fff; background: var(--c); box-shadow: 0 2px 8px rgb(0 0 0 / 0.15); transition: transform 0.2s ease, opacity 0.2s ease; }
+.swatches button.done { transform: scale(0.8); opacity: 0.45; }
+.shake { animation: shake 0.4s; }
+@keyframes shake { 20%, 60% { transform: translateX(-8px); } 40%, 80% { transform: translateX(8px); } }
+
+/* Night: the toddler session is over. A dim glowing bottle in the last colour. */
+.night {
+  position: fixed;
+  inset: 0;
+  z-index: 25;
+  display: grid;
+  place-items: center;
+  background: rgb(12 5 9 / 0.88);
+}
+.night svg { width: min(38vmin, 220px); height: auto; animation: glow 5s ease-in-out infinite; }
+.night .bottle-fill { fill: var(--glow); }
+.night .bottle-line { fill: none; stroke: rgb(255 255 255 / 0.35); stroke-width: 0.5; }
+.night .bottle-cap { fill: #2a2226; }
+@keyframes glow {
+  0%, 100% { filter: drop-shadow(0 0 10px var(--glow)) brightness(0.75); }
+  50% { filter: drop-shadow(0 0 36px var(--glow)) brightness(1); }
+}
 
 /* Breath */
 .breath {
   position: fixed;
   left: 0;
   right: 0;
-  bottom: calc(86px + env(safe-area-inset-bottom, 0px));
+  bottom: calc(128px + env(safe-area-inset-bottom, 0px));
   text-align: center;
   font-family: var(--display);
   font-weight: 500;
@@ -234,7 +304,7 @@ body:not(.painting) .breath { bottom: calc(40px + env(safe-area-inset-bottom, 0p
 .motif.show { opacity: 0.95; }
 
 /* Quiet the chrome while someone is simply watching */
-body.idle .controls, body.idle .mark { opacity: 0.28; }
+body.idle .controls, body.idle .kid { opacity: 0.28; }
 body.idle .tray:not([hidden]) { opacity: 0.4; }
 
 /* Welcome */
@@ -293,24 +363,35 @@ body.idle .tray:not([hidden]) { opacity: 0.4; }
     radial-gradient(circle at 70% 60%, #e8a0a8 0 12%, #fbf3ee 12% 17%, #c9405b 17% 24%, transparent 24%),
     var(--nail);
 }
-@media (max-width: 560px) {
-  .mark small { display: none; }
-}
-@media (max-width: 420px) {
-  .mark { display: none; }
+@media (max-width: 480px) {
+  .tray { gap: 0.15rem; padding: 0.3rem; }
+  .tray .sep { display: none; }
+  .step { width: 1.9rem; }
+  .year { min-width: 0; max-width: 5.6rem; }
+  .year span { white-space: normal; font-size: 0.62rem; }
+  .dots { gap: 0.2rem; padding-inline: 0.1rem; }
+  .dots i { width: 0.9rem; height: 0.9rem; }
+  .plain { padding: 0 0.6rem; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .knob, .tray, .breath, .welcome, .controls, .mark { transition: none; }
+  .knob, .tray, .breath, .welcome, .controls, .kid, .caption { transition: none; }
+  .night svg { animation: none; }
 }
 </style>
 </head>
 <body>
 
-<canvas id="pool" aria-label="Nail polish floating on water. Drag to move it; with Paint on, tap to drop polish and drag to swirl it."></canvas>
+<canvas id="pool" aria-label="Nail polish floating on water. Drag to move it; with Paint on, every stroke becomes a symmetric nail-art design."></canvas>
 
-<div class="mark glass">chipped<span class="dot"></span> <small>water marble</small></div>
+<button id="kid" class="icon glass kid" type="button" aria-pressed="false" aria-label="Little hands mode" title="Little hands mode">
+  <svg viewBox="0 0 24 24"><path d="M8 10.5V8a4 4 0 0 1 8 0v2.5"/><rect class="lock-body" x="5.5" y="10.5" width="13" height="10" rx="2.5"/><path class="heart" d="M12 18.3l-2.3-2.2a1.35 1.35 0 0 1 2.3-1.3 1.35 1.35 0 0 1 2.3 1.3z"/></svg>
+  <svg class="ring" viewBox="0 0 44 44" aria-hidden="true"><circle cx="22" cy="22" r="20"/></svg>
+</button>
 
 <div class="controls">
+  <button id="timer" class="icon glass" type="button" aria-label="Session timer" title="Session timer">
+    <svg viewBox="0 0 24 24"><defs><clipPath id="bottleClip"><path d="M8 10.5h8a1.5 1.5 0 0 1 1.5 1.5v7.5a2 2 0 0 1-2 2h-7a2 2 0 0 1-2-2V12A1.5 1.5 0 0 1 8 10.5z"/></clipPath></defs><rect id="bottleFill" class="bottle-fill" x="5" y="10.5" width="14" height="11" clip-path="url(#bottleClip)"/><path d="M8 10.5h8a1.5 1.5 0 0 1 1.5 1.5v7.5a2 2 0 0 1-2 2h-7a2 2 0 0 1-2-2V12A1.5 1.5 0 0 1 8 10.5z"/><path d="M10.2 10.5V8.4h3.6v2.1"/><rect class="bottle-cap" x="9.4" y="2.6" width="5.2" height="5.8" rx="1"/><path class="bottle-glint" d="M9 13.3v4"/></svg>
+  </button>
   <button id="breathe" class="icon glass" type="button" aria-pressed="true" aria-label="Breathing guide" title="Breathing guide">
     <svg viewBox="0 0 24 24" class="on"><path d="M4 12c2.5-4 5.5-4 8 0s5.5 4 8 0"/><path d="M4 17c2.5-4 5.5-4 8 0s5.5 4 8 0" opacity=".5"/><path d="M4 7c2.5-4 5.5-4 8 0s5.5 4 8 0" opacity=".5"/></svg>
     <svg viewBox="0 0 24 24" class="off"><path d="M4 12h16" opacity=".6"/></svg>
@@ -327,16 +408,76 @@ body.idle .tray:not([hidden]) { opacity: 0.4; }
 <div class="breath" id="breathText" aria-live="off"></div>
 <div class="motif" id="motif" aria-live="polite"></div>
 
+<div class="caption" id="caption" hidden></div>
 <div class="tray glass" id="tray" hidden>
-  <div id="shades" style="display:flex;gap:0.2rem"></div>
+  <button class="step" id="yearPrev" type="button" aria-label="Previous year">&lsaquo;</button>
+  <div class="year"><b id="yearLabel">2026</b><span id="yearSub"></span></div>
+  <button class="step" id="yearNext" type="button" aria-label="Next year">&rsaquo;</button>
+  <div class="dots" id="dots"></div>
   <span class="sep"></span>
-  <button class="plain" id="fresh" type="button" title="Flood a fresh base coat and start a new design">Fresh base coat</button>
+  <button class="plain" id="fresh" type="button" title="Flood a fresh base coat and start a new design">New coat</button>
+</div>
+
+<div class="sheet" id="timerSheet" hidden>
+  <div class="card glass" role="dialog" aria-labelledby="timerTitle">
+    <p class="eyebrow" id="timerTitle">Session</p>
+    <div class="left" id="timeLeft" hidden></div>
+    <div class="dial">
+      <button class="round" id="minus" type="button" aria-label="One minute less">&minus;</button>
+      <output id="mins" aria-live="polite">5<small> min</small></output>
+      <button class="round" id="plus" type="button" aria-label="One minute more">+</button>
+    </div>
+    <div class="picks" id="picks"></div>
+    <p class="note" id="timerNote">When time is up, the music fades and the polish settles.</p>
+    <div class="row">
+      <button class="primary" id="startSession" type="button">Start</button>
+      <button class="secondary" id="closeTimer" type="button">Not now</button>
+    </div>
+  </div>
+</div>
+
+<div class="sheet" id="endSheet" hidden>
+  <div class="card glass" role="dialog" aria-labelledby="endTitle">
+    <p class="eyebrow">Session complete</p>
+    <h2 id="endTitle">All done.</h2>
+    <p>Take one slow breath before you go.</p>
+    <div class="row">
+      <button class="primary" id="backToIt" type="button">Back to it</button>
+      <button class="secondary" id="fiveMore" type="button">Another 5 minutes</button>
+    </div>
+  </div>
+</div>
+
+<div class="sheet" id="kidSheet" hidden>
+  <div class="card glass" role="dialog" aria-labelledby="kidTitle">
+    <p class="eyebrow">Little hands</p>
+    <h2 id="kidTitle">Lock it for a toddler</h2>
+    <p>Full screen, no zooming, softer music, and every finger paints. Paint, music and breathing still work. If a session timer is running, it ends with a dim glowing bottle.</p>
+    <p class="note">To unlock, hold this button for 3 seconds, then tap the colours it asks for. For a full lock, also turn on Guided Access (iPhone) or App pinning (Android).</p>
+    <div class="row">
+      <button class="primary" id="lockKid" type="button">Lock for little hands</button>
+      <button class="secondary" id="closeKid" type="button">Not now</button>
+    </div>
+  </div>
+</div>
+
+<div class="sheet" id="unlockSheet" hidden>
+  <div class="card glass" role="dialog" aria-labelledby="unlockAsk">
+    <p class="eyebrow">Grown-ups only</p>
+    <h2 id="unlockAsk"></h2>
+    <div class="swatches" id="unlockDots"></div>
+  </div>
+</div>
+
+<div class="night" id="night" hidden>
+  <svg viewBox="0 0 24 24" aria-label="All done"><defs><clipPath id="nightClip"><path d="M8 10.5h8a1.5 1.5 0 0 1 1.5 1.5v7.5a2 2 0 0 1-2 2h-7a2 2 0 0 1-2-2V12A1.5 1.5 0 0 1 8 10.5z"/></clipPath></defs><rect class="bottle-fill" x="5" y="10.5" width="14" height="11" clip-path="url(#nightClip)"/><path class="bottle-line" d="M8 10.5h8a1.5 1.5 0 0 1 1.5 1.5v7.5a2 2 0 0 1-2 2h-7a2 2 0 0 1-2-2V12A1.5 1.5 0 0 1 8 10.5z"/><path class="bottle-line" d="M10.2 10.5V8.4h3.6v2.1"/><rect class="bottle-cap" x="9.4" y="2.6" width="5.2" height="5.8" rx="1"/></svg>
 </div>
 
 <div class="welcome" id="welcome">
   <div class="card glass">
-    <h1>water marble<span class="dot"></span></h1>
+    <h1>chipped<span class="dot"></span></h1>
     <p>Glossy nail polish floating on still water. Drag through it and it drifts like a puddle. Switch on Paint and just move your finger: every stroke turns into a finished nail-art design.</p>
+    <p>The colours are real: each year's most searched nail polish shades worldwide, from Google Trends.</p>
     <div class="row">
       <button class="primary" id="beginSound" type="button">Begin with music</button>
       <button class="secondary" id="beginQuiet" type="button">Begin quietly</button>
@@ -345,36 +486,57 @@ body.idle .tray:not([hidden]) { opacity: 0.4; }
   </div>
 </div>
 
-<script>
+<script type="module">
+import { colours as TREND_COLOURS, years as TREND_YEARS } from './data/parts/nail-colour-trends.json';
+
 (() => {
 'use strict';
 
-// ---------- Shades ----------
+// ---------- Shades: the real colours of each year ----------
+// Each year paints with its most searched nail polish colours worldwide (data/parts/nail-colour-trends.json, from
+// data/scripts/fetch-google-trends-colours.mjs): its top four plus its colour of the year. The most searched colour is
+// the base coat; the others come round, and bloom bigger, in proportion to their share of searches.
 const hex = (h) => [1, 3, 5].map((i) => parseInt(h.slice(i, i + 2), 16) / 255);
-const SHADES = [
-  { name: 'Lacquer', sparkle: 0.25, base: '#fbf3ee', colors: ['#c9405b', '#efcfc3', '#8c2539', '#e8a0a8', '#fbf3ee', '#a8324c'] },
-  { name: 'Lilac hour', sparkle: 0.45, base: '#f3e9f7', colors: ['#8e72c7', '#f3e9f7', '#c9b6e4', '#5b4a8a', '#e7c6d9'] },
-  { name: 'Sea glass', sparkle: 0.35, base: '#e9f4ef', colors: ['#4f9a94', '#e9f4ef', '#a8d5c9', '#2f5f6b', '#f2d8c9'] },
-  { name: 'Gold leaf', sparkle: 1.0, base: '#1f1a17', colors: ['#d9a441', '#fbf8f1', '#8a5a2b', '#f5e6c8', '#1f1a17'] },
-  { name: 'Cherry cola', sparkle: 0.3, base: '#f6d6d2', colors: ['#9e1b32', '#f6d6d2', '#5a1020', '#e05a6d', '#2a0b10'] },
-].map((s) => ({ ...s, rgb: s.colors.map(hex), baseRgb: hex(s.base), accents: s.colors.filter((c) => c !== s.base).map(hex) }));
-let shade = SHADES[0];
+const COLOURS = Object.fromEntries(TREND_COLOURS.map((c) => [c.id, c]));
+function makeShade(name, entries, extra = {}) {
+  const rgb = entries.map((e) => hex(e.hex));
+  const rest = entries.slice(1);
+  const mean = rest.reduce((s, e) => s + (e.share ?? 1), 0) / rest.length;
+  // The colour of the year always gets at least an average share, so the headline colour shows in every design.
+  const weight = (e) => Math.max((e.share ?? mean) / mean, e.id && e.id === extra.coty?.id ? 1 : 0);
+  const accents = rest.map((e) => Object.assign(hex(e.hex), { k: Math.max(0.5, Math.min(1.8, weight(e))) }));
+  const counts = rest.map((e) => Math.max(1, Math.round(weight(e) * 2)));
+  const seq = [];
+  for (let round = 0; seq.length < counts.reduce((a, b) => a + b, 0); round++) counts.forEach((n, i) => round < n && seq.push(i));
+  return { name, colors: entries.map((e) => e.hex), rgb, baseRgb: rgb[0], accents, seq, sparkle: entries.some((e) => e.sparkle) ? 1 : 0.25, ...extra };
+}
+const YEARS = TREND_YEARS.filter((y) => !y.thin).map((y) =>
+  makeShade(y.year, y.palette.map((p) => ({ ...COLOURS[p.id], share: p.share })), { year: y.year, partial: y.partial, top: y.top, coty: y.colourOfTheYear }),
+);
+const FALLBACK = makeShade('Lacquer', ['#fbf3ee', '#c9405b', '#efcfc3', '#8c2539', '#e8a0a8', '#a8324c'].map((h) => ({ hex: h })));
+let yearIdx = YEARS.length - 1; // Paint opens on this year.
+let driftIdx = YEARS.length - 1; // Calm mode drifts on through the years.
+let shade = YEARS[yearIdx] ?? FALLBACK;
 let colorIdx = 0;
 let accentIdx = 0;
 const nextColor = () => shade.rgb[colorIdx++ % shade.rgb.length];
-const nextAccent = () => shade.accents[accentIdx++ % shade.accents.length];
-// Polish never blends like watercolour: every pixel snaps to one of the current shade's real colours. Changing shade
-// floods a fresh base coat, so older colours are pushed off the nail.
-function paletteArray() {
+const nextAccent = () => shade.accents[shade.seq[accentIdx++ % shade.seq.length]];
+// Polish never blends like watercolour: every pixel snaps to one of the current year's real colours. When the year
+// changes, the whole marble cross-fades from the old year's colours to the new year's.
+function paletteArray(sh) {
   const data = new Float32Array(48);
-  shade.rgb.slice(0, 16).forEach((c, i) => data.set(c, i * 3));
-  return { n: Math.min(16, shade.rgb.length), data };
+  sh.rgb.slice(0, 16).forEach((c, i) => data.set(c, i * 3));
+  return { n: Math.min(16, sh.rgb.length), data };
 }
-let palette = paletteArray();
+let palette = paletteArray(shade);
+let prevPalette = palette;
+let paletteSince = -1e9;
 function useShade(s) {
+  if (s !== shade) { prevPalette = palette; paletteSince = performance.now(); }
   shade = s; colorIdx = 0; accentIdx = 0;
-  palette = paletteArray();
+  palette = paletteArray(s);
 }
+const colourName = (id) => COLOURS[id]?.name ?? id;
 
 const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
 const $ = (id) => document.getElementById(id);
@@ -468,15 +630,15 @@ const FS = {
   gradient: `uniform sampler2D uPressure, uVelocity;
     void main(){ float L = texture(uPressure, vL).x, R = texture(uPressure, vR).x, T = texture(uPressure, vT).x, B = texture(uPressure, vB).x;
       o = vec4(texture(uVelocity, vUv).xy - vec2(R - L, T - B), 0.0, 1.0); }`,
-  display: `uniform sampler2D uDye; uniform vec2 dyeTexel; uniform float time, aspect, sparkle; uniform vec3 pal[16]; uniform int palN;
+  display: `uniform sampler2D uDye; uniform vec2 dyeTexel; uniform float time, aspect, sparkle; uniform vec3 pal[16], prevPal[16]; uniform int palN, prevPalN; uniform float palMix;
     float height(vec2 uv){ vec4 d = texture(uDye, uv); return d.a * (0.55 + 0.45 * dot(d.rgb / max(d.a, 1e-3), vec3(0.3, 0.5, 0.2))); }
     // Snap to the nearest real shade, with a hair of anti-aliasing where two shades meet.
-    vec3 snap(vec3 c){
-      if (palN == 0) return c;
+    vec3 snapTo(vec3 c, vec3 P[16], int n){
+      if (n == 0) return c;
       vec3 b = c, s = c; float bd = 1e9, sd = 1e9;
       for (int i = 0; i < 16; i++){
-        if (i >= palN) break;
-        vec3 q = pal[i]; float d = dot(c - q, c - q);
+        if (i >= n) break;
+        vec3 q = P[i]; float d = dot(c - q, c - q);
         if (d < bd){ sd = bd; s = b; bd = d; b = q; } else if (d < sd){ sd = d; s = q; }
       }
       return mix(mix(b, s, 0.5), b, smoothstep(0.0, 0.04, sqrt(sd) - sqrt(bd)));
@@ -485,7 +647,8 @@ const FS = {
       vec2 q = vec2(vUv.x * aspect, vUv.y);
       vec4 d = texture(uDye, vUv);
       float cover = smoothstep(0.4, 0.6, d.a);
-      vec3 polish = snap(d.rgb / max(d.a, 1e-3));
+      vec3 raw = d.rgb / max(d.a, 1e-3);
+      vec3 polish = palMix >= 1.0 ? snapTo(raw, pal, palN) : mix(snapTo(raw, prevPal, prevPalN), snapTo(raw, pal, palN), palMix);
       // The bare nail under the polish, with the faint ridges of a real nail plate.
       vec3 nail = mix(vec3(0.965, 0.87, 0.835), vec3(0.93, 0.81, 0.77), noise(q * 40.0) * 0.6 + (1.0 - vUv.y) * 0.4);
       nail *= 0.975 + 0.025 * sin(q.x * 260.0 + noise(q * 6.0) * 6.0);
@@ -641,7 +804,8 @@ function dropPasses(list) {
 }
 // area is r squared, in screen-height units.
 function queueDrop(x, y, color, area, delay = 0, rate = 4.5) {
-  drops.push({ x, y, color, left: area, at: simTime + delay, rate });
+  // Accent colours carry k: more searched colours bloom bigger.
+  drops.push({ x, y, color, left: area * (color.k || 1), at: simTime + delay, rate });
 }
 
 function step(dt) {
@@ -720,6 +884,10 @@ function render(time) {
   gl.uniform1f(u.sparkle, shade.sparkle);
   gl.uniform1i(u.palN, palette.n);
   gl.uniform3fv(u['pal[0]'], palette.data);
+  const t = Math.min(1, (performance.now() - paletteSince) / 2500);
+  gl.uniform1f(u.palMix, t * t * (3 - 2 * t));
+  gl.uniform1i(u.prevPalN, prevPalette.n);
+  gl.uniform3fv(u['prevPal[0]'], prevPalette.data);
   blit(null);
 }
 
@@ -823,21 +991,24 @@ function placeMotif(p, x, y, dirx, diry) {
 function baseCoat() {
   const asp = aspect();
   fold = [5, 6, 6, 8][Math.floor(Math.random() * 4)];
+  // A new coat replaces anything still blooming, or floods from the same centre interleave into thin rings.
   pulls.length = 0;
+  drops.length = 0;
   queueDrop(0.5, 0.5, shade.baseRgb, ((asp * asp) / 4 + 0.25) * 1.15, 0, 2.6);
   music.note(0.25, 0.07);
 }
 const motifEl = $('motif');
 let motifTimer = 0;
-function showMotif() {
-  motifEl.textContent = MOTIFS[motifIdx % MOTIFS.length].name;
+function showLabel(text, ms = 1600) {
+  motifEl.textContent = text;
   motifEl.classList.add('show');
   clearTimeout(motifTimer);
-  motifTimer = setTimeout(() => motifEl.classList.remove('show'), 1600);
+  motifTimer = setTimeout(() => motifEl.classList.remove('show'), ms);
 }
+const showMotif = () => showLabel(MOTIFS[motifIdx % MOTIFS.length].name);
 
 function onDown(e) {
-  if (!started) return;
+  if (!started || frozen) return;
   try { canvas.setPointerCapture(e.pointerId); } catch {}
   const [x, y] = uv(e);
   const p = { x, y, sx: x, sy: y, travel: 0, moved: false, rings: 0, hold: 0, count: 0, dx: 1, dy: 0 };
@@ -859,7 +1030,7 @@ function onDown(e) {
 function onMove(e) {
   lastActivity = performance.now();
   document.body.classList.remove('idle');
-  if (!started) return;
+  if (!started || frozen) return;
   const [x, y] = uv(e);
   let p = pointers.get(e.pointerId);
   if (!p) {
@@ -913,6 +1084,8 @@ addEventListener('pointermove', () => { lastActivity = performance.now(); docume
 // ---------- Music ----------
 const music = (() => {
   let ctx = null, master, verb, dry, on = false, timers = [], lastNote = 0;
+  let level = 0.75, fade = 1;
+  const target = () => (on ? level * fade : 0);
   const mtof = (m) => 440 * Math.pow(2, (m - 69) / 12);
   // Dmaj9, Bm11, Gmaj9(#11), A6sus: open voicings that never resolve hard.
   const CHORDS = [[50, 57, 61, 64, 66], [47, 54, 57, 62, 64], [43, 50, 57, 59, 61], [45, 52, 57, 59, 62]];
@@ -959,14 +1132,16 @@ const music = (() => {
     chord++;
     timers.push(setTimeout(pad, 11000));
   }
-  function bell(m, vol) {
+  function bell(m, vol, out) {
     const t0 = ctx.currentTime + 0.01;
     for (const [mult, v, dec] of [[1, 1, 3.2], [2.01, 0.25, 1.4], [3.98, 0.08, 0.7]]) {
       const o = ctx.createOscillator(), g = ctx.createGain();
       o.type = 'sine'; o.frequency.value = mtof(m) * mult;
       g.gain.setValueAtTime(0, t0); g.gain.linearRampToValueAtTime(vol * v, t0 + 0.008);
       g.gain.exponentialRampToValueAtTime(0.0001, t0 + dec);
-      o.connect(g); g.connect(verb); g.connect(dry); o.start(t0); o.stop(t0 + dec + 0.1);
+      o.connect(g);
+      if (out) g.connect(out); else { g.connect(verb); g.connect(dry); }
+      o.start(t0); o.stop(t0 + dec + 0.1);
     }
   }
   function drift() {
@@ -981,7 +1156,29 @@ const music = (() => {
       if (!ctx) return;
       if (on) ctx.resume();
       master.gain.cancelScheduledValues(ctx.currentTime);
-      master.gain.setTargetAtTime(on ? 0.75 : 0, ctx.currentTime, on ? 1.4 : 0.25);
+      master.gain.setTargetAtTime(target(), ctx.currentTime, on ? 1.4 : 0.25);
+    },
+    // Softer for little ears.
+    setLevel(v) {
+      level = v;
+      if (ctx) master.gain.setTargetAtTime(target(), ctx.currentTime, 0.6);
+    },
+    // Fade the whole mix to a fraction of its level over some seconds, for the end of a session.
+    fadeTo(k, sec) {
+      fade = k;
+      if (!ctx) return;
+      const t = ctx.currentTime;
+      master.gain.cancelScheduledValues(t);
+      master.gain.setValueAtTime(master.gain.value, t);
+      master.gain.linearRampToValueAtTime(target(), t + sec);
+    },
+    // Three soft bells when a session ends, past the faded mix.
+    chime() {
+      if (!ctx || !on) return;
+      const g = ctx.createGain();
+      g.gain.value = level;
+      g.connect(ctx.destination);
+      [74, 81, 86].forEach((m, i) => setTimeout(() => bell(m, 0.09, g), i * 420));
     },
     // A plucked note for each bead, higher up the screen is higher up the scale.
     note(y, vol) {
@@ -1010,8 +1207,19 @@ function breathe(phase = 0) {
   breathTimer = setTimeout(() => breathe(phase + 1), ms);
 }
 
+// ---------- Storage (this browser only) ----------
+const store = {
+  get(k) { try { return localStorage.getItem(k); } catch { return null; } },
+  set(k, v) { try { v == null ? localStorage.removeItem(k) : localStorage.setItem(k, v); } catch {} },
+};
+const KID_KEY = 'chipped-little-hands';
+const NIGHT_KEY = 'chipped-little-hands-done';
+const SESSION_KEY = 'chipped-session';
+
 // ---------- Controls ----------
 let started = false;
+let frozen = false;
+let kid = false;
 function begin(withSound) {
   if (started) return;
   started = true;
@@ -1020,6 +1228,7 @@ function begin(withSound) {
   setSound(withSound);
   breathe(0);
   navigator.wakeLock?.request('screen').catch(() => {});
+  if (kid) document.documentElement.requestFullscreen?.().catch(() => {});
 }
 $('beginSound').addEventListener('click', () => begin(true));
 $('beginQuiet').addEventListener('click', () => begin(false));
@@ -1032,6 +1241,8 @@ function setPaint(v) {
   $('paint').setAttribute('aria-checked', String(v));
   document.body.classList.toggle('painting', v);
   $('tray').hidden = !v;
+  $('caption').hidden = !v;
+  if (v && YEARS.length) { useShade(YEARS[yearIdx]); renderYear(); }
   if (v && dye) baseCoat();
 }
 $('paint').addEventListener('click', () => { begin(false); setPaint(!painting); });
@@ -1042,52 +1253,306 @@ $('breathe').addEventListener('click', () => {
   if (started) breathe(0);
 });
 
-const shadesEl = $('shades');
-SHADES.forEach((s) => {
-  const b = document.createElement('button');
-  b.type = 'button'; b.className = 'shade'; b.id = 'shade-' + s.name.toLowerCase().replace(/\s+/g, '-');
-  b.setAttribute('aria-pressed', String(s === shade));
-  const c = s.colors;
-  b.innerHTML = `<span class="swatch" style="background:conic-gradient(${c[0]} 0 35%, ${c[1]} 0 55%, ${c[2]} 0 75%, ${c[3]} 0 90%, ${c[4]} 0)"></span>${s.name}`;
-  b.addEventListener('click', () => {
-    useShade(s);
-    if (painting && dye) baseCoat();
-    shadesEl.querySelectorAll('.shade').forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
+// ---------- Years ----------
+const pct = (x) => `${Math.round(x * 100)}%`;
+function renderYear() {
+  const y = YEARS[yearIdx];
+  if (!y) { $('tray').querySelector('.year').hidden = true; return; }
+  $('yearLabel').textContent = y.partial ? `${y.year} so far` : y.year;
+  $('yearSub').textContent = y.coty ? `Colour of the year: ${colourName(y.coty.id)}` : 'Top five';
+  $('yearPrev').disabled = yearIdx === 0;
+  $('yearNext').disabled = yearIdx === YEARS.length - 1;
+  $('dots').innerHTML = '';
+  y.colors.forEach((c, i) => {
+    const id = TREND_YEARS.find((t) => t.year === y.year).palette[i].id;
+    const dot = document.createElement('i');
+    dot.style.setProperty('--c', c);
+    dot.title = colourName(id);
+    if (y.coty?.id === id) dot.className = 'coty';
+    $('dots').appendChild(dot);
   });
-  shadesEl.appendChild(b);
-});
+  const top = y.top.map((t, i) => `${i + 1} ${colourName(t.id)} ${pct(t.share)}`).join(' · ');
+  const coty = y.coty ? ` Colour of the year: ${colourName(y.coty.id)} (${COLOURS[y.coty.id].search}), up ${pct(y.coty.growth)} on the year before.` : '';
+  $('caption').textContent = `${y.year}${y.partial ? ' so far' : ''}, worldwide searches for nail polish colours (Google Trends): ${top}.${coty}`;
+}
+function setYear(i) {
+  if (!YEARS.length) return;
+  yearIdx = Math.max(0, Math.min(YEARS.length - 1, i));
+  useShade(YEARS[yearIdx]);
+  renderYear();
+  if (painting && dye) baseCoat();
+}
+$('yearPrev').addEventListener('click', () => setYear(yearIdx - 1));
+$('yearNext').addEventListener('click', () => setYear(yearIdx + 1));
 $('fresh').addEventListener('click', () => { if (dye) baseCoat(); });
+renderYear();
+
+// ---------- Session timer ----------
+const AMBIENT = SIM.ambient;
+const PICKS = [3, 5, 10, 20];
+let mins = 5;
+let session = null; // { endAt, total, fading }
+let nextDrip = 6;
+const sheet = (id, show) => { $(id).hidden = !show; };
+function renderMins() {
+  $('mins').innerHTML = `${mins}<small> min</small>`;
+  $('picks').querySelectorAll('.pick').forEach((b) => b.setAttribute('aria-pressed', String(Number(b.dataset.m) === mins)));
+}
+PICKS.forEach((m, i) => {
+  const b = document.createElement('button');
+  b.type = 'button'; b.className = 'pick'; b.dataset.m = m;
+  b.innerHTML = `<i style="--c:${shade.colors[i % shade.colors.length]}"></i>${m} min`;
+  b.addEventListener('click', () => { mins = m; renderMins(); });
+  $('picks').appendChild(b);
+});
+renderMins();
+$('minus').addEventListener('click', () => { mins = Math.max(1, mins - 1); renderMins(); });
+$('plus').addEventListener('click', () => { mins += 1; renderMins(); });
+const clock = (ms) => { const s = Math.ceil(ms / 1000); return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`; };
+function openTimer() {
+  const running = !!session;
+  $('timerSheet').querySelector('.card').classList.toggle('running', running);
+  $('timeLeft').hidden = !running;
+  $('timerTitle').textContent = running ? 'Time left' : 'Session';
+  $('timerNote').textContent = running ? 'The music fades over the last minute.' : 'When time is up, the music fades and the polish settles.';
+  $('startSession').textContent = running ? 'End now' : 'Start';
+  $('closeTimer').textContent = running ? 'Close' : 'Not now';
+  if (running) $('timeLeft').textContent = clock(session.endAt - Date.now());
+  sheet('timerSheet', true);
+}
+$('timer').addEventListener('click', () => { if (!kid) { begin(false); openTimer(); } });
+$('closeTimer').addEventListener('click', () => sheet('timerSheet', false));
+$('startSession').addEventListener('click', () => {
+  sheet('timerSheet', false);
+  if (session) endSession(); else startSession(mins);
+});
+function startSession(m) {
+  session = { endAt: Date.now() + m * 60000, total: m * 60000, fading: false };
+  store.set(SESSION_KEY, JSON.stringify(session));
+  frozen = false;
+  SIM.ambient = AMBIENT;
+  music.fadeTo(1, 2);
+}
+function tickSession() {
+  if (!session) return 1;
+  const left = session.endAt - Date.now();
+  if (left <= 60000 && !session.fading) {
+    session.fading = true;
+    music.fadeTo(0, Math.max(1, left / 1000));
+  }
+  // Over the last minute the polish slows to stillness.
+  if (session.fading) SIM.ambient = AMBIENT * Math.max(0, left / 60000);
+  if (!$('timerSheet').hidden && !$('timeLeft').hidden) $('timeLeft').textContent = clock(Math.max(0, left));
+  if (left <= 0) { endSession(); return 0; }
+  return Math.max(0, left / session.total);
+}
+function endSession() {
+  session = null;
+  store.set(SESSION_KEY, null);
+  frozen = true;
+  pointers.forEach((p) => clearInterval(p.hold));
+  pointers.clear();
+  sheet('timerSheet', false);
+  if (kid) {
+    store.set(NIGHT_KEY, '1');
+    showNight();
+  } else {
+    music.chime();
+    music.fadeTo(0, 2);
+    sheet('endSheet', true);
+  }
+}
+function resume() {
+  frozen = false;
+  SIM.ambient = AMBIENT;
+  nextDrip = simTime + 4;
+}
+$('backToIt').addEventListener('click', () => {
+  sheet('endSheet', false);
+  resume();
+  setSound(false);
+  music.fadeTo(1, 0.1);
+});
+$('fiveMore').addEventListener('click', () => {
+  sheet('endSheet', false);
+  resume();
+  startSession(5);
+});
+let lastFill = '';
+function drawBottle(frac) {
+  const h = (11 * frac).toFixed(2);
+  const key = `${h}${shade.colors[0]}`;
+  if (key === lastFill) return;
+  lastFill = key;
+  const f = $('bottleFill');
+  f.setAttribute('y', (10.5 + 11 * (1 - frac)).toFixed(2));
+  f.setAttribute('height', h);
+  f.style.fill = shade.colors[0];
+}
+
+// ---------- Little hands ----------
+function setKid(v) {
+  kid = v;
+  store.set(KID_KEY, v ? '1' : null);
+  document.body.classList.toggle('kid-mode', v);
+  $('kid').setAttribute('aria-pressed', String(v));
+  $('kid').setAttribute('aria-label', v ? 'Little hands mode is on. Hold for 3 seconds to unlock' : 'Little hands mode');
+  music.setLevel(v ? 0.3 : 0.75);
+  if (v) {
+    document.documentElement.requestFullscreen?.().catch(() => {});
+    navigator.wakeLock?.request('screen').catch(() => {});
+  } else if (document.fullscreenElement) {
+    document.exitFullscreen?.().catch(() => {});
+  }
+}
+// The night-light bottle glows in the last year's headline colour, lifted towards white if it is too dark to glow.
+function glowColour() {
+  const id = shade.coty?.id;
+  const c = hex(id ? COLOURS[id].hex : shade.colors[0]);
+  const lum = 0.299 * c[0] + 0.587 * c[1] + 0.114 * c[2];
+  const k = lum < 0.35 ? 0.5 : 0;
+  return `rgb(${c.map((v) => Math.round((v + (1 - v) * k) * 255)).join(',')})`;
+}
+function showNight() {
+  $('night').style.setProperty('--glow', glowColour());
+  sheet('night', true);
+  setSound(false);
+  clearTimeout(breathTimer);
+  breathEl.classList.remove('show');
+}
+$('kid').addEventListener('click', () => {
+  if (kid) return; // Locked: only a 3-second hold opens the unlock.
+  sheet('kidSheet', true);
+});
+$('closeKid').addEventListener('click', () => sheet('kidSheet', false));
+$('lockKid').addEventListener('click', () => {
+  sheet('kidSheet', false);
+  setKid(true);
+  begin(false);
+});
+let holdTimer = 0;
+const endHold = () => { clearTimeout(holdTimer); $('kid').classList.remove('holding'); };
+$('kid').addEventListener('pointerdown', () => {
+  if (!kid) return;
+  $('kid').classList.add('holding');
+  holdTimer = setTimeout(() => { endHold(); askUnlock(); }, 3000);
+});
+for (const t of ['pointerup', 'pointerleave', 'pointercancel']) $('kid').addEventListener(t, endHold);
+
+// The unlock asks, in words, for three colours in a random order: easy to read, impossible to learn by watching.
+const UNLOCK = [
+  { name: 'red', hex: '#d22b3a' }, { name: 'orange', hex: '#f08a24' }, { name: 'yellow', hex: '#f2c230' },
+  { name: 'green', hex: '#2f9a55' }, { name: 'blue', hex: '#2d5fd3' }, { name: 'purple', hex: '#7a3fb8' }, { name: 'pink', hex: '#ef7aa5' },
+];
+const shuffle = (a) => { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+let unlockTimer = 0;
+function askUnlock() {
+  const ask = shuffle([...UNLOCK]).slice(0, 3);
+  let at = 0;
+  $('unlockAsk').textContent = `Tap ${ask[0].name}, then ${ask[1].name}, then ${ask[2].name}`;
+  const dots = $('unlockDots');
+  dots.innerHTML = '';
+  for (const c of shuffle([...UNLOCK])) {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.style.setProperty('--c', c.hex);
+    b.setAttribute('aria-label', c.name);
+    b.addEventListener('click', () => {
+      if (c !== ask[at]) {
+        const card = $('unlockSheet').querySelector('.card');
+        card.classList.add('shake');
+        setTimeout(() => { card.classList.remove('shake'); sheet('unlockSheet', false); }, 420);
+        return;
+      }
+      b.classList.add('done');
+      if (++at === ask.length) unlock();
+    });
+    dots.appendChild(b);
+  }
+  sheet('unlockSheet', true);
+  clearTimeout(unlockTimer);
+  unlockTimer = setTimeout(() => sheet('unlockSheet', false), 20000);
+}
+function unlock() {
+  clearTimeout(unlockTimer);
+  sheet('unlockSheet', false);
+  setKid(false);
+  store.set(NIGHT_KEY, null);
+  if (!$('night').hidden) {
+    sheet('night', false);
+    resume();
+    breathe(0);
+    music.fadeTo(1, 0.1);
+  }
+}
+// Tapping outside a card closes it, except the unlock, which only closes on a wrong colour or after 20 seconds.
+for (const id of ['timerSheet', 'kidSheet', 'endSheet']) $(id).addEventListener('click', (e) => { if (e.target === $(id) && id !== 'endSheet') sheet(id, false); });
+
+// ---------- No zooming, pull-to-refresh or text selection, anywhere ----------
+for (const t of ['gesturestart', 'gesturechange', 'dblclick', 'contextmenu']) document.addEventListener(t, (e) => e.preventDefault(), { passive: false });
+document.addEventListener('touchmove', (e) => { if (e.touches.length > 1 || e.target === canvas) e.preventDefault(); }, { passive: false });
 
 addEventListener('keydown', (e) => {
-  if (e.metaKey || e.ctrlKey || e.altKey) return;
+  if (e.metaKey || e.ctrlKey || e.altKey || kid) return;
   if (e.key === 'p' || e.key === 'P') { begin(false); setPaint(!painting); }
   if (e.key === 'm' || e.key === 'M') { begin(false); setSound(!music.on); }
+  if (painting && e.key === 'ArrowLeft') setYear(yearIdx - 1);
+  if (painting && e.key === 'ArrowRight') setYear(yearIdx + 1);
 });
 document.addEventListener('visibilitychange', () => (document.hidden ? music.pause() : music.resume()));
+
+// ---------- Restore little hands after a reload ----------
+if (store.get(KID_KEY) === '1') {
+  setKid(true);
+  if (store.get(NIGHT_KEY) === '1') {
+    started = true;
+    frozen = true;
+    $('welcome').remove();
+    showNight();
+  }
+}
+try {
+  const saved = JSON.parse(store.get(SESSION_KEY) || 'null');
+  if (saved && !frozen) {
+    if (saved.endAt > Date.now()) session = { ...saved, fading: false };
+    else if (kid) { started = true; frozen = true; $('welcome')?.remove(); store.set(NIGHT_KEY, '1'); showNight(); store.set(SESSION_KEY, null); }
+    else store.set(SESSION_KEY, null);
+  }
+} catch {}
 
 // ---------- Run ----------
 if (dye) {
   pour(true);
-  let last = performance.now(), nextDrip = 6;
+  let last = performance.now();
   const loop = (now) => {
     const dt = Math.min((now - last) / 1000, 1 / 30);
     last = now;
+    const frac = tickSession();
+    drawBottle(frac);
     if (!document.hidden) {
-      // While watching, a bead of polish lands now and then.
-      if (started && !painting && simTime > nextDrip) {
+      // While watching, a bead of polish lands now and then, each in the next year's colours.
+      if (started && !painting && !frozen && !session?.fading && simTime > nextDrip) {
         nextDrip = simTime + (reduced ? 18 : 8) + Math.random() * 6;
+        if (YEARS.length) {
+          driftIdx = (driftIdx + 1) % YEARS.length;
+          const y = YEARS[driftIdx];
+          useShade(y);
+          showLabel(y.coty ? `${y.year} · ${colourName(y.coty.id)} rising` : `${y.year}`, 3200);
+        }
         const x = 0.15 + Math.random() * 0.7, y = 0.15 + Math.random() * 0.7;
         const rings = 1 + Math.floor(Math.random() * 3);
         for (let r = 0; r < rings; r++) queueDrop(x, y, nextColor(), 0.0025 + Math.random() * 0.003, r * 0.6);
         music.note(y, 0.05);
       }
-      step(dt);
+      if (!frozen) step(dt);
       render(now / 1000);
     }
     if (now - lastActivity > 5000 && started) document.body.classList.add('idle');
     requestAnimationFrame(loop);
   };
   requestAnimationFrame(loop);
+} else {
+  drawBottle(1);
 }
 })();
 </script>
