@@ -1,0 +1,22 @@
+{
+  "source": "Hand-coded from English Wikipedia articles, read on 2026-11-13. Each row links the article its claim comes from.",
+  "licence": "Wikipedia text is CC BY-SA 4.0. The evidence lines are our own summaries.",
+  "handCoded": true,
+  "note": "Not a dataset: 14 countries sorted by hand into hands, chopsticks or cutlery, one row each, only where a Wikipedia article says plainly how most people there eat. Countries are not one thing (the India article itself says cutlery is common in parts of the country), and a country missing here just means we found no clear line to cite. style 'cutlery' covers both knife and fork and spoon and fork; utensils says which.",
+  "countries": [
+    { "iso3": "IND", "country": "India", "style": "hands", "utensils": "right hand", "evidence": "Says most Indians eat with their hands with minimal cutlery, while cutlery is common in some parts.", "url": "https://en.wikipedia.org/wiki/Customs_and_etiquette_in_Indian_dining" },
+    { "iso3": "ETH", "country": "Ethiopia", "style": "hands", "utensils": "right hand, with injera", "evidence": "Says Ethiopians usually eat with their right hands, using pieces of injera to pick up food.", "url": "https://en.wikipedia.org/wiki/Ethiopian_cuisine" },
+    { "iso3": "MAR", "country": "Morocco", "style": "hands", "utensils": "hands, with bread", "evidence": "Says Moroccans traditionally eat with their hands and use bread.", "url": "https://en.wikipedia.org/wiki/Moroccan_cuisine" },
+    { "iso3": "MMR", "country": "Myanmar", "style": "hands", "utensils": "right hand", "evidence": "Says the Burmese traditionally eat with their right hand; chopsticks and spoons are for noodle dishes.", "url": "https://en.wikipedia.org/wiki/Burmese_cuisine" },
+    { "iso3": "CHN", "country": "China", "style": "chopsticks", "utensils": "chopsticks", "evidence": "Names China, Japan, Korea and Vietnam as the chopsticks cultural sphere.", "url": "https://en.wikipedia.org/wiki/Chopsticks" },
+    { "iso3": "JPN", "country": "Japan", "style": "chopsticks", "utensils": "chopsticks", "evidence": "Names China, Japan, Korea and Vietnam as the chopsticks cultural sphere.", "url": "https://en.wikipedia.org/wiki/Chopsticks" },
+    { "iso3": "KOR", "country": "South Korea", "style": "chopsticks", "utensils": "chopsticks and a spoon", "evidence": "Says all food is eaten with metal chopsticks and a long-handled spoon, together called sujeo.", "url": "https://en.wikipedia.org/wiki/Korean_cuisine" },
+    { "iso3": "VNM", "country": "Vietnam", "style": "chopsticks", "utensils": "chopsticks", "evidence": "Names China, Japan, Korea and Vietnam as the chopsticks cultural sphere.", "url": "https://en.wikipedia.org/wiki/Chopsticks" },
+    { "iso3": "THA", "country": "Thailand", "style": "cutlery", "utensils": "fork and spoon", "evidence": "Says food was traditionally eaten with the hand but most Thais today eat with a fork and spoon.", "url": "https://en.wikipedia.org/wiki/Thai_cuisine" },
+    { "iso3": "IDN", "country": "Indonesia", "style": "cutlery", "utensils": "spoon and fork", "evidence": "Says meals are commonly eaten with a spoon in the right hand and a fork in the left; bare hands are also common in some regions.", "url": "https://en.wikipedia.org/wiki/Indonesian_cuisine" },
+    { "iso3": "GBR", "country": "United Kingdom", "style": "cutlery", "utensils": "knife and fork", "evidence": "Describes the French and British style: knife in the right hand, fork in the left.", "url": "https://en.wikipedia.org/wiki/Eating_utensil_etiquette" },
+    { "iso3": "FRA", "country": "France", "style": "cutlery", "utensils": "knife and fork", "evidence": "Describes the French and British style: knife in the right hand, fork in the left.", "url": "https://en.wikipedia.org/wiki/Eating_utensil_etiquette" },
+    { "iso3": "DEU", "country": "Germany", "style": "cutlery", "utensils": "knife and fork", "evidence": "Describes the German style: fork in the left hand, knife in the right.", "url": "https://en.wikipedia.org/wiki/Eating_utensil_etiquette" },
+    { "iso3": "USA", "country": "United States", "style": "cutlery", "utensils": "knife and fork", "evidence": "Describes the American style of cutting with the knife then switching the fork to the right hand.", "url": "https://en.wikipedia.org/wiki/Eating_utensil_etiquette" }
+  ]
+}
