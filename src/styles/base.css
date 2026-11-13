@@ -4,30 +4,40 @@
   box-sizing: border-box;
 }
 
+/* Nail bar at night: plum-black ground, hot lacquer pink and gold under neon. The same palette as
+   public/capital/index.html. Charts and exhibits read these tokens, so a change here repaints them all. */
 :root {
-  --bg: #fbf3f1;
-  --card: #ffffff;
-  --ink: #2a2223;
-  --muted: #7c6d70;
-  --rule: #eddcd8;
-  --lacquer: #c9405b;
-  --lacquer-deep: #8c2539;
-  --chrome: #bba9a5;
-  --gold: #c58d4e;
-  color-scheme: light;
+  --bg: #170d1a;
+  --card: #211426;
+  --well: #170d1a;
+  --ink: #f7ecf3;
+  --muted: #b49fb8;
+  --faint: #7d6884;
+  --rule: #3a2741;
+  --lacquer: #ff4f8b;
+  --lacquer-deep: #b8265e;
+  --chrome: #a896ae;
+  --gold: #ffc93c;
+  --onyx: #0c070e;
+  --display: 'Unbounded', 'Arial Black', system-ui, sans-serif;
+  --body: 'Instrument Sans', 'Helvetica Neue', Arial, system-ui, sans-serif;
+  --mono: 'IBM Plex Mono', ui-monospace, Menlo, Consolas, monospace;
+  /* A chip knocked out of the top right corner, the same chip as the full stop in the masthead. */
+  --chipped: polygon(0 0, calc(100% - 64px) 0, calc(100% - 50px) 9px, calc(100% - 34px) 3px, calc(100% - 20px) 15px, 100% 26px, 100% 100%, 0 100%);
+  color-scheme: dark;
 }
 
 html,
 body {
   margin: 0;
+  background: var(--bg);
 }
 
 body {
-  font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+  font-family: var(--body);
   font-size: 16px;
-  line-height: 1.5;
+  line-height: 1.55;
   overflow-x: hidden;
-  background: var(--bg);
   color: var(--ink);
 }
 
@@ -39,14 +49,19 @@ body {
 }
 
 .masthead {
-  padding-block: 3rem 1.5rem;
+  display: grid;
+  gap: 1rem;
+  padding-block: 3.5rem 2rem;
 }
 
 .masthead h1 {
-  margin: 0.25rem 0 0.75rem;
-  font-size: clamp(3.5rem, 12vw, 7rem);
-  line-height: 0.9;
+  margin: 0;
+  font: 900 clamp(4rem, 16vw, 9.5rem) / 0.85 var(--display);
   letter-spacing: -0.05em;
+  background: linear-gradient(100deg, var(--lacquer) 0%, #ff9ac0 45%, var(--gold) 95%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
 }
 
 .masthead .dot {
@@ -56,13 +71,14 @@ body {
   margin-left: 0.04em;
   border-radius: 50%;
   background: var(--lacquer);
+  filter: drop-shadow(0 0 0.12em var(--lacquer));
   clip-path: polygon(0 0, 62% 0, 70% 18%, 84% 10%, 100% 30%, 100% 100%, 0 100%);
 }
 
 .kicker {
   margin: 0;
-  font-size: 0.75rem;
-  letter-spacing: 0.08em;
+  font: 500 0.72rem / 1.2 var(--mono);
+  letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--muted);
 }
@@ -70,30 +86,37 @@ body {
 .lede {
   max-width: 40rem;
   margin: 0;
-  font-size: 1.1rem;
+  font-size: 1.15rem;
   color: var(--muted);
+  text-wrap: pretty;
+}
+
+.masthead .lede {
+  font-size: clamp(1.1rem, 2.4vw, 1.35rem);
+  color: var(--ink);
 }
 
 .exhibits {
   display: grid;
-  gap: 1.5rem;
-  padding-bottom: 3rem;
+  gap: 1.75rem;
+  padding-bottom: 4rem;
 }
 
 .exhibit {
   display: grid;
   gap: 1rem;
   min-width: 0;
-  padding: 1.5rem;
+  padding: 1.75rem 1.5rem 1.5rem;
   border-radius: 22px;
   background: var(--card);
+  clip-path: var(--chipped);
 }
 
 .exhibit h2 {
   margin: 0;
-  font-size: clamp(1.4rem, 3.4vw, 2rem);
-  line-height: 1.15;
-  letter-spacing: -0.02em;
+  max-width: 34ch;
+  font: 600 clamp(1.25rem, 2.9vw, 1.8rem) / 1.2 var(--display);
+  letter-spacing: -0.025em;
   text-wrap: balance;
 }
 
@@ -111,22 +134,29 @@ body {
   padding: 0.45rem 0.9rem;
   border: 1px solid var(--rule);
   border-radius: 999px;
-  background: var(--bg);
+  background: var(--well);
   color: var(--ink);
   font: inherit;
   font-size: 0.875rem;
   font-weight: 600;
   cursor: pointer;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.pill:hover {
+  border-color: var(--lacquer);
 }
 
 .pill[aria-pressed='true'] {
   border-color: var(--lacquer);
   background: var(--lacquer);
-  color: #fff;
+  color: var(--onyx);
+  box-shadow: 0 0 18px rgb(255 79 139 / 0.45);
 }
 
 .pill:focus-visible,
-.exhibit button:focus-visible {
+.exhibit button:focus-visible,
+.exhibit a:focus-visible {
   outline: 3px solid var(--gold);
   outline-offset: 2px;
 }
@@ -140,12 +170,14 @@ body {
 
 .chart text {
   fill: var(--muted);
+  font-family: var(--mono);
   font-size: 12px;
 }
 
 .chart text.strong {
   fill: var(--ink);
   font-size: 14px;
+  font-weight: 500;
 }
 
 .chart text.hot {
@@ -154,8 +186,8 @@ body {
 
 .charthead {
   margin: 0.5rem 0 0;
-  font-size: 0.85rem;
-  font-weight: 600;
+  font: 500 0.8rem / 1.4 var(--mono);
+  color: var(--ink);
 }
 
 .cards {
@@ -166,15 +198,18 @@ body {
 
 .card {
   display: grid;
-  padding: 0.75rem 1rem;
+  gap: 0.2rem;
+  padding: 0.9rem 1rem;
+  border: 1px solid var(--rule);
   border-radius: 14px;
-  background: var(--bg);
+  background: var(--well);
 }
 
 .card b {
-  font-size: 1.9rem;
-  line-height: 1.1;
+  font: 700 1.8rem / 1.1 var(--display);
   letter-spacing: -0.03em;
+  color: var(--gold);
+  font-variant-numeric: tabular-nums;
 }
 
 .card span,
@@ -185,4 +220,11 @@ body {
 
 .source {
   margin: 0;
+  color: var(--faint);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pill {
+    transition: none;
+  }
 }

@@ -47,9 +47,9 @@ describe('polish stripes', async () => {
     expect(stripesSvg(s.months)).toContain('opacity="0.9"')
   })
 
-  it('runs from nude for the quietest month to deep lacquer for the busiest', () => {
-    expect(colour(0)).toBe('rgb(239,207,195)')
-    expect(colour(1)).toBe('rgb(140,37,57)')
+  it('runs from plum for the quietest month to hot lacquer for the busiest', () => {
+    expect(colour(0)).toBe('rgb(52,30,58)')
+    expect(colour(1)).toBe('rgb(255,79,139)')
   })
 
   it('finds the 2016 peak and the 2000 start', () => {

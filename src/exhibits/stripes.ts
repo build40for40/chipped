@@ -3,14 +3,14 @@ import { data } from './draw'
 
 const raw = (data as unknown as { stripes: { monthly: Record<string, number>; annual: Record<string, number> } }).stripes
 
-// The same colours as --nude, --lacquer and --lacquer-deep in src/styles/base.css.
-const NUDE = [239, 207, 195]
-const LACQUER = [201, 64, 91]
-const DEEP = [140, 37, 57]
+// Night colours from src/styles/base.css: a quiet month sinks into plum, a busy one glows --lacquer pink.
+const PLUM = [52, 30, 58]
+const DEEP = [184, 38, 94]
+const LACQUER = [255, 79, 139]
 
-// t from 0 (quietest month) to 1 (busiest): nude to lacquer for the first 60%, then lacquer to deep.
+// t from 0 (quietest month) to 1 (busiest): plum to deep lacquer for the first 60%, then up to hot pink.
 export function colour(t: number): string {
-  const [a, b, u] = t < 0.6 ? [NUDE, LACQUER, t / 0.6] : [LACQUER, DEEP, (t - 0.6) / 0.4]
+  const [a, b, u] = t < 0.6 ? [PLUM, DEEP, t / 0.6] : [DEEP, LACQUER, (t - 0.6) / 0.4]
   return `rgb(${a.map((x, i) => Math.round(x + (b[i]! - x) * u)).join(',')})`
 }
 

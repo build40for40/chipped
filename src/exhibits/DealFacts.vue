@@ -70,8 +70,8 @@ function deal() {
   width: 100px;
   height: 26px;
   border-radius: 50%;
-  border: 3px dashed rgb(255 255 255 / 0.8);
-  box-shadow: 0 4px 0 rgb(0 0 0 / 0.18);
+  border: 3px dashed rgb(255 255 255 / 0.75);
+  box-shadow: 0 4px 0 rgb(0 0 0 / 0.45);
   transition: transform 0.45s, opacity 0.45s;
 }
 .pchip.gone {
@@ -84,8 +84,9 @@ function deal() {
   min-height: 160px;
   align-content: center;
   padding: 1.1rem;
+  border: 1px solid var(--rule);
   border-radius: 18px;
-  background: var(--bg);
+  background: var(--well);
 }
 .factcard b {
   font-size: clamp(1.1rem, 2.4vw, 1.4rem);

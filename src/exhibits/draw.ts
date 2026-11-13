@@ -53,7 +53,7 @@ export function icon(kind: Icon, cx: number, base: number, s: number): string {
       const bw = W * 0.95
       const bh = H * 0.66
       const cw = bw * 0.34
-      return `<rect x="${f(cx - cw / 2)}" y="${f(base - H)}" width="${f(cw)}" height="${f(H * 0.36)}" rx="${f(3 * s + 1)}" ${fill('ink')}/>` +
+      return `<rect x="${f(cx - cw / 2)}" y="${f(base - H)}" width="${f(cw)}" height="${f(H * 0.36)}" rx="${f(3 * s + 1)}" stroke-width="1.5" style="fill:var(--onyx);stroke:var(--chrome)"/>` +
         `<rect x="${f(cx - bw / 2)}" y="${f(base - bh)}" width="${f(bw)}" height="${f(bh)}" rx="${f(bw * 0.22)}" ${fill('lacquer')}/>` +
         `<rect x="${f(cx - bw * 0.32)}" y="${f(base - bh * 0.86)}" width="${f(bw * 0.12)}" height="${f(bh * 0.55)}" rx="${f(bw * 0.06)}" style="fill:#fff;opacity:.35"/>`
     }
@@ -69,7 +69,7 @@ export function icon(kind: Icon, cx: number, base: number, s: number): string {
       const y0 = base - w
       let pins = ''
       for (let i = 0; i < 5; i++) pins += `<rect x="${f(cx - w * 0.6)}" y="${f(y0 + w * (0.14 + i * 0.18))}" width="${f(w * 1.2)}" height="${f(Math.max(1, w * 0.06))}" ${fill('chrome')}/>`
-      return pins + `<rect x="${f(cx - w / 2)}" y="${f(y0)}" width="${f(w)}" height="${f(w)}" rx="${f(w * 0.08)}" ${fill('ink')}/>` +
+      return pins + `<rect x="${f(cx - w / 2)}" y="${f(y0)}" width="${f(w)}" height="${f(w)}" rx="${f(w * 0.08)}" stroke-width="1.5" style="fill:var(--onyx);stroke:var(--chrome)"/>` +
         `<rect x="${f(cx - w * 0.25)}" y="${f(y0 + w * 0.25)}" width="${f(w * 0.5)}" height="${f(w * 0.5)}" rx="${f(w * 0.04)}" ${fill('gold')}/>`
     }
   }

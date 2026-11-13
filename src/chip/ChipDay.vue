@@ -89,10 +89,10 @@ function onFocus(e: FocusEvent) {
 </template>
 
 <style scoped>
-/* Uses the page's tokens from styles/base.css. These are the only extra colours: glossy black for the years,
-   the page's lacquer red for the latest, and a bare nail for the chip. */
+/* Uses the page's tokens from styles/base.css. These are the only extra colours: smoky plum polish for the years,
+   the page's lacquer pink for the latest, and a bare nail for the chip. */
 .chipday {
-  --chip-year: #3a3033; --chip-year-deep: #120d0e;
+  --chip-year: #6a4a74; --chip-year-deep: #2a1830;
   --chip-latest: var(--lacquer); --chip-latest-deep: var(--lacquer-deep);
   --chip-bare: #f8e4dc;
 }
@@ -103,7 +103,7 @@ function onFocus(e: FocusEvent) {
 .key .bare { background: var(--chip-bare); border: 1px solid var(--chrome); }
 .key .line { width: 16px; height: 0; border-radius: 0; border-top: 2px dashed var(--ink); }
 .key .latest { background: var(--lacquer); }
-.tip { position: fixed; z-index: 20; max-width: 240px; padding: 0.4rem 0.7rem; border-radius: 12px; background: var(--ink); color: #fff; font-size: 0.8rem; white-space: pre-line; pointer-events: none; transform: translateY(-100%); }
+.tip { position: fixed; z-index: 20; max-width: 240px; padding: 0.4rem 0.7rem; border-radius: 12px; background: var(--onyx); border: 1px solid var(--rule); color: var(--ink); font-size: 0.8rem; white-space: pre-line; pointer-events: none; transform: translateY(-100%); }
 /* The chart arrives through v-html, so scoped styles need :deep to reach it. */
 .chart :deep(.nail) { outline: none; }
 .chart :deep(.nail:focus-visible .edge) { stroke: var(--gold); stroke-width: 3; }

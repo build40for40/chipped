@@ -17,12 +17,12 @@ const href = `${import.meta.env.BASE_URL}capital/`
 </template>
 
 <style scoped>
+/* The loudest card on the page: a lacquer-to-gold rim, like the Chipped Capital page it links to. */
 .capital {
-  background: #170d1a;
-  color: #f7ecf3;
-}
-.capital .kicker {
-  color: #b49fb8;
+  border: 1.5px solid transparent;
+  background:
+    linear-gradient(var(--card), var(--card)) padding-box,
+    linear-gradient(120deg, var(--lacquer), var(--gold)) border-box;
 }
 .scores {
   display: grid;
@@ -33,11 +33,12 @@ const href = `${import.meta.env.BASE_URL}capital/`
   display: grid;
   gap: 0.2rem;
   padding: 0.9rem 1rem;
-  border: 1px solid #3a2741;
+  border: 1px solid var(--rule);
   border-radius: 14px;
+  background: var(--well);
 }
 .scores b {
-  font-size: clamp(1.2rem, 3.4vw, 1.8rem);
+  font: 700 clamp(1.2rem, 3.4vw, 1.8rem) / 1.1 var(--display);
   font-variant-numeric: tabular-nums;
   letter-spacing: -0.02em;
 }
@@ -45,27 +46,24 @@ const href = `${import.meta.env.BASE_URL}capital/`
   color: #9be15d;
 }
 .scores div:last-child b {
-  color: #ff4f8b;
+  color: var(--lacquer);
 }
 .scores span {
   font-size: 0.85rem;
-  color: #b49fb8;
+  color: var(--muted);
 }
 .go {
   justify-self: start;
   padding: 0.7rem 1.1rem;
   border-radius: 999px;
-  background: #f7ecf3;
-  color: #170d1a;
+  background: var(--ink);
+  color: var(--onyx);
   font-weight: 600;
   text-decoration: none;
+  transition: background 0.15s;
 }
 .go:hover {
-  background: #ffc93c;
-}
-.go:focus-visible {
-  outline: 3px solid #ff4f8b;
-  outline-offset: 3px;
+  background: var(--gold);
 }
 @media (max-width: 560px) {
   .scores {

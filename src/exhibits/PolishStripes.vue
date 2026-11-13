@@ -1,6 +1,6 @@
 <script setup lang="ts">
 // The hero: every month of UK nail product imports since 2000, painted as one stripe of polish.
-// Colour is the month's rank against every other month, from nude (quiet) to deep lacquer (busy).
+// Colour is the month's rank against every other month, from plum (quiet) to hot lacquer pink (busy).
 import { stripes, stripesSvg } from './stripes'
 
 const s = stripes()
@@ -14,7 +14,7 @@ const svg = stripesSvg(s.months)
       <span v-for="t in s.ticks" :key="t.year" :style="{ left: `${t.at * 100}%` }">{{ t.year }}</span>
     </div>
     <figcaption id="hero-caption" class="caption">
-      <span><b>Polish stripes.</b> Every month of UK nail polish imports since {{ s.firstYear }}, one stripe each. Pale is a quiet month, deep red a busy one.</span>
+      <span><b>Polish stripes.</b> Every month of UK nail polish imports since {{ s.firstYear }}, one stripe each. Dark is a quiet month, hot pink a busy one.</span>
       <span class="facts">£{{ s.firstTotal }}m in {{ s.firstYear }} · peak £{{ s.peakTotal }}m in {{ s.peakYear }} · about £{{ s.recentTotal }}m a year since {{ s.recentFrom }}</span>
       <span class="source">HM Revenue &amp; Customs, commodity 33043000 (manicure and pedicure preparations), imports in pounds. Trade, not shop sales. EU trade was counted differently from 2021. Open Government Licence v3.0.</span>
     </figcaption>
@@ -23,11 +23,12 @@ const svg = stripesSvg(s.months)
 
 <style scoped>
 .hero {
-  margin: 0;
+  margin: 0 0 2.5rem;
 }
 .band {
-  height: clamp(180px, 30vw, 340px);
+  height: clamp(160px, 26vw, 300px);
   position: relative;
+  box-shadow: 0 0 60px rgb(255 79 139 / 0.18);
 }
 .band :deep(svg) {
   display: block;
@@ -38,8 +39,8 @@ const svg = stripesSvg(s.months)
   position: relative;
   height: 1.4rem;
   margin-inline: 0;
-  font-size: 0.75rem;
-  color: var(--muted);
+  font: 0.72rem var(--mono);
+  color: var(--faint);
 }
 .ticks span {
   position: absolute;
@@ -55,11 +56,15 @@ const svg = stripesSvg(s.months)
   padding-inline: max(1rem, env(safe-area-inset-left, 0px)) max(1rem, env(safe-area-inset-right, 0px));
   font-size: 0.9rem;
 }
+.caption b {
+  color: var(--lacquer);
+}
 .facts {
-  font-weight: 600;
+  font: 500 0.85rem var(--mono);
+  color: var(--gold);
 }
 .source {
   font-size: 0.75rem;
-  color: var(--muted);
+  color: var(--faint);
 }
 </style>

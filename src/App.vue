@@ -8,12 +8,12 @@ import TrueCost from './exhibits/TrueCost.vue'
 </script>
 
 <template>
-  <PolishStripes />
   <header class="masthead">
-    <p class="kicker">build40for40.com · Day 10</p>
+    <p class="kicker">build40for40.com · Day 10 · the almanac of chips and nails</p>
     <h1>chipped<span class="dot" aria-hidden="true"></span></h1>
     <p class="lede">My nails are always chipped. Here's the data on why, and on everything else called "chip" or "nail".</p>
   </header>
+  <PolishStripes />
   <main class="exhibits">
     <TrueCost />
     <CapitalLink />
