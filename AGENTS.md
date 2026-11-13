@@ -2,13 +2,13 @@
 
 Day 10 of 40 for 40, built live on Twitch on Friday 13 November 2026. The problem is "Chipped nails", from <problem owner>. Work is tracked on the Superthread `day10` board and the "Day 10" page.
 
-- **Form factor:** a web app at https://build40for40.com/chipped/.
+- **Form factor:** a web app at https://build40for40.com/chipped/. Since 13 November 2026 that URL is Water Marble, a mindfulness page; the data almanac is kept, unlinked, at `/chipped/almanac/`.
 
 Shared 40 for 40 context, services and rules live in `../AGENTS.md`.
 
 ## Stack
 
-- Vue 3 with `<script setup lang="ts">`, built with Vite.
+- Vue 3 with `<script setup lang="ts">`, built with Vite. Vite builds two pages: `index.html` (Water Marble, plain HTML with one inline script, no Vue) and `almanac/index.html` (the Vue app in `src/`).
 - Vitest with jsdom and `@vue/test-utils`. Unit tests sit next to their source as `*.test.ts`. Tests for Worker code start with `// @vitest-environment node`.
 - `@/` resolves to `src/`.
 - The Worker in `worker/` serves the API under `/chipped/api/*`. Everything else under `/chipped/` is a static file from `dist/chipped/`.
@@ -18,7 +18,7 @@ Shared 40 for 40 context, services and rules live in `../AGENTS.md`.
 
 ## Commands
 
-- `npm run dev`: Vite on port 5173 plus `wrangler dev` on 8787, with Vite proxying `/chipped/api` to the Worker. Open http://localhost:5173/chipped/. Copy `.dev.vars.example` to `.dev.vars` and add an `ANTHROPIC_API_KEY` first.
+- `npm run dev`: Vite on port 5173 plus `wrangler dev` on 8787, with Vite proxying `/chipped/api` to the Worker. Open http://localhost:5173/chipped/ for Water Marble and http://localhost:5173/chipped/almanac/ for the almanac. Copy `.dev.vars.example` to `.dev.vars` and add an `ANTHROPIC_API_KEY` first.
 - `npm run fake`: Vite only, with `dev/fake-api.ts` standing in for the Worker, so the page clicks through with no key. Answers are canned, and production builds leave it out.
 - `npm test`: unit tests.
 - `npm run build`: type-check with `vue-tsc`, then build to `dist/chipped/`.
@@ -38,6 +38,16 @@ Shared 40 for 40 context, services and rules live in `../AGENTS.md`.
 My nails are always chipped
 
 ## What we're building
+
+### Water Marble (the front page)
+
+`index.html` at `/chipped/`: the hero banner's polish, turned into a whole screen of nail polish floating on water, as a calm, soothing page.
+
+- A WebGL 2 fluid simulation. Drag through it and the polish drifts like a puddle; now and then a bead of polish lands and blooms. Polish beads use the area-preserving push of real water marbling, and the polish is carried with MacCormack advection so shades keep crisp edges.
+- The Paint toggle (top right, or P): a tap drops a bead, holding still stacks rings, dragging drops small beads and feathers them. A tray offers five shades, New pour and Wipe.
+- Music is generated with Web Audio (pads, bells, a water bed) and starts only after the visitor taps Begin. A breathing guide runs along the bottom. Without WebGL 2 it shows a still picture.
+
+### The almanac (kept, unlinked, at `/chipped/almanac/`)
 
 The authority on everything "chipped" and "nail": a data almanac of every meaning of both words, serious and silly, direct (fingernails) and indirect (microchips, Chippendales, "nailed it").
 
