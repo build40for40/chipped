@@ -210,7 +210,25 @@ button:focus-visible { outline: 2px solid var(--lacquer); outline-offset: 3px; }
 .picks { display: flex; flex-wrap: wrap; gap: 0.4rem; }
 .pick { display: flex; align-items: center; gap: 0.45rem; height: 2.2rem; padding: 0 0.85rem 0 0.55rem; border: 0; border-radius: 999px; background: rgb(255 255 255 / 0.5); font-weight: 600; font-size: 0.85rem; }
 .pick i { width: 0.8rem; height: 0.8rem; border-radius: 50%; background: var(--c); box-shadow: inset 0 0 0 1px rgb(0 0 0 / 0.1); }
-.pick[aria-pressed="true"] { background: #fff; box-shadow: 0 1px 6px rgb(80 20 35 / 0.15); }
+.pick[aria-pressed="true"], .custom.on { background: #fff; box-shadow: 0 1px 6px rgb(80 20 35 / 0.15); }
+.custom { display: flex; align-items: center; gap: 0.2rem; height: 2.2rem; padding: 0 0.85rem 0 0.35rem; border-radius: 999px; background: rgb(255 255 255 / 0.5); font-weight: 600; font-size: 0.85rem; cursor: text; }
+.custom input {
+  width: 3.4rem;
+  border: 0;
+  background: transparent;
+  font: inherit;
+  font-size: 16px; /* 16px stops iPhone zooming in on focus */
+  text-align: center;
+  color: var(--ink);
+  -webkit-user-select: text;
+  user-select: text;
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+.custom input::-webkit-outer-spin-button, .custom input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+.custom input::placeholder { color: var(--ink-soft); }
+.custom input:focus { outline: none; }
+.custom:focus-within { outline: 2px solid var(--lacquer); outline-offset: 2px; }
 .swatches { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.75rem; padding-block: 0.3rem; }
 .swatches button { width: 3rem; height: 3rem; border-radius: 50%; border: 3px solid #fff; background: var(--c); box-shadow: 0 2px 8px rgb(0 0 0 / 0.15); transition: transform 0.2s ease, opacity 0.2s ease; }
 .swatches button.done { transform: scale(0.8); opacity: 0.45; }
@@ -378,7 +396,9 @@ body.idle .tray:not([hidden]) { opacity: 0.4; }
     <h2 id="kidTitle">Lock it for a toddler</h2>
     <p>Full screen, no zooming, softer music, and every finger paints. Paint, music and breathing still work.</p>
     <p class="eyebrow">End after</p>
-    <div class="picks" id="picks"></div>
+    <div class="picks" id="picks">
+      <label class="custom" for="customMins"><input id="customMins" type="number" inputmode="numeric" min="1" max="600" placeholder="Other" aria-label="Other number of minutes"> min</label>
+    </div>
     <p class="note" id="endNote">When time is up, the music fades, the polish settles and a softly glowing bottle stays on screen until you unlock.</p>
     <p class="note">To unlock, hold the lock button for 3 seconds, then tap the colours it asks for. For a full lock, also turn on Guided Access (iPhone) or App pinning (Android).</p>
     <div class="row">
@@ -1178,11 +1198,22 @@ PICKS.forEach((m, i) => {
   const b = document.createElement('button');
   b.type = 'button'; b.className = 'pick'; b.dataset.m = m;
   b.innerHTML = `<i style="--c:${shade.colors[i % shade.colors.length]}"></i>${m ? `${m} min` : 'No limit'}`;
-  b.addEventListener('click', () => { mins = m; renderMins(); });
-  $('picks').appendChild(b);
+  b.addEventListener('click', () => { mins = m; $('customMins').value = ''; renderMins(); });
+  if (m) $('picks').insertBefore(b, $('picks').querySelector('.custom'));
+  else $('picks').appendChild(b);
 });
+// Any number of minutes, for a short sit of your own.
+$('customMins').addEventListener('input', () => {
+  const v = Math.round(Number($('customMins').value));
+  if (v >= 1) mins = Math.min(v, 600);
+  else if (!$('customMins').value) mins = 5;
+  renderMins();
+});
+$('customMins').addEventListener('keydown', (e) => { if (e.key === 'Enter') $('lockKid').click(); });
 function renderMins() {
-  $('picks').querySelectorAll('.pick').forEach((b) => b.setAttribute('aria-pressed', String(Number(b.dataset.m) === mins)));
+  const custom = !!$('customMins').value && mins >= 1;
+  $('picks').querySelectorAll('.pick').forEach((b) => b.setAttribute('aria-pressed', String(!custom && Number(b.dataset.m) === mins)));
+  $('picks').querySelector('.custom').classList.toggle('on', custom);
   $('endNote').hidden = !mins;
 }
 renderMins();
@@ -1325,7 +1356,7 @@ for (const t of ['gesturestart', 'gesturechange', 'dblclick', 'contextmenu']) do
 document.addEventListener('touchmove', (e) => { if (e.touches.length > 1 || e.target === canvas) e.preventDefault(); }, { passive: false });
 
 addEventListener('keydown', (e) => {
-  if (e.metaKey || e.ctrlKey || e.altKey || kid) return;
+  if (e.metaKey || e.ctrlKey || e.altKey || kid || e.target.tagName === 'INPUT') return;
   if (e.key === 'p' || e.key === 'P') { begin(false); setPaint(!painting); }
   if (e.key === 'm' || e.key === 'M') { begin(false); setSound(!music.on); }
 });
