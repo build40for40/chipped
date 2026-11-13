@@ -1177,7 +1177,11 @@ renderMins();
 function startSession(m) {
   session = { endAt: Date.now() + m * 60000, total: m * 60000, fading: false };
   store.set(SESSION_KEY, JSON.stringify(session));
+  // Undo any fade an earlier session left behind.
+  music.fadeTo(1, 1);
 }
+// The fade covers the last minute, or the last third of a short session, so a 1-minute session still has music.
+const fadeMs = () => Math.min(60000, session.total / 3);
 function stopSession() {
   session = null;
   store.set(SESSION_KEY, null);
@@ -1187,11 +1191,11 @@ function stopSession() {
 function tickSession() {
   if (!session) return;
   const left = session.endAt - Date.now();
-  if (left <= 60000 && !session.fading) {
+  if (left <= fadeMs() && !session.fading) {
     session.fading = true;
     music.fadeTo(0, Math.max(1, left / 1000));
   }
-  if (session.fading) SIM.ambient = AMBIENT * Math.max(0, left / 60000);
+  if (session.fading) SIM.ambient = AMBIENT * Math.max(0, left / fadeMs());
   if (left <= 0) endSession();
 }
 function endSession() {
@@ -1228,7 +1232,7 @@ let nightSince = null;
 function showNight(instant = false) {
   nightSince = performance.now() - (instant ? 60000 : 0);
   document.body.classList.add('night');
-  setSound(false);
+  music.fadeTo(0, 2);
   clearTimeout(breathTimer);
   breathEl.classList.remove('show');
 }
@@ -1240,7 +1244,7 @@ $('closeKid').addEventListener('click', () => sheet('kidSheet', false));
 $('lockKid').addEventListener('click', () => {
   sheet('kidSheet', false);
   setKid(true);
-  begin(false);
+  begin(true);
   if (mins) startSession(mins);
 });
 let holdTimer = 0;
