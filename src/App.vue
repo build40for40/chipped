@@ -2,6 +2,7 @@
 import { computed, onMounted, ref } from 'vue'
 
 import AskForm from './ask/AskForm.vue'
+import Lenses from './lenses/Lenses.vue'
 
 interface Greeting {
   message: string
@@ -41,6 +42,7 @@ onMounted(async () => {
     <p v-else>Waking the Worker up…</p>
     <AskForm />
   </main>
+  <Lenses />
 </template>
 
 <style scoped>

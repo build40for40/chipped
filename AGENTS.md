@@ -43,6 +43,7 @@ The authority on everything "chipped" and "nail": a data almanac of every meanin
 
 - Each entry: what it is, its data curve, how it correlates with chipped nails, and a one-line fact to repeat to friends.
 - Data lives in `data/`: `entries.json` is the catalogue, `scripts/` fetch each source into `parts/`, `raw/` is a git-ignored cache.
+- The seven lenses (`src/lenses/`) are the questions the team wants answered, one chart each, shown under the main page. `dummy.ts` holds made-up numbers until the real series land, and every chart is labelled "Dummy data" while it does. `charts.ts` draws each plot as an SVG string at the width it is given; `Lenses.vue` lays them out.
 
 ## Decided
 
