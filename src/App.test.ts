@@ -1,18 +1,29 @@
-import { afterEach, describe, expect, it, vi } from 'vitest'
-import { flushPromises, mount } from '@vue/test-utils'
+import { describe, expect, it } from 'vitest'
+import { mount } from '@vue/test-utils'
 
 import App from './App.vue'
 
-afterEach(() => vi.unstubAllGlobals())
-
 describe('App', () => {
-  it('shows the greeting from the API with the London time', async () => {
-    const greeting = { message: 'The Worker says hi.', at: '2026-11-02T09:00:00Z' }
-    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(Response.json(greeting)))
-
+  it('leads with the true cost of a salon visit against doing your own nails', () => {
     const wrapper = mount(App)
-    await flushPromises()
+    expect(wrapper.find('h1').text()).toBe('chipped')
+    expect(wrapper.text()).toContain('Painting your own nails costs what it did in 1967. A salon visit costs twice as much as it did.')
+  })
 
-    expect(wrapper.text()).toContain("The Worker says hi. It's 09:00 in London")
+  it('switches the true cost chart to another thing', async () => {
+    const wrapper = mount(App)
+    const chips = wrapper.findAll('.pill').find((b) => b.text() === 'Potato chips')!
+    await chips.trigger('click')
+    expect(chips.attributes('aria-pressed')).toBe('true')
+    expect(wrapper.text()).toContain('a bag in 1980, which is $7.97 in 2025 money')
+  })
+
+  it('deals one fact per tap and shuffles at the end', async () => {
+    const wrapper = mount(App)
+    const stack = wrapper.find('.stack')
+    await stack.trigger('click')
+    expect(wrapper.text()).toContain('Chip 1 of 10')
+    for (let i = 0; i < 10; i++) await stack.trigger('click')
+    expect(wrapper.text()).toContain('Tap the chips to deal a fact.')
   })
 })

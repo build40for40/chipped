@@ -29,6 +29,7 @@ Everything "chip" and "nail", as JSON you can chart. `npm run data:publish` copi
 | `parts/grooming-affordability-by-country.json` | https://build40for40.com/chipped/data/grooming-affordability-by-country.json | The manicure index for 34 other countries, as an index only. `countries[]` rows with `iso3`, `tier` (all "B": no country but the UK has a manicure price), `price_item`, `wage_measure`, `years`, and yearly `price_index`, `wage`, and the derived `price_index_2015`, `wage_index_2015` and `price_to_pay_index` (price against pay, 2015 = 100, above 100 = takes more work than in 2015). Brazil's index is for manicures alone; the rest are hairdressing and grooming. The UK and US also have `women_wage` and `price_to_women_pay_index`, and the UK has `true_manicure` |
 | `parts/us-protests.json` | https://build40for40.com/chipped/data/us-protests.json | US protest events and estimated crowds from the Crowd Counting Consortium, Jan 2017 to May 2026: `events_all`, `people_all`, and `events_women`, `people_women` for protests tagged women's rights or reproductive rights. Each has `.weekly` (keyed by the Monday), `.monthly` and `.annual` |
 | `parts/eating-styles.json` | https://build40for40.com/chipped/data/eating-styles.json | **Hand-coded, not fetched.** 14 countries sorted into hands, chopsticks or cutlery, each with the Wikipedia article it rests on |
+| `parts/real-prices.json` | https://build40for40.com/chipped/data/real-prices.json | US prices adjusted for inflation with the CPI, yearly: potato chips, personal care products (includes nail polish), personal care services (salons), steel nails, semiconductors, computers. `series[key].real[year]` is an index with the first year = 100; `.nominal[year]` is the published yearly mean. From FRED. Drives the True Cost chart via `build-exhibits.mjs` |
 | `parts/lenses.json` | https://build40for40.com/chipped/data/lenses.json | An earlier pull of the non-nail side of the lenses, under `lenses.<name>`. Most of it overlaps the lens files above; use those first. Only here: `selfCare.jobs` (US fitness-centre, nail and hair salon jobs, yearly 2005–2025, until `bls-selfcare.json` can be fetched), `protests` daily English "Nail salon" pageviews 2016–2021, and Ngram book counts for dating and promotion phrases in `pride` |
 
 Every entry is keyed by the same `id` across files. The lens files above are not entries: [`LENSES.md`](LENSES.md) says which of the seven lenses each one serves, what is a stand-in, and what is still missing. The baseline everything is compared against is `chipped-nails`.
@@ -59,6 +60,8 @@ node data/scripts/fetch-grooming-affordability.mjs   # run after fetch-uk-pay.mj
 node data/scripts/fetch-ccc-protests.mjs          # downloads about 200 MB
 node data/scripts/fetch-bls-selfcare.mjs          # not run yet: writes bls-selfcare.json, needs 4 of the 25 keyless BLS calls a day
 node data/scripts/build-lenses.mjs      # rewrites src/lenses/data.json, the numbers the seven lens charts draw
+node data/scripts/fetch-real-prices.mjs
+node data/scripts/build-exhibits.mjs    # writes src/exhibits/data.json for the top of the page
 npm run data:publish
 ```
 
