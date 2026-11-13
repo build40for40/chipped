@@ -1,12 +1,942 @@
 <!DOCTYPE html>
 <html lang="en-GB">
-  <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chipped</title>
-  </head>
-  <body>
-    <div id="app"></div>
-    <script type="module" src="/src/main.ts"></script>
-  </body>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="description" content="Nail polish floating on still water: drag it like a puddle, or switch on Paint to marble your own design. With music and a breathing guide.">
+<title>Chipped</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&family=Instrument+Sans:wght@400..600&display=swap">
+<style>
+/* Layout: one full-bleed WebGL image of polish floating on water; small frosted controls float in the corners.
+   A single committed look (wet polish over a bare nail), so the colours are set explicitly rather than themed. */
+:root {
+  --nail: #f6ded5;        /* the bare nail plate the polish floats on */
+  --lacquer: #c9405b;     /* the chipped. full stop */
+  --ink: #3b1a22;         /* text on frosted glass */
+  --ink-soft: #6e4650;
+  --glass: rgb(255 248 245 / 0.62);
+  --glass-edge: rgb(255 255 255 / 0.7);
+  --display: "Bricolage Grotesque", "Avenir Next", system-ui, sans-serif;
+  --body: "Instrument Sans", "Helvetica Neue", system-ui, sans-serif;
+  color-scheme: light;
+}
+html, body { height: 100%; margin: 0; }
+body {
+  background: var(--nail);
+  color: var(--ink);
+  font-family: var(--body);
+  overflow: hidden;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+  -webkit-user-select: none;
+}
+canvas#pool {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  touch-action: none;
+  cursor: grab;
+}
+body.painting canvas#pool { cursor: crosshair; }
+
+.glass {
+  background: var(--glass);
+  border: 1px solid var(--glass-edge);
+  backdrop-filter: blur(14px) saturate(1.2);
+  -webkit-backdrop-filter: blur(14px) saturate(1.2);
+  box-shadow: 0 8px 30px rgb(80 20 35 / 0.12);
+}
+
+/* Corners */
+.mark {
+  position: fixed;
+  top: calc(14px + env(safe-area-inset-top, 0px));
+  left: max(16px, env(safe-area-inset-left, 0px));
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  padding: 0.45rem 0.8rem;
+  border-radius: 999px;
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: 1rem;
+  letter-spacing: -0.02em;
+  color: var(--ink);
+  text-decoration: none;
+  transition: opacity 1.2s ease;
+}
+.mark small {
+  font-family: var(--body);
+  font-weight: 500;
+  font-size: 0.72rem;
+  letter-spacing: 0.02em;
+  color: var(--ink-soft);
+}
+.dot {
+  display: inline-block;
+  width: 0.24em;
+  height: 0.24em;
+  margin-left: 0.04em;
+  border-radius: 50%;
+  background: var(--lacquer);
+}
+.controls {
+  position: fixed;
+  top: calc(14px + env(safe-area-inset-top, 0px));
+  right: max(16px, env(safe-area-inset-right, 0px));
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  transition: opacity 1.2s ease;
+}
+button {
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+}
+button:focus-visible { outline: 2px solid var(--lacquer); outline-offset: 3px; }
+.icon {
+  width: 2.5rem;
+  height: 2.5rem;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  padding: 0;
+}
+.icon svg { width: 1.15rem; height: 1.15rem; stroke: var(--ink); fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.icon[aria-pressed="false"] .on, .icon[aria-pressed="true"] .off { display: none; }
+
+.switch {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  height: 2.5rem;
+  padding: 0 0.45rem 0 0.95rem;
+  border-radius: 999px;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+.track {
+  position: relative;
+  width: 2.6rem;
+  height: 1.6rem;
+  border-radius: 999px;
+  background: rgb(59 26 34 / 0.18);
+  transition: background 0.35s ease;
+}
+.knob {
+  position: absolute;
+  top: 0.2rem;
+  left: 0.2rem;
+  width: 1.2rem;
+  height: 1.2rem;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 1px 4px rgb(0 0 0 / 0.2);
+  transition: transform 0.35s cubic-bezier(.5,1.6,.4,1);
+}
+.switch[aria-checked="true"] .track { background: var(--lacquer); }
+.switch[aria-checked="true"] .knob { transform: translateX(1rem); }
+
+/* Paint tray: shades and a fresh start, only while painting */
+.tray {
+  position: fixed;
+  left: 50%;
+  bottom: calc(18px + env(safe-area-inset-bottom, 0px));
+  transform: translate(-50%, 0);
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.4rem;
+  border-radius: 999px;
+  max-width: calc(100% - 32px);
+  overflow-x: auto;
+  scrollbar-width: none;
+  transition: opacity 0.5s ease, transform 0.5s ease;
+}
+.tray[hidden] { display: flex !important; opacity: 0; pointer-events: none; transform: translate(-50%, 12px); }
+.shade {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  flex: none;
+  height: 2.3rem;
+  padding: 0 0.8rem 0 0.4rem;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  font-size: 0.8rem;
+  font-weight: 500;
+  white-space: nowrap;
+}
+.shade[aria-pressed="true"] { background: rgb(255 255 255 / 0.85); box-shadow: 0 1px 6px rgb(80 20 35 / 0.12); }
+.swatch {
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 50%;
+  box-shadow: inset 0 0 0 1px rgb(0 0 0 / 0.08);
+}
+.sep { width: 1px; height: 1.4rem; background: rgb(59 26 34 / 0.15); flex: none; }
+.plain {
+  flex: none;
+  height: 2.3rem;
+  padding: 0 0.85rem;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  font-size: 0.8rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.plain:hover, .shade:hover { background: rgb(255 255 255 / 0.6); }
+
+/* Breath */
+.breath {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: calc(86px + env(safe-area-inset-bottom, 0px));
+  text-align: center;
+  font-family: var(--display);
+  font-weight: 500;
+  font-size: clamp(1.1rem, 2.4vw, 1.5rem);
+  letter-spacing: 0.01em;
+  color: #fff;
+  text-shadow: 0 1px 14px rgb(60 10 25 / 0.55), 0 0 2px rgb(60 10 25 / 0.3);
+  opacity: 0;
+  transition: opacity 1.6s ease;
+  pointer-events: none;
+}
+.breath.show { opacity: 0.92; }
+body:not(.painting) .breath { bottom: calc(40px + env(safe-area-inset-bottom, 0px)); }
+
+/* Quiet the chrome while someone is simply watching */
+body.idle .controls, body.idle .mark { opacity: 0.28; }
+body.idle .tray:not([hidden]) { opacity: 0.4; }
+
+/* Welcome */
+.welcome {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding-block: 24px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  background: radial-gradient(ellipse at center, rgb(40 8 18 / 0.18), rgb(40 8 18 / 0.32));
+  transition: opacity 1.2s ease;
+}
+.welcome.gone { opacity: 0; pointer-events: none; }
+.card {
+  width: min(27rem, 100%);
+  padding: 2rem 1.75rem 1.6rem;
+  border-radius: 1.75rem;
+  display: grid;
+  gap: 1rem;
+  text-align: left;
+}
+.card h1 {
+  margin: 0;
+  font-family: var(--display);
+  font-weight: 800;
+  font-size: clamp(2.4rem, 9vw, 3.2rem);
+  line-height: 0.95;
+  letter-spacing: -0.045em;
+  text-wrap: balance;
+}
+.card p {
+  margin: 0;
+  font-size: 1rem;
+  line-height: 1.5;
+  color: var(--ink-soft);
+}
+.card .row { display: flex; flex-wrap: wrap; gap: 0.6rem; margin-top: 0.4rem; }
+.primary, .secondary {
+  height: 2.9rem;
+  padding: 0 1.3rem;
+  border-radius: 999px;
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+.primary { background: var(--lacquer); color: #fff; border: 0; box-shadow: 0 6px 18px rgb(201 64 91 / 0.35); }
+.secondary { background: rgb(255 255 255 / 0.55); border: 1px solid rgb(59 26 34 / 0.12); }
+.card .tip { font-size: 0.78rem; color: var(--ink-soft); opacity: 0.85; }
+
+.fallback {
+  position: fixed;
+  inset: 0;
+  background:
+    radial-gradient(circle at 30% 35%, #c9405b 0 9%, #efcfc3 9% 15%, #8c2539 15% 21%, transparent 21%),
+    radial-gradient(circle at 70% 60%, #e8a0a8 0 12%, #fbf3ee 12% 17%, #c9405b 17% 24%, transparent 24%),
+    var(--nail);
+}
+@media (max-width: 560px) {
+  .mark small { display: none; }
+}
+@media (max-width: 420px) {
+  .mark { display: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .knob, .tray, .breath, .welcome, .controls, .mark { transition: none; }
+}
+</style>
+</head>
+<body>
+
+<canvas id="pool" aria-label="Nail polish floating on water. Drag to move it; with Paint on, tap to drop polish and drag to swirl it."></canvas>
+
+<div class="mark glass">chipped<span class="dot"></span> <small>water marble</small></div>
+
+<div class="controls">
+  <button id="breathe" class="icon glass" type="button" aria-pressed="true" aria-label="Breathing guide" title="Breathing guide">
+    <svg viewBox="0 0 24 24" class="on"><path d="M4 12c2.5-4 5.5-4 8 0s5.5 4 8 0"/><path d="M4 17c2.5-4 5.5-4 8 0s5.5 4 8 0" opacity=".5"/><path d="M4 7c2.5-4 5.5-4 8 0s5.5 4 8 0" opacity=".5"/></svg>
+    <svg viewBox="0 0 24 24" class="off"><path d="M4 12h16" opacity=".6"/></svg>
+  </button>
+  <button id="sound" class="icon glass" type="button" aria-pressed="false" aria-label="Music" title="Music (M)">
+    <svg viewBox="0 0 24 24" class="on"><path d="M4 9v6h4l5 4V5L8 9H4z"/><path d="M16.5 8.5a5 5 0 0 1 0 7"/><path d="M19 6a8.5 8.5 0 0 1 0 12"/></svg>
+    <svg viewBox="0 0 24 24" class="off"><path d="M4 9v6h4l5 4V5L8 9H4z"/><path d="M17 9.5l5 5M22 9.5l-5 5"/></svg>
+  </button>
+  <button id="paint" class="switch glass" type="button" role="switch" aria-checked="false" title="Paint mode (P)">
+    Paint <span class="track"><span class="knob"></span></span>
+  </button>
+</div>
+
+<div class="breath" id="breathText" aria-live="off"></div>
+
+<div class="tray glass" id="tray" hidden>
+  <div id="shades" style="display:flex;gap:0.2rem"></div>
+  <span class="sep"></span>
+  <button class="plain" id="pour" type="button" title="Cover the nail in a fresh marble of this shade">New pour</button>
+  <button class="plain" id="wipe" type="button" title="Back to a bare nail">Wipe</button>
+</div>
+
+<div class="welcome" id="welcome">
+  <div class="card glass">
+    <h1>water marble<span class="dot"></span></h1>
+    <p>Nail polish floating on still water. Drag through it and it drifts like a puddle. Switch on Paint and every touch drops a bead of lacquer that blooms into rings.</p>
+    <div class="row">
+      <button class="primary" id="beginSound" type="button">Begin with music</button>
+      <button class="secondary" id="beginQuiet" type="button">Begin quietly</button>
+    </div>
+    <p class="tip">Headphones help. Hold still while painting to stack rings; drag to feather them.</p>
+  </div>
+</div>
+
+<script>
+(() => {
+'use strict';
+
+// ---------- Shades ----------
+const hex = (h) => [1, 3, 5].map((i) => parseInt(h.slice(i, i + 2), 16) / 255);
+const SHADES = [
+  { name: 'Lacquer', sparkle: 0.25, colors: ['#c9405b', '#efcfc3', '#8c2539', '#e8a0a8', '#fbf3ee', '#a8324c'] },
+  { name: 'Lilac hour', sparkle: 0.45, colors: ['#8e72c7', '#f3e9f7', '#c9b6e4', '#5b4a8a', '#e7c6d9'] },
+  { name: 'Sea glass', sparkle: 0.35, colors: ['#4f9a94', '#e9f4ef', '#a8d5c9', '#2f5f6b', '#f2d8c9'] },
+  { name: 'Gold leaf', sparkle: 1.0, colors: ['#d9a441', '#fbf8f1', '#8a5a2b', '#f5e6c8', '#1f1a17'] },
+  { name: 'Cherry cola', sparkle: 0.3, colors: ['#9e1b32', '#f6d6d2', '#5a1020', '#e05a6d', '#2a0b10'] },
+].map((s) => ({ ...s, rgb: s.colors.map(hex) }));
+let shade = SHADES[0];
+let colorIdx = 0;
+const nextColor = () => shade.rgb[colorIdx++ % shade.rgb.length];
+
+const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const $ = (id) => document.getElementById(id);
+const canvas = $('pool');
+
+// ---------- WebGL 2 fluid ----------
+const gl = canvas.getContext('webgl2', { alpha: false, antialias: false, depth: false, stencil: false, preserveDrawingBuffer: false });
+if (!gl || !(gl.getExtension('EXT_color_buffer_float') || gl.getExtension('EXT_color_buffer_half_float'))) {
+  document.body.insertAdjacentHTML('afterbegin', '<div class="fallback"></div>');
+  $('beginSound').closest('.card').querySelector('p').textContent = 'This browser cannot run the moving polish (it needs WebGL 2), so here is a still. The music still plays.';
+  canvas.remove();
+}
+
+const VERT = `#version 300 es
+in vec2 aPos;
+uniform vec2 texel;
+out vec2 vUv, vL, vR, vT, vB;
+void main(){
+  vUv = aPos * 0.5 + 0.5;
+  vL = vUv - vec2(texel.x, 0.0); vR = vUv + vec2(texel.x, 0.0);
+  vT = vUv + vec2(0.0, texel.y); vB = vUv - vec2(0.0, texel.y);
+  gl_Position = vec4(aPos, 0.0, 1.0);
+}`;
+const HEAD = `#version 300 es
+precision highp float; precision highp sampler2D;
+in vec2 vUv, vL, vR, vT, vB;
+out vec4 o;
+float hash(vec2 p){ return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
+float noise(vec2 p){ vec2 i = floor(p), f = fract(p); vec2 u = f*f*(3.0-2.0*f);
+  return mix(mix(hash(i), hash(i+vec2(1,0)), u.x), mix(hash(i+vec2(0,1)), hash(i+vec2(1,1)), u.x), u.y); }
+float fbm(vec2 p){ float v = 0.0, a = 0.5; for (int i = 0; i < 4; i++){ v += a*noise(p); p *= 2.03; a *= 0.5; } return v; }
+`;
+const FS = {
+  splat: `uniform sampler2D uTarget; uniform float aspect; uniform vec2 point; uniform vec3 color; uniform float radius;
+    void main(){ vec2 p = vUv - point; p.x *= aspect; o = vec4(texture(uTarget, vUv).xyz + color * exp(-dot(p,p)/radius), 1.0); }`,
+  // A bead of polish landing on the water: everything is pushed outward by an area-preserving radial move and the
+  // bead fills the space it opens. Applied in small steps so the bead visibly blooms.
+  drop: `uniform sampler2D uDye; uniform float aspect; uniform vec2 center; uniform float rho2; uniform vec3 color;
+    void main(){
+      vec2 d = vUv - center; d.x *= aspect;
+      float r2 = max(dot(d, d), 1e-9);
+      float s = sqrt(max(0.0, 1.0 - rho2 / r2));
+      vec2 src = center + vec2(d.x / aspect, d.y) * s;
+      vec4 pushed = texture(uDye, src);
+      float inside = 1.0 - smoothstep(rho2 * 0.92, rho2 * 1.08, r2);
+      o = mix(pushed, vec4(color, 1.0), inside);
+    }`,
+  advect: `uniform sampler2D uVelocity, uSource; uniform vec2 simTexel; uniform float dt, dissipation;
+    void main(){ vec2 c = vUv - dt * texture(uVelocity, vUv).xy * simTexel; o = texture(uSource, c) / (1.0 + dissipation * dt); }`,
+  // MacCormack correction for the polish, so shades keep crisp edges instead of blurring into one colour.
+  maccormack: `uniform sampler2D uVelocity, uSource, uFwd; uniform vec2 simTexel, dyeTexel; uniform float dt;
+    void main(){
+      vec2 v = texture(uVelocity, vUv).xy * simTexel * dt;
+      vec4 hat = texture(uFwd, vUv);
+      vec4 bar = texture(uFwd, vUv + v);
+      vec4 r = hat + 0.5 * (texture(uSource, vUv) - bar);
+      vec2 base = (floor((vUv - v) / dyeTexel - 0.5) + 0.5) * dyeTexel;
+      vec4 a = texture(uSource, base), b = texture(uSource, base + vec2(dyeTexel.x, 0.0));
+      vec4 c = texture(uSource, base + vec2(0.0, dyeTexel.y)), d = texture(uSource, base + dyeTexel);
+      o = clamp(r, min(min(a, b), min(c, d)), max(max(a, b), max(c, d)));
+    }`,
+  ambient: `uniform sampler2D uVelocity; uniform float time, strength, aspect, dt;
+    void main(){
+      vec2 p = vec2(vUv.x * aspect, vUv.y) * 1.3 + vec2(time * 0.02, -time * 0.013);
+      float e = 0.02;
+      float n = fbm(p), nx = fbm(p + vec2(e, 0.0)), ny = fbm(p + vec2(0.0, e));
+      vec2 curl = vec2(ny - n, -(nx - n)) / e;
+      o = vec4(texture(uVelocity, vUv).xy + curl * strength * dt, 0.0, 1.0);
+    }`,
+  curl: `uniform sampler2D uVelocity;
+    void main(){ float L = texture(uVelocity, vL).y, R = texture(uVelocity, vR).y, T = texture(uVelocity, vT).x, B = texture(uVelocity, vB).x;
+      o = vec4(0.5 * (R - L - T + B), 0.0, 0.0, 1.0); }`,
+  vorticity: `uniform sampler2D uVelocity, uCurl; uniform float curl, dt;
+    void main(){ float L = texture(uCurl, vL).x, R = texture(uCurl, vR).x, T = texture(uCurl, vT).x, B = texture(uCurl, vB).x, C = texture(uCurl, vUv).x;
+      vec2 f = 0.5 * vec2(abs(T) - abs(B), abs(R) - abs(L)); f /= length(f) + 1e-4; f *= curl * C; f.y *= -1.0;
+      o = vec4(clamp(texture(uVelocity, vUv).xy + f * dt, -1000.0, 1000.0), 0.0, 1.0); }`,
+  divergence: `uniform sampler2D uVelocity;
+    void main(){ float L = texture(uVelocity, vL).x, R = texture(uVelocity, vR).x, T = texture(uVelocity, vT).y, B = texture(uVelocity, vB).y;
+      vec2 C = texture(uVelocity, vUv).xy;
+      if (vL.x < 0.0) L = -C.x; if (vR.x > 1.0) R = -C.x; if (vT.y > 1.0) T = -C.y; if (vB.y < 0.0) B = -C.y;
+      o = vec4(0.5 * (R - L + T - B), 0.0, 0.0, 1.0); }`,
+  scale: `uniform sampler2D uTexture; uniform float value; void main(){ o = value * texture(uTexture, vUv); }`,
+  pressure: `uniform sampler2D uPressure, uDivergence;
+    void main(){ float L = texture(uPressure, vL).x, R = texture(uPressure, vR).x, T = texture(uPressure, vT).x, B = texture(uPressure, vB).x;
+      o = vec4((L + R + B + T - texture(uDivergence, vUv).x) * 0.25, 0.0, 0.0, 1.0); }`,
+  gradient: `uniform sampler2D uPressure, uVelocity;
+    void main(){ float L = texture(uPressure, vL).x, R = texture(uPressure, vR).x, T = texture(uPressure, vT).x, B = texture(uPressure, vB).x;
+      o = vec4(texture(uVelocity, vUv).xy - vec2(R - L, T - B), 0.0, 1.0); }`,
+  display: `uniform sampler2D uDye; uniform vec2 dyeTexel; uniform float time, aspect, sparkle;
+    float height(vec2 uv){ vec4 d = texture(uDye, uv); vec3 c = d.rgb / max(d.a, 1e-3); return d.a * 0.55 + d.a * dot(c, vec3(0.3, 0.5, 0.2)) * 0.45; }
+    void main(){
+      vec2 q = vec2(vUv.x * aspect, vUv.y);
+      vec4 d = texture(uDye, vUv);
+      float a = clamp(d.a, 0.0, 1.0);
+      vec3 polish = d.rgb / max(d.a, 1e-3);
+      // The bare nail under the polish, with the faint ridges of a real nail plate.
+      vec3 nail = mix(vec3(0.965, 0.87, 0.835), vec3(0.93, 0.81, 0.77), noise(q * 40.0) * 0.6 + (1.0 - vUv.y) * 0.4);
+      nail *= 0.975 + 0.025 * sin(q.x * 260.0 + noise(q * 6.0) * 6.0);
+      vec3 col = mix(nail, polish, smoothstep(0.04, 0.5, a));
+      // Wet gloss: raised edges where shades meet, plus a slow ripple on the water.
+      vec2 e = dyeTexel * 1.6;
+      float hL = height(vUv - vec2(e.x, 0.0)), hR = height(vUv + vec2(e.x, 0.0));
+      float hB = height(vUv - vec2(0.0, e.y)), hT = height(vUv + vec2(0.0, e.y));
+      float t = time * 0.06;
+      float w0 = fbm(q * 2.6 + vec2(t, -t * 0.7)), wx = fbm(q * 2.6 + vec2(t + 0.02, -t * 0.7)), wy = fbm(q * 2.6 + vec2(t, -t * 0.7 + 0.02));
+      vec3 n = normalize(vec3((hL - hR) * 5.0 + (w0 - wx) * 2.2, (hB - hT) * 5.0 + (w0 - wy) * 2.2, 1.0));
+      vec3 L = normalize(vec3(-0.45, 0.6, 0.9));
+      vec3 H = normalize(L + vec3(0.0, 0.0, 1.0));
+      float diff = dot(n, L);
+      float spec = pow(max(dot(n, H), 0.0), 60.0);
+      col *= 0.9 + 0.12 * diff;
+      col += vec3(spec * 0.42);
+      // A soft band of light drifting across the surface, and a sheen along the top.
+      float band = (vUv.x * 0.55 + (1.0 - vUv.y)) - (fract(time * 0.022) * 2.8 - 0.7);
+      col += vec3(exp(-band * band / 0.02) * 0.08);
+      col += vec3(smoothstep(0.7, 1.0, vUv.y) * 0.07);
+      // Shimmer: a few flakes in the lacquer catch the light now and then.
+      vec2 cell = floor(gl_FragCoord.xy / 2.5);
+      float h = hash(cell);
+      float tw = pow(0.5 + 0.5 * sin(time * 1.6 + h * 80.0), 10.0);
+      col += vec3(step(0.988, h) * tw * a * sparkle * 0.7);
+      // Gentle vignette.
+      vec2 v = vUv - 0.5; col *= 1.0 - 0.22 * dot(v, v) * 2.0;
+      o = vec4(col, 1.0);
+    }`,
+};
+
+let P, quad, velocity, dye, dyeTmp, curlFbo, divergence, pressure, simW, simH, dyeW, dyeH;
+if (canvas.isConnected) initGL();
+
+function initGL() {
+  const compile = (type, src) => {
+    const s = gl.createShader(type); gl.shaderSource(s, src); gl.compileShader(s);
+    if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) throw new Error(gl.getShaderInfoLog(s));
+    return s;
+  };
+  const vs = compile(gl.VERTEX_SHADER, VERT);
+  const program = (src) => {
+    const p = gl.createProgram();
+    gl.attachShader(p, vs); gl.attachShader(p, compile(gl.FRAGMENT_SHADER, HEAD + src));
+    gl.bindAttribLocation(p, 0, 'aPos'); gl.linkProgram(p);
+    if (!gl.getProgramParameter(p, gl.LINK_STATUS)) throw new Error(gl.getProgramInfoLog(p));
+    const u = {};
+    for (let i = 0, n = gl.getProgramParameter(p, gl.ACTIVE_UNIFORMS); i < n; i++) {
+      const name = gl.getActiveUniform(p, i).name; u[name] = gl.getUniformLocation(p, name);
+    }
+    return { p, u };
+  };
+  P = Object.fromEntries(Object.entries(FS).map(([k, v]) => [k, program(v)]));
+
+  quad = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, quad);
+  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 3, -1, -1, 3]), gl.STATIC_DRAW);
+  gl.enableVertexAttribArray(0);
+  gl.vertexAttribPointer(0, 2, gl.FLOAT, false, 0, 0);
+
+  sizeCanvas();
+  const res = (base) => {
+    const asp = canvas.width / canvas.height;
+    return asp >= 1 ? [Math.round(base * asp), base] : [base, Math.round(base / asp)];
+  };
+  [simW, simH] = res(128);
+  const dyeBase = Math.min(1024, Math.round(Math.min(canvas.width, canvas.height) * 1.1));
+  [dyeW, dyeH] = res(Math.max(512, dyeBase));
+  const H = gl.HALF_FLOAT;
+  velocity = doubleFbo(simW, simH, gl.RG16F, gl.RG, H);
+  dye = doubleFbo(dyeW, dyeH, gl.RGBA16F, gl.RGBA, H);
+  dyeTmp = fbo(dyeW, dyeH, gl.RGBA16F, gl.RGBA, H);
+  curlFbo = fbo(simW, simH, gl.R16F, gl.RED, H);
+  divergence = fbo(simW, simH, gl.R16F, gl.RED, H);
+  pressure = doubleFbo(simW, simH, gl.R16F, gl.RED, H);
+  if (gl.checkFramebufferStatus(gl.FRAMEBUFFER) !== gl.FRAMEBUFFER_COMPLETE) throw new Error('No half-float render targets');
+}
+
+function fbo(w, h, internal, format, type) {
+  gl.activeTexture(gl.TEXTURE0);
+  const tex = gl.createTexture();
+  gl.bindTexture(gl.TEXTURE_2D, tex);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+  gl.texImage2D(gl.TEXTURE_2D, 0, internal, w, h, 0, format, type, null);
+  const fb = gl.createFramebuffer();
+  gl.bindFramebuffer(gl.FRAMEBUFFER, fb);
+  gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, tex, 0);
+  gl.viewport(0, 0, w, h);
+  gl.clearColor(0, 0, 0, 0);
+  gl.clear(gl.COLOR_BUFFER_BIT);
+  return { fb, w, h, texel: [1 / w, 1 / h], bind(unit) { gl.activeTexture(gl.TEXTURE0 + unit); gl.bindTexture(gl.TEXTURE_2D, tex); return unit; } };
+}
+function doubleFbo(w, h, internal, format, type) {
+  let a = fbo(w, h, internal, format, type), b = fbo(w, h, internal, format, type);
+  return { w, h, texel: a.texel, get read() { return a; }, get write() { return b; }, swap() { [a, b] = [b, a]; } };
+}
+function use(prog, texel) { gl.useProgram(prog.p); if (prog.u.texel) gl.uniform2fv(prog.u.texel, texel); return prog.u; }
+function blit(target) {
+  if (target) { gl.bindFramebuffer(gl.FRAMEBUFFER, target.fb); gl.viewport(0, 0, target.w, target.h); }
+  else { gl.bindFramebuffer(gl.FRAMEBUFFER, null); gl.viewport(0, 0, gl.drawingBufferWidth, gl.drawingBufferHeight); }
+  gl.drawArrays(gl.TRIANGLES, 0, 3);
+}
+function sizeCanvas() {
+  const dpr = Math.min(window.devicePixelRatio || 1, 1.75);
+  const w = Math.max(1, Math.round(innerWidth * dpr)), h = Math.max(1, Math.round(innerHeight * dpr));
+  if (canvas.width !== w || canvas.height !== h) { canvas.width = w; canvas.height = h; }
+}
+const aspect = () => canvas.width / canvas.height;
+
+// ---------- Simulation ----------
+const SIM = { velDissipation: 0.55, curl: 3, pressureIters: 20, ambient: reduced ? 0.6 : 2.2 };
+const splats = [];
+const drops = [];
+let simTime = 0;
+
+function splat(x, y, dx, dy, radius) {
+  const u = use(P.splat, velocity.texel);
+  gl.uniform1i(u.uTarget, velocity.read.bind(0));
+  gl.uniform1f(u.aspect, aspect());
+  gl.uniform2f(u.point, x, y);
+  gl.uniform3f(u.color, dx, dy, 0);
+  gl.uniform1f(u.radius, radius);
+  blit(velocity.write); velocity.swap();
+}
+function dropPass(x, y, rho2, color) {
+  const u = use(P.drop, dye.texel);
+  gl.uniform1i(u.uDye, dye.read.bind(0));
+  gl.uniform1f(u.aspect, aspect());
+  gl.uniform2f(u.center, x, y);
+  gl.uniform1f(u.rho2, rho2);
+  gl.uniform3fv(u.color, color);
+  blit(dye.write); dye.swap();
+}
+// area is r squared, in screen-height units.
+function queueDrop(x, y, color, area, delay = 0) {
+  drops.push({ x, y, color, left: area, at: simTime + delay });
+}
+
+function step(dt) {
+  simTime += dt;
+  for (const s of splats.splice(0)) splat(s.x, s.y, s.dx, s.dy, s.r);
+
+  let u = use(P.ambient, velocity.texel);
+  gl.uniform1i(u.uVelocity, velocity.read.bind(0));
+  gl.uniform1f(u.time, simTime); gl.uniform1f(u.strength, SIM.ambient); gl.uniform1f(u.aspect, aspect()); gl.uniform1f(u.dt, dt);
+  blit(velocity.write); velocity.swap();
+
+  u = use(P.curl, velocity.texel);
+  gl.uniform1i(u.uVelocity, velocity.read.bind(0));
+  blit(curlFbo);
+
+  u = use(P.vorticity, velocity.texel);
+  gl.uniform1i(u.uVelocity, velocity.read.bind(0)); gl.uniform1i(u.uCurl, curlFbo.bind(1));
+  gl.uniform1f(u.curl, SIM.curl); gl.uniform1f(u.dt, dt);
+  blit(velocity.write); velocity.swap();
+
+  u = use(P.divergence, velocity.texel);
+  gl.uniform1i(u.uVelocity, velocity.read.bind(0));
+  blit(divergence);
+
+  u = use(P.scale, velocity.texel);
+  gl.uniform1i(u.uTexture, pressure.read.bind(0)); gl.uniform1f(u.value, 0.8);
+  blit(pressure.write); pressure.swap();
+
+  u = use(P.pressure, velocity.texel);
+  gl.uniform1i(u.uDivergence, divergence.bind(0));
+  for (let i = 0; i < SIM.pressureIters; i++) {
+    gl.uniform1i(u.uPressure, pressure.read.bind(1));
+    blit(pressure.write); pressure.swap();
+  }
+
+  u = use(P.gradient, velocity.texel);
+  gl.uniform1i(u.uPressure, pressure.read.bind(0)); gl.uniform1i(u.uVelocity, velocity.read.bind(1));
+  blit(velocity.write); velocity.swap();
+
+  u = use(P.advect, velocity.texel);
+  gl.uniform2fv(u.simTexel, velocity.texel); gl.uniform1f(u.dt, dt);
+  gl.uniform1i(u.uVelocity, velocity.read.bind(0)); gl.uniform1i(u.uSource, velocity.read.bind(0));
+  gl.uniform1f(u.dissipation, SIM.velDissipation);
+  blit(velocity.write); velocity.swap();
+
+  gl.uniform1i(u.uVelocity, velocity.read.bind(0)); gl.uniform1i(u.uSource, dye.read.bind(1));
+  gl.uniform1f(u.dissipation, 0);
+  blit(dyeTmp);
+  u = use(P.maccormack, dye.texel);
+  gl.uniform2fv(u.simTexel, velocity.texel); gl.uniform2fv(u.dyeTexel, dye.texel); gl.uniform1f(u.dt, dt);
+  gl.uniform1i(u.uVelocity, velocity.read.bind(0)); gl.uniform1i(u.uSource, dye.read.bind(1)); gl.uniform1i(u.uFwd, dyeTmp.bind(2));
+  blit(dye.write); dye.swap();
+
+  // Beads bloom quickly then slow, like polish spreading on water.
+  let n = 0;
+  for (let i = 0; i < drops.length && n < 10; i++) {
+    const d = drops[i];
+    if (d.at > simTime) continue;
+    n++;
+    let s = d.left * (1 - Math.exp(-dt * 4.5));
+    if (d.left - s < 2e-6) s = d.left;
+    dropPass(d.x, d.y, s, d.color);
+    d.left -= s;
+    if (d.left <= 0) { drops.splice(i, 1); i--; }
+  }
+}
+
+function render(time) {
+  sizeCanvas();
+  const u = use(P.display, [0, 0]);
+  gl.uniform1i(u.uDye, dye.read.bind(0));
+  gl.uniform2fv(u.dyeTexel, dye.texel);
+  gl.uniform1f(u.time, time);
+  gl.uniform1f(u.aspect, aspect());
+  gl.uniform1f(u.sparkle, shade.sparkle);
+  blit(null);
+}
+
+function clearDye() {
+  for (const f of [dye.read, dye.write]) { gl.bindFramebuffer(gl.FRAMEBUFFER, f.fb); gl.clearColor(0, 0, 0, 0); gl.clear(gl.COLOR_BUFFER_BIT); }
+  drops.length = 0;
+}
+
+// A full marble: clusters of nested rings, combed through a few times, then left to settle.
+function pour(instant) {
+  const asp = aspect();
+  const centres = Math.round(9 + 5 * Math.min(asp, 2));
+  const queued = [];
+  for (let c = 0; c < centres; c++) {
+    const x = Math.random(), y = Math.random();
+    const rings = 2 + Math.floor(Math.random() * 4);
+    const area = (0.004 + Math.random() * 0.012) * Math.max(1, asp * 0.8);
+    for (let r = 0; r < rings; r++) queued.push({ x, y, color: nextColor(), area: area / (1 + r * 0.35), delay: c * 0.18 + r * 0.32 });
+  }
+  if (instant) {
+    for (const q of queued) dropPass(q.x, q.y, q.area, q.color);
+    // Comb it: a couple of slow S-shaped strokes, then let the water carry it.
+    for (let k = 0; k < 2; k++) {
+      const vertical = Math.random() < 0.5, phase = Math.random() * 6.28, amp = 0.15 + Math.random() * 0.2, base = 0.2 + k * 0.3;
+      for (let i = 0; i <= 30; i++) {
+        const t = i / 30;
+        const a = base + amp * Math.sin(t * 6.28 + phase);
+        const [x, y] = vertical ? [a, t] : [t, a];
+        const dir = k % 2 ? -1 : 1;
+        splats.push({ x, y, dx: vertical ? 0 : 110 * dir, dy: vertical ? 110 * dir : 0, r: 0.003 });
+      }
+      for (let i = 0; i < 20; i++) step(1 / 60);
+    }
+    for (let i = 0; i < 10; i++) step(1 / 60);
+  } else {
+    for (const q of queued) queueDrop(q.x, q.y, q.color, q.area, q.delay);
+  }
+}
+
+// ---------- Pointer ----------
+let painting = false;
+const pointers = new Map();
+let lastActivity = performance.now();
+
+function uv(e) {
+  const r = canvas.getBoundingClientRect();
+  return [(e.clientX - r.left) / r.width, 1 - (e.clientY - r.top) / r.height];
+}
+function onDown(e) {
+  if (!started) return;
+  canvas.setPointerCapture?.(e.pointerId);
+  const [x, y] = uv(e);
+  const p = { x, y, sx: x, sy: y, travel: 0, moved: false, rings: 0, hold: 0 };
+  pointers.set(e.pointerId, p);
+  if (painting) {
+    queueDrop(x, y, nextColor(), 0.0016 + Math.random() * 0.0012);
+    music.note(y, 0.08);
+    p.hold = setInterval(() => {
+      if (p.moved || p.rings >= 7) return;
+      p.rings++;
+      queueDrop(p.sx, p.sy, nextColor(), 0.0014 + Math.random() * 0.0008);
+      music.note(p.sy + p.rings * 0.08, 0.06);
+    }, 430);
+  }
+}
+function onMove(e) {
+  lastActivity = performance.now();
+  document.body.classList.remove('idle');
+  if (!started) return;
+  const [x, y] = uv(e);
+  let p = pointers.get(e.pointerId);
+  if (!p) {
+    // A hovering mouse nudges the water in calm mode, like the banner on the main page.
+    if (painting || e.pointerType !== 'mouse') return;
+    p = { x, y, hover: true };
+    pointers.set(e.pointerId, p);
+    return;
+  }
+  const dx = x - p.x, dy = y - p.y;
+  p.x = x; p.y = y;
+  if (!dx && !dy) return;
+  const force = painting ? 3000 : p.hover ? 650 : 1900;
+  splats.push({ x, y, dx: dx * force * aspect(), dy: dy * force, r: painting ? 0.0028 : 0.0055 });
+  if (painting && !p.hover) {
+    const dist = Math.hypot(dx * aspect(), dy);
+    p.travel += dist;
+    if (Math.hypot((x - p.sx) * aspect(), y - p.sy) > 0.015) p.moved = true;
+    if (p.travel > 0.055) {
+      p.travel = 0;
+      queueDrop(x, y, nextColor(), 0.0003 + Math.random() * 0.0004);
+      music.note(y, 0.035);
+    }
+  }
+}
+function onUp(e) {
+  const p = pointers.get(e.pointerId);
+  if (p) clearInterval(p.hold);
+  pointers.delete(e.pointerId);
+}
+canvas.addEventListener('pointerdown', onDown);
+canvas.addEventListener('pointermove', onMove);
+canvas.addEventListener('pointerup', onUp);
+canvas.addEventListener('pointercancel', onUp);
+canvas.addEventListener('pointerleave', (e) => { if (e.pointerType === 'mouse' && pointers.get(e.pointerId)?.hover) pointers.delete(e.pointerId); });
+addEventListener('pointermove', () => { lastActivity = performance.now(); document.body.classList.remove('idle'); });
+
+// ---------- Music ----------
+const music = (() => {
+  let ctx = null, master, verb, dry, on = false, timers = [], lastNote = 0;
+  const mtof = (m) => 440 * Math.pow(2, (m - 69) / 12);
+  // Dmaj9, Bm11, Gmaj9(#11), A6sus: open voicings that never resolve hard.
+  const CHORDS = [[50, 57, 61, 64, 66], [47, 54, 57, 62, 64], [43, 50, 57, 59, 61], [45, 52, 57, 59, 62]];
+  const BELLS = [62, 64, 66, 69, 71, 74, 76, 78, 81, 83, 86];
+  let chord = 0;
+
+  function impulse(sec) {
+    const len = Math.floor(ctx.sampleRate * sec), b = ctx.createBuffer(2, len, ctx.sampleRate);
+    for (let ch = 0; ch < 2; ch++) { const d = b.getChannelData(ch); for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, 2.6); }
+    return b;
+  }
+  function build() {
+    ctx = new (window.AudioContext || window.webkitAudioContext)();
+    master = ctx.createGain(); master.gain.value = 0;
+    const comp = ctx.createDynamicsCompressor(); comp.threshold.value = -18; comp.ratio.value = 3;
+    master.connect(comp); comp.connect(ctx.destination);
+    verb = ctx.createConvolver(); verb.buffer = impulse(6);
+    const wet = ctx.createGain(); wet.gain.value = 0.7; verb.connect(wet); wet.connect(master);
+    dry = ctx.createGain(); dry.gain.value = 0.45; dry.connect(master);
+    // Water underneath: brown noise, low and slowly breathing.
+    const len = ctx.sampleRate * 4, buf = ctx.createBuffer(1, len, ctx.sampleRate), d = buf.getChannelData(0);
+    let last = 0; for (let i = 0; i < len; i++) { last = (last + 0.02 * (Math.random() * 2 - 1)) / 1.02; d[i] = last * 3.2; }
+    const src = ctx.createBufferSource(); src.buffer = buf; src.loop = true;
+    const lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 420;
+    const g = ctx.createGain(); g.gain.value = 0.05;
+    const lfo = ctx.createOscillator(), lfoG = ctx.createGain(); lfo.frequency.value = 0.08; lfoG.gain.value = 0.03;
+    lfo.connect(lfoG); lfoG.connect(g.gain); lfo.start();
+    src.connect(lp); lp.connect(g); g.connect(dry); g.connect(verb); src.start();
+  }
+  function pad() {
+    const t0 = ctx.currentTime + 0.05, hold = 11, atk = 4.5, rel = 7;
+    const lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.Q.value = 0.4;
+    lp.frequency.setValueAtTime(500, t0); lp.frequency.linearRampToValueAtTime(1300, t0 + atk + 2); lp.frequency.linearRampToValueAtTime(600, t0 + hold + rel);
+    lp.connect(dry); lp.connect(verb);
+    for (const m of CHORDS[chord % CHORDS.length]) {
+      for (const [type, det, v] of [['sine', -5, 0.03], ['triangle', 6, 0.014]]) {
+        const o = ctx.createOscillator(), g = ctx.createGain();
+        o.type = type; o.frequency.value = mtof(m); o.detune.value = det + (Math.random() - 0.5) * 4;
+        g.gain.setValueAtTime(0, t0); g.gain.linearRampToValueAtTime(v, t0 + atk);
+        g.gain.setValueAtTime(v, t0 + hold); g.gain.linearRampToValueAtTime(0, t0 + hold + rel);
+        o.connect(g); g.connect(lp); o.start(t0); o.stop(t0 + hold + rel + 0.2);
+      }
+    }
+    chord++;
+    timers.push(setTimeout(pad, 11000));
+  }
+  function bell(m, vol) {
+    const t0 = ctx.currentTime + 0.01;
+    for (const [mult, v, dec] of [[1, 1, 3.2], [2.01, 0.25, 1.4], [3.98, 0.08, 0.7]]) {
+      const o = ctx.createOscillator(), g = ctx.createGain();
+      o.type = 'sine'; o.frequency.value = mtof(m) * mult;
+      g.gain.setValueAtTime(0, t0); g.gain.linearRampToValueAtTime(vol * v, t0 + 0.008);
+      g.gain.exponentialRampToValueAtTime(0.0001, t0 + dec);
+      o.connect(g); g.connect(verb); g.connect(dry); o.start(t0); o.stop(t0 + dec + 0.1);
+    }
+  }
+  function drift() {
+    if (Math.random() < 0.8) bell(BELLS[Math.floor(Math.random() * 7)], 0.035);
+    timers.push(setTimeout(drift, 2600 + Math.random() * 5200));
+  }
+  return {
+    get on() { return on; },
+    set(v) {
+      on = v;
+      if (on && !ctx) { build(); pad(); timers.push(setTimeout(drift, 3000)); }
+      if (!ctx) return;
+      if (on) ctx.resume();
+      master.gain.cancelScheduledValues(ctx.currentTime);
+      master.gain.setTargetAtTime(on ? 0.75 : 0, ctx.currentTime, on ? 1.4 : 0.25);
+    },
+    // A plucked note for each bead, higher up the screen is higher up the scale.
+    note(y, vol) {
+      if (!ctx || !on) return;
+      const now = performance.now();
+      if (now - lastNote < 90) return;
+      lastNote = now;
+      const i = Math.max(0, Math.min(BELLS.length - 1, Math.floor(y * BELLS.length)));
+      bell(BELLS[i], vol);
+    },
+    pause() { ctx?.suspend(); },
+    resume() { if (ctx && on) ctx.resume(); },
+  };
+})();
+
+// ---------- Breathing ----------
+const breathEl = $('breathText');
+let breathOn = true, breathTimer = 0;
+function breathe(phase = 0) {
+  clearTimeout(breathTimer);
+  if (!breathOn) { breathEl.classList.remove('show'); return; }
+  const steps = [['Breathe in', 4000], ['Hold', 2000], ['Breathe out', 6000], ['', 1500]];
+  const [text, ms] = steps[phase % steps.length];
+  breathEl.classList.remove('show');
+  setTimeout(() => { breathEl.textContent = text; if (text && breathOn) breathEl.classList.add('show'); }, 700);
+  breathTimer = setTimeout(() => breathe(phase + 1), ms);
+}
+
+// ---------- Controls ----------
+let started = false;
+function begin(withSound) {
+  if (started) return;
+  started = true;
+  $('welcome').classList.add('gone');
+  setTimeout(() => $('welcome').remove(), 1300);
+  setSound(withSound);
+  breathe(0);
+  navigator.wakeLock?.request('screen').catch(() => {});
+}
+$('beginSound').addEventListener('click', () => begin(true));
+$('beginQuiet').addEventListener('click', () => begin(false));
+
+function setSound(v) { music.set(v); $('sound').setAttribute('aria-pressed', String(v)); }
+$('sound').addEventListener('click', () => { begin(false); setSound(!music.on); });
+
+function setPaint(v) {
+  painting = v;
+  $('paint').setAttribute('aria-checked', String(v));
+  document.body.classList.toggle('painting', v);
+  $('tray').hidden = !v;
+}
+$('paint').addEventListener('click', () => { begin(false); setPaint(!painting); });
+
+$('breathe').addEventListener('click', () => {
+  breathOn = !breathOn;
+  $('breathe').setAttribute('aria-pressed', String(breathOn));
+  if (started) breathe(0);
+});
+
+const shadesEl = $('shades');
+SHADES.forEach((s) => {
+  const b = document.createElement('button');
+  b.type = 'button'; b.className = 'shade'; b.id = 'shade-' + s.name.toLowerCase().replace(/\s+/g, '-');
+  b.setAttribute('aria-pressed', String(s === shade));
+  const c = s.colors;
+  b.innerHTML = `<span class="swatch" style="background:conic-gradient(${c[0]} 0 35%, ${c[1]} 0 55%, ${c[2]} 0 75%, ${c[3]} 0 90%, ${c[4]} 0)"></span>${s.name}`;
+  b.addEventListener('click', () => {
+    shade = s; colorIdx = 0;
+    shadesEl.querySelectorAll('.shade').forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
+  });
+  shadesEl.appendChild(b);
+});
+$('pour').addEventListener('click', () => { if (dye) pour(false); });
+$('wipe').addEventListener('click', () => { if (dye) clearDye(); });
+
+addEventListener('keydown', (e) => {
+  if (e.metaKey || e.ctrlKey || e.altKey) return;
+  if (e.key === 'p' || e.key === 'P') { begin(false); setPaint(!painting); }
+  if (e.key === 'm' || e.key === 'M') { begin(false); setSound(!music.on); }
+});
+document.addEventListener('visibilitychange', () => (document.hidden ? music.pause() : music.resume()));
+
+// ---------- Run ----------
+if (dye) {
+  pour(true);
+  let last = performance.now(), nextDrip = 6;
+  const loop = (now) => {
+    const dt = Math.min((now - last) / 1000, 1 / 30);
+    last = now;
+    if (!document.hidden) {
+      // While watching, a bead of polish lands now and then.
+      if (started && !painting && simTime > nextDrip) {
+        nextDrip = simTime + (reduced ? 18 : 8) + Math.random() * 6;
+        const x = 0.15 + Math.random() * 0.7, y = 0.15 + Math.random() * 0.7;
+        const rings = 1 + Math.floor(Math.random() * 3);
+        for (let r = 0; r < rings; r++) queueDrop(x, y, nextColor(), 0.0025 + Math.random() * 0.003, r * 0.6);
+        music.note(y, 0.05);
+      }
+      step(dt);
+      render(now / 1000);
+    }
+    if (now - lastActivity > 5000 && started) document.body.classList.add('idle');
+    requestAnimationFrame(loop);
+  };
+  requestAnimationFrame(loop);
+}
+})();
+</script>
+</body>
 </html>
