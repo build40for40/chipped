@@ -9,8 +9,9 @@
     "run_worker_first": ["/chipped/api/*"]
   },
   "routes": [
-    { "pattern": "build40for40.com/chipped", "zone_name": "build40for40.com" },
-    { "pattern": "build40for40.com/chipped/*", "zone_name": "build40for40.com" }
+    // One wildcard rather than "/chipped" and "/chipped/*": an exact route misses "/chipped?utm_source=…",
+    // which then fell through to the site's Worker and 404ed.
+    { "pattern": "build40for40.com/chipped*", "zone_name": "build40for40.com" }
   ],
   "workers_dev": true,
   "preview_urls": true,
