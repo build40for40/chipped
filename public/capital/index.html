@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chipped Capital</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700;900&family=Instrument+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: a night-time nail bar fund factsheet. Hero verdict, then the race chart, then the full leaderboard. Single dark look by choice. */
+:root {
+  --bg: #170d1a;
+  --panel: #211426;
+  --line: #3a2741;
+  --ink: #f7ecf3;
+  --muted: #b49fb8;
+  --faint: #7d6884;
+  --nail: #ff4f8b;
+  --chip: #ffc93c;
+  --win: #7be0a6;
+  --lose: #ff7a6b;
+  --display: "Unbounded", "Arial Black", system-ui, sans-serif;
+  --body: "Instrument Sans", "Helvetica Neue", Arial, system-ui, sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, Menlo, Consolas, monospace;
+  color-scheme: dark;
+}
+html { background: var(--bg); }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 16px/1.55 var(--body); padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 0 48px; overflow-x: hidden; }
+.wrap { max-width: 1080px; margin: 0 auto; display: grid; gap: 56px; }
+.num { font-family: var(--mono); font-variant-numeric: tabular-nums; }
+header.hero { padding-top: 48px; display: grid; gap: 22px; position: relative; }
+.eyebrow { font: 500 12px/1 var(--mono); letter-spacing: .14em; text-transform: uppercase; color: var(--muted); display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.eyebrow .back { color: var(--ink); text-decoration: none; border-bottom: 1px solid var(--line); }
+.eyebrow .back:hover { color: var(--chip); }
+.eyebrow .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--nail); box-shadow: 0 0 12px var(--nail); }
+h1 { font: 900 clamp(40px, 8.5vw, 104px)/.92 var(--display); letter-spacing: -.03em; margin: 0; text-wrap: balance; }
+h1 .gloss { background: linear-gradient(100deg, var(--nail) 0%, #ff9ac0 38%, var(--chip) 80%); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.lede { font-size: clamp(18px, 2.3vw, 22px); max-width: 40ch; color: var(--ink); margin: 0; text-wrap: balance; }
+.lede b { font-weight: 600; }
+.tiles { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+.tile { background: var(--panel); border: 1px solid var(--line); border-radius: 18px; padding: 18px 20px 20px; display: grid; gap: 6px; position: relative; overflow: hidden; }
+.tile::after { content: ""; position: absolute; inset: 0 0 auto; height: 3px; background: var(--c); }
+.tile .k { font: 500 11px/1.2 var(--mono); letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+.tile .v { font: 700 clamp(26px, 4vw, 40px)/1 var(--display); letter-spacing: -.02em; color: var(--c); }
+.tile .who { font-size: 14px; color: var(--muted); }
+section h2 { font: 700 clamp(22px, 3.2vw, 32px)/1.1 var(--display); letter-spacing: -.02em; margin: 0 0 6px; text-wrap: balance; }
+section .sub { color: var(--muted); margin: 0 0 18px; max-width: 62ch; }
+.chartbar { display: flex; justify-content: space-between; align-items: end; gap: 16px; flex-wrap: wrap; margin-bottom: 10px; }
+.yearbig { font: 900 clamp(44px, 7vw, 76px)/1 var(--display); color: var(--ink); letter-spacing: -.04em; opacity: .9; }
+.leader { font: 500 13px/1.3 var(--mono); color: var(--muted); }
+button.play { font: 600 15px/1 var(--body); color: var(--bg); background: var(--ink); border: 0; border-radius: 999px; padding: 13px 20px 13px 16px; display: inline-flex; gap: 10px; align-items: center; cursor: pointer; transition: transform .15s ease, background .15s; }
+button.play:hover { background: var(--chip); transform: translateY(-1px); }
+button.play:focus-visible { outline: 3px solid var(--nail); outline-offset: 3px; }
+button.play svg { width: 14px; height: 14px; }
+.chart { position: relative; background: var(--panel); border: 1px solid var(--line); border-radius: 22px; padding: 14px 6px 6px 4px; }
+.chart svg { display: block; width: 100%; height: auto; overflow: visible; }
+.tip { position: absolute; pointer-events: none; background: #0f0812; border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px; font: 12px/1.5 var(--mono); color: var(--ink); min-width: 210px; box-shadow: 0 12px 30px rgba(0,0,0,.45); transform: translate(-50%, 0); }
+.tip .yr { font: 700 13px var(--display); margin-bottom: 4px; }
+.tip .r { display: flex; justify-content: space-between; gap: 14px; }
+.tip .r i { display: inline-block; width: 8px; height: 8px; border-radius: 2px; margin-right: 6px; }
+.legend { display: flex; flex-wrap: wrap; gap: 8px 10px; margin-top: 14px; }
+.legend span { display: inline-flex; align-items: center; gap: 7px; font-size: 13px; color: var(--muted); background: var(--panel); border: 1px solid var(--line); border-radius: 999px; padding: 5px 11px 5px 9px; }
+.legend i { width: 10px; height: 10px; border-radius: 50%; background: var(--c); box-shadow: 0 0 8px var(--c); }
+.board { display: grid; gap: 0; border-top: 1px solid var(--line); }
+.row { display: grid; grid-template-columns: 28px minmax(0, 1.25fr) minmax(0, 1.6fr) 118px; gap: 14px; align-items: center; padding: 13px 0; border-bottom: 1px solid var(--line); }
+.row .rk { font: 500 13px var(--mono); color: var(--faint); }
+.row .name { min-width: 0; }
+.row .item { font-weight: 600; font-size: 16px; line-height: 1.25; }
+.row .co { font-size: 13px; color: var(--muted); }
+.tag { display: inline-block; font: 500 10px/1 var(--mono); letter-spacing: .1em; text-transform: uppercase; padding: 4px 6px; border-radius: 5px; margin-right: 6px; vertical-align: 2px; }
+.tag.chip { background: color-mix(in srgb, var(--chip) 18%, transparent); color: var(--chip); }
+.tag.nail { background: color-mix(in srgb, var(--nail) 18%, transparent); color: var(--nail); }
+.track { position: relative; height: 14px; border-radius: 999px; background: color-mix(in srgb, var(--line) 70%, transparent); }
+.fill { position: absolute; inset: 0 auto 0 0; border-radius: 999px; background: linear-gradient(90deg, color-mix(in srgb, var(--c) 40%, transparent), var(--c)); box-shadow: 0 0 14px color-mix(in srgb, var(--c) 45%, transparent); }
+.mk { position: absolute; top: -5px; bottom: -5px; width: 2px; background: var(--ink); border-radius: 2px; }
+.mk::after { content: "S&P"; position: absolute; top: -14px; left: 50%; transform: translateX(-50%); font: 500 9px var(--mono); color: var(--muted); letter-spacing: .06em; }
+.row:not(:first-child) .mk::after { content: none; }
+.val { text-align: right; }
+.val .v { font: 600 16px var(--mono); font-variant-numeric: tabular-nums; }
+.val .vs { font: 500 11px var(--mono); }
+.vs.w { color: var(--win); } .vs.l { color: var(--lose); }
+.axis { display: grid; grid-template-columns: 28px minmax(0, 1.25fr) minmax(0, 1.6fr) 118px; gap: 14px; padding: 0 0 8px; }
+.axis .ticks { position: relative; height: 14px; font: 500 10px var(--mono); color: var(--faint); }
+.axis .ticks span { position: absolute; transform: translateX(-50%); }
+.quote { font: 700 clamp(22px, 3.4vw, 34px)/1.2 var(--display); letter-spacing: -.02em; margin: 0; max-width: 26ch; text-wrap: balance; }
+.quote em { font-style: normal; color: var(--nail); }
+.quote strong { color: var(--chip); font-weight: 700; }
+.notes { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 18px; color: var(--muted); font-size: 14px; }
+.notes h3 { font: 500 11px/1 var(--mono); letter-spacing: .12em; text-transform: uppercase; color: var(--ink); margin: 0 0 8px; }
+.notes p { margin: 0; }
+@media (max-width: 680px) {
+  .tiles { grid-template-columns: 1fr; }
+  .row, .axis { grid-template-columns: 22px minmax(0, 1fr) 98px; }
+  .row .bar, .axis .ticks { grid-column: 2 / 4; grid-row: 2; }
+  .axis { display: none; }
+  .row { row-gap: 8px; }
+}
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header class="hero">
+    <div class="eyebrow"><a class="back" href="../">← chipped</a><span>·</span><span class="dot"></span><span>Chipped Capital</span><span>·</span><span>Fund factsheet, 13 Nov 2026</span></div>
+    <h1>$1,000 in <span class="gloss">chips &amp; nails.</span></h1>
+    <p class="lede">We put a pretend grand into every company behind a chip or a nail, reinvested the dividends, and held. <b>AI chips made millions. Nail polish lost three-quarters.</b></p>
+    <div class="tiles">
+      <div class="tile" style="--c: #9be15d"><span class="k">Best</span><span class="v num">$4,268,721</span><span class="who">AI chips (Nvidia), since 1999</span></div>
+      <div class="tile" style="--c: #e6d6ea"><span class="k">The market</span><span class="v num">$224,291</span><span class="who">S&amp;P 500, since 1980</span></div>
+      <div class="tile" style="--c: var(--nail)"><span class="k">Worst</span><span class="v num">$280</span><span class="who">OPI nail polish (Coty), since 2013</span></div>
+    </div>
+  </header>
+
+  <section>
+    <h2>The race, 1980 to now</h2>
+    <p class="sub">$1,000 in each, dividends reinvested. Each line starts the day its company could be bought. The scale is logarithmic: every gridline is ten times the one below.</p>
+    <div class="chartbar">
+      <div><div class="yearbig num" id="yr">2026</div><div class="leader" id="lead">Leader: AI chips (Nvidia) $4,268,721</div></div>
+      <button class="play" id="play" type="button"><svg viewBox="0 0 14 14" aria-hidden="true"><path d="M2 1.2v11.6L12.5 7z" fill="currentColor"/></svg><span>Replay the race</span></button>
+    </div>
+    <div class="chart" id="chart"><svg id="svg" role="img" aria-label="Log-scale chart of $1,000 invested from 1980 or listing to November 2026. Nvidia $4.27 million, Nucor $720 thousand, Hershey $537 thousand, PepsiCo $435 thousand, Intel $318 thousand, S&amp;P 500 $224 thousand, Stanley Black and Decker $71 thousand, Coty $280."></svg><div class="tip" id="tip" hidden></div></div>
+    <div class="legend" id="legend"></div>
+  </section>
+
+  <section>
+    <h2>The full leaderboard</h2>
+    <p class="sub">Every chip and nail company we could price. The white tick on each bar is what the same $1,000 in the S&amp;P 500 would be worth over the same years.</p>
+    <div class="axis" aria-hidden="true"><span></span><span></span><div class="ticks" id="ticks"></div><span></span></div>
+    <div class="board" id="board"></div>
+  </section>
+
+  <section>
+    <p class="quote">Chocolate chips beat microchips. Nail guns lost to the market. And if your nails are chipped, <em>at least you didn't buy the polish</em>, which turned <strong>$1,000 into $280</strong>.</p>
+  </section>
+
+  <section class="notes">
+    <div><h3>How</h3><p>Yahoo Finance adjusted closing prices, so dividends are reinvested, from March 1980 or the listing date to 13 November 2026. The S&amp;P 500 is Robert Shiller's total return series over the same windows, topped up with SPY to today.</p></div>
+    <div><h3>Survivors only</h3><p>Only companies still trading have prices. Revlon, the classic nail polish brand, went bankrupt in 2022 and its shareholders were wiped out. US Steel was bought out in 2025. Both are missing, which flatters the list.</p></div>
+    <div><h3>Hindsight</h3><p>These companies were picked in 2026. In 1980 nobody knew steel would beat AMD. This is a pub fact, not investment advice.</p></div>
+  </section>
+</div>
+
+<script>
+(() => {
+const S = {
+  SP:   { label: "S&P 500", short: "S&P 500", c: "#e6d6ea", dash: "6 6", start: 1980.21, now: 224291, v: [1323,1290,1538,1895,1984,2606,3235,3232,3839,4999,4881,5958,6882,7568,7602,10523,13003,17134,21502,26137,24633,21475,17140,20956,23642,25317,28929,30755,18689,24301,27707,28291,33043,42862,49661,50673,56618,68458,67211,84789,100474,128869,109558,133338,173797,201302] },
+  NVDA: { label: "AI chips (Nvidia)", short: "AI chips", c: "#9be15d", start: 1999.06, now: 4268721, v: [null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,2384,3329,13592,2339,4714,4787,7428,15039,20736,4919,11386,9387,8448,7521,10042,12793,21380,69903,127215,88013,155734,346189,780594,388231,1316170,3570103,4959463] },
+  NUE:  { label: "Steel nails (Nucor)", short: "Steel nails", c: "#ff8a3d", start: 1980.21, now: 719844, v: [1827,1562,1634,2244,1712,2889,2474,3244,3945,5017,5202,7548,13306,18057,18920,19626,17629,16832,15228,19510,14359,19461,15411,21258,40198,52599,89655,101106,81526,84959,82607,77413,87572,111688,105652,89883,136789,149922,125393,140242,137770,300954,353283,472526,321543,456703] },
+  HSY:  { label: "Chocolate chips (Hershey)", short: "Choc chips", c: "#d39a6a", start: 1980.21, now: 537378, v: [1160,1778,2784,3123,3815,5165,7581,7708,8407,11882,12790,15486,16803,17915,18165,25021,34287,49312,50204,38987,54067,57921,58757,68476,100599,101638,93387,75701,68996,73441,99559,133779,160017,219826,239953,211101,250689,281603,273392,383303,405907,525985,640977,526383,492137,546180] },
+  PEP:  { label: "Lay's potato chips (PepsiCo)", short: "Lay's", c: "#ffd84a", start: 1980.21, now: 434939, v: [1356,1887,1933,2163,2527,4418,4841,6336,7664,12642,15658,20710,25729,25743,23283,36495,38761,52910,60480,52937,75503,75092,65979,73925,84134,96956,104580,129555,95922,109953,121709,127504,135658,169096,198291,215639,232450,273868,260687,332053,370809,447034,477359,461652,426559,418691] },
+  INTC: { label: "Microchips (Intel)", short: "Intel", c: "#5cc8ff", start: 1980.21, now: 317521, v: [1288,720,1240,2688,1792,1872,1344,2544,2280,3312,3696,4704,8364,11966,12373,22044,50988,54786,92609,128812,94212,98814,49095,101436,74490,80550,66696,89528,50572,72775,77338,92338,81244,106365,153404,150007,163143,213505,222529,290872,248147,263166,140418,273201,110468,203306] },
+  SWK:  { label: "Nail guns (Stanley Black & Decker)", short: "Nail guns", c: "#3fdcbc", start: 1980.21, now: 71024, v: [1111,1111,1556,1730,1643,2067,2537,2647,3143,4427,3413,4969,5330,5760,4791,7131,7719,13743,8253,9237,9911,15162,11550,13117,17401,17488,18744,18470,13389,20969,27873,28867,32431,36257,44176,50114,54947,82694,59430,83900,92059,98763,40571,54994,46642,45164] },
+  COTY: { label: "OPI nail polish (Coty)", short: "OPI polish", c: "#ff4f8b", start: 2013.45, now: 280, v: [null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,890,1219,1528,1110,1240,426,763,481,720,587,851,477,211] },
+};
+const NOW = 2026.87, X0 = 1980, X1 = NOW, LO = 100, HI = 1e7;
+for (const s of Object.values(S)) {
+  s.pts = [[s.start, 1000]];
+  s.v.forEach((v, i) => { const x = 1981 + i; if (v != null && x > s.start) s.pts.push([x, v]); });
+  s.pts.push([NOW, s.now]);
+}
+const fmt = (v) => "$" + Math.round(v).toLocaleString("en-US");
+const short = (v) => v >= 1e6 ? "$" + (v / 1e6).toFixed(1) + "m" : v >= 1e3 ? "$" + Math.round(v / 1e3) + "k" : "$" + Math.round(v);
+const keys = ["NVDA","NUE","HSY","PEP","INTC","SP","SWK","COTY"];
+const svg = document.getElementById("svg"), chart = document.getElementById("chart"), tip = document.getElementById("tip");
+const NS = "http://www.w3.org/2000/svg";
+const el = (n, a, p) => { const e = document.createElementNS(NS, n); for (const k in a) e.setAttribute(k, a[k]); (p || svg).appendChild(e); return e; };
+let geo = null, progress = 1;
+
+document.getElementById("legend").innerHTML = keys.map(k => `<span style="--c:${S[k].c}"><i></i>${S[k].label}</span>`).join("");
+
+function valueAt(s, x) {
+  const p = s.pts; if (x < p[0][0]) return null; if (x >= p.at(-1)[0]) return p.at(-1)[1];
+  for (let i = 1; i < p.length; i++) if (x <= p[i][0]) { const [x0, v0] = p[i - 1], [x1, v1] = p[i]; const t = (x - x0) / (x1 - x0); return Math.exp(Math.log(v0) + t * (Math.log(v1) - Math.log(v0))); }
+}
+
+function draw() {
+  const W = chart.clientWidth - 10, narrow = W < 560;
+  const H = Math.max(300, Math.min(520, W * 0.56));
+  const L = narrow ? 40 : 52, R = narrow ? 84 : 150, T = 14, B = 30;
+  const xs = (x) => L + (x - X0) / (X1 - X0) * (W - L - R);
+  const ys = (v) => T + (1 - (Math.log10(v) - Math.log10(LO)) / (Math.log10(HI) - Math.log10(LO))) * (H - T - B);
+  geo = { W, H, L, R, T, B, xs, ys };
+  svg.setAttribute("viewBox", `0 0 ${W} ${H}`); svg.setAttribute("width", W); svg.setAttribute("height", H);
+  svg.innerHTML = "";
+  const defs = el("defs", {});
+  const clip = el("clipPath", { id: "clip" }, defs);
+  el("rect", { id: "cliprect", x: 0, y: 0, width: xs(X0 + (X1 - X0) * progress), height: H }, clip);
+  const glow = el("filter", { id: "glow", x: "-20%", y: "-20%", width: "140%", height: "140%" }, defs);
+  el("feGaussianBlur", { stdDeviation: 3.2, result: "b" }, glow);
+  const m = el("feMerge", {}, glow); el("feMergeNode", { in: "b" }, m); el("feMergeNode", { in: "SourceGraphic" }, m);
+  for (let d = 2; d <= 7; d++) {
+    const y = ys(10 ** d);
+    el("line", { x1: L, x2: W - R + 8, y1: y, y2: y, stroke: "#3a2741", "stroke-width": 1, "stroke-dasharray": d === 3 ? "0" : "2 5" });
+    const t = el("text", { x: L - 8, y: y + 4, "text-anchor": "end", fill: "#7d6884", "font-family": "IBM Plex Mono, monospace", "font-size": 11 });
+    t.textContent = ({ 2: "$100", 3: "$1k", 4: "$10k", 5: "$100k", 6: "$1m", 7: "$10m" })[d];
+  }
+  const breakEven = el("text", { x: L + 6, y: ys(1000) - 6, fill: "#7d6884", "font-family": "IBM Plex Mono, monospace", "font-size": 10 }); breakEven.textContent = "your $1,000";
+  for (const yr of (narrow ? [1980, 2000, 2020] : [1980, 1990, 2000, 2010, 2020])) {
+    const t = el("text", { x: xs(yr), y: H - 8, "text-anchor": "middle", fill: "#7d6884", "font-family": "IBM Plex Mono, monospace", "font-size": 11 }); t.textContent = yr;
+  }
+  const g = el("g", { "clip-path": "url(#clip)" });
+  for (const k of [...keys].reverse()) {
+    const s = S[k], d = s.pts.map(([x, v], i) => (i ? "L" : "M") + xs(x).toFixed(1) + " " + ys(v).toFixed(1)).join("");
+    el("path", { d, fill: "none", stroke: s.c, "stroke-width": k === "SP" ? 2 : 2.4, "stroke-linejoin": "round", "stroke-linecap": "round", "stroke-dasharray": s.dash || "0", filter: k === "SP" ? "" : "url(#glow)", opacity: k === "SP" ? .85 : 1 }, g);
+  }
+  geo.heads = el("g", {}); geo.labels = el("g", {});
+  geo.cross = el("line", { y1: T, y2: H - B, stroke: "#b49fb8", "stroke-width": 1, "stroke-dasharray": "3 4", opacity: 0 });
+  placeHeads();
+}
+
+function placeHeads() {
+  const { xs, ys, W, R, H, T, B } = geo, x = X0 + (X1 - X0) * progress;
+  document.getElementById("cliprect").setAttribute("width", xs(x) + 2);
+  geo.heads.innerHTML = ""; geo.labels.innerHTML = "";
+  const live = keys.map(k => ({ k, v: valueAt(S[k], x) })).filter(o => o.v != null);
+  for (const o of live) {
+    el("circle", { cx: xs(x), cy: ys(o.v), r: 4.5, fill: S[o.k].c, stroke: "#170d1a", "stroke-width": 2 }, geo.heads);
+  }
+  const lab = live.map(o => ({ ...o, y: ys(o.v) })).sort((a, b) => a.y - b.y), gap = 17;
+  for (let i = 1; i < lab.length; i++) if (lab[i].y - lab[i - 1].y < gap) lab[i].y = lab[i - 1].y + gap;
+  const over = lab.length ? lab.at(-1).y - (H - B) : 0; if (over > 0) for (const o of lab) o.y -= over;
+  for (let i = lab.length - 2; i >= 0; i--) if (lab[i + 1].y - lab[i].y < gap) lab[i].y = lab[i + 1].y - gap;
+  const lx = xs(x) + 10;
+  for (const o of lab) {
+    el("line", { x1: xs(x) + 5, x2: lx - 2, y1: ys(o.v), y2: o.y, stroke: S[o.k].c, "stroke-width": 1, opacity: .5 }, geo.labels);
+    const t = el("text", { x: lx, y: o.y + 4, fill: S[o.k].c, "font-family": "Instrument Sans, sans-serif", "font-size": 12, "font-weight": 600 }, geo.labels);
+    t.textContent = (W < 560 ? "" : S[o.k].short + " ") + short(o.v);
+  }
+  const lead = live.filter(o => o.k !== "SP").sort((a, b) => b.v - a.v)[0];
+  document.getElementById("yr").textContent = progress >= 1 ? "Now" : Math.floor(x);
+  if (lead) document.getElementById("lead").textContent = `Leader: ${S[lead.k].label} ${fmt(lead.v)}`;
+}
+
+let anim = null;
+function race() {
+  if (matchMedia("(prefers-reduced-motion: reduce)").matches) { progress = 1; placeHeads(); return; }
+  cancelAnimationFrame(anim); const t0 = performance.now(), dur = 8000;
+  const step = (t) => { const p = Math.min(1, (t - t0) / dur); progress = p < 1 ? 0.004 + p * 0.996 : 1; placeHeads(); if (p < 1) anim = requestAnimationFrame(step); };
+  anim = requestAnimationFrame(step);
+}
+document.getElementById("play").addEventListener("click", race);
+
+svg.addEventListener("pointermove", (e) => {
+  if (!geo || progress < 1) return;
+  const r = svg.getBoundingClientRect(), px = (e.clientX - r.left) * geo.W / r.width;
+  const x = X0 + (px - geo.L) / (geo.W - geo.L - geo.R) * (X1 - X0);
+  if (x < X0 || x > X1) { tip.hidden = true; geo.cross.setAttribute("opacity", 0); return; }
+  geo.cross.setAttribute("x1", geo.xs(x)); geo.cross.setAttribute("x2", geo.xs(x)); geo.cross.setAttribute("opacity", .6);
+  const rows = keys.map(k => ({ k, v: valueAt(S[k], x) })).filter(o => o.v != null).sort((a, b) => b.v - a.v);
+  tip.innerHTML = `<div class="yr">${Math.floor(x)}</div>` + rows.map(o => `<div class="r"><span><i style="background:${S[o.k].c}"></i>${S[o.k].short}</span><span>${fmt(o.v)}</span></div>`).join("");
+  tip.hidden = false;
+  const cx = (e.clientX - chart.getBoundingClientRect().left), w = tip.offsetWidth;
+  tip.style.left = Math.max(w / 2 + 6, Math.min(chart.clientWidth - w / 2 - 6, cx)) + "px";
+  tip.style.top = "16px";
+});
+svg.addEventListener("pointerleave", () => { tip.hidden = true; if (geo) geo.cross.setAttribute("opacity", 0); });
+
+const B = [
+  ["AI chips", "Nvidia", "chip", 1999, 4268721, 9930],
+  ["Steel nails", "Nucor", "nail", 1980, 719844, 224291],
+  ["Memory chips", "Micron", "chip", 1984, 564402, 124256],
+  ["Chocolate chips", "Hershey", "chip", 1980, 537378, 224291],
+  ["Lay's potato chips", "PepsiCo", "chip", 1980, 434939, 224291],
+  ["Microchips", "Texas Instruments", "chip", 1980, 373133, 224291],
+  ["Microchips", "Intel", "chip", 1980, 317521, 224291],
+  ["Microchips", "AMD", "chip", 1980, 169017, 224291],
+  ["Nail guns", "Stanley Black & Decker", "nail", 1980, 71024, 224291],
+  ["Kettle chips", "Campbell's", "chip", 1980, 44623, 224291],
+  ["Nail polish shop", "Ulta", "nail", 2007, 22183, 7028],
+  ["Nail polish and makeup", "Estée Lauder", "nail", 1995, 18160, 22036],
+  ["Poker chips", "MGM", "chip", 1988, 12971, 64378],
+  ["Cheap nail polish", "e.l.f.", "nail", 2016, 4394, 4146],
+  ["OPI nail polish", "Coty", "nail", 2013, 280, 5903],
+];
+const pos = (v) => (Math.log10(v) - 2) / 5 * 100;
+document.getElementById("ticks").innerHTML = [[100,"$100"],[1e3,"$1k"],[1e4,"$10k"],[1e5,"$100k"],[1e6,"$1m"],[1e7,"$10m"]].map(([v, t]) => `<span style="left:${pos(v)}%">${t}</span>`).join("");
+document.getElementById("board").innerHTML = B.map(([item, co, fam, yr, v, sp], i) => {
+  const beat = v > sp, ratio = beat ? v / sp : sp / v;
+  const vs = beat ? `${ratio >= 1.95 ? ratio.toFixed(0) + "× the market" : "+" + Math.round((ratio - 1) * 100) + "% vs market"}` : `market did ${ratio >= 1.95 ? ratio.toFixed(0) + "× better" : "+" + Math.round((ratio - 1) * 100) + "% better"}`;
+  return `<div class="row" style="--c:${fam === "chip" ? "var(--chip)" : "var(--nail)"}">
+    <span class="rk">${String(i + 1).padStart(2, "0")}</span>
+    <div class="name"><div class="item"><span class="tag ${fam}">${fam}</span>${item}</div><div class="co">${co} · since ${yr}</div></div>
+    <div class="bar"><div class="track"><div class="fill" style="width:${pos(v).toFixed(1)}%"></div><div class="mk" style="left:${pos(sp).toFixed(1)}%"></div></div></div>
+    <div class="val"><div class="v">${fmt(v)}</div><div class="vs ${beat ? "w" : "l"}">${vs}</div></div>
+  </div>`;
+}).join("");
+
+draw();
+let rt; addEventListener("resize", () => { clearTimeout(rt); rt = setTimeout(draw, 120); });
+if (document.fonts) document.fonts.ready.then(draw);
+})();
+</script>
+</body>
+</html>
