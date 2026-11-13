@@ -31,7 +31,7 @@ Shared 40 for 40 context, services and rules live in `../AGENTS.md`.
 - Vite builds with `base: '/chipped/'` into `dist/chipped/`, so the asset paths match the URL path. `run_worker_first` sends only `/chipped/api/*` to the Worker code.
 - CI (`.github/workflows/ci.yml`) tests and builds every push and PR. Pushes to `main` deploy to production. PRs upload a preview version and comment its public `workers.dev` link, which is named after the branch.
 - Deploys need the `CLOUDFLARE_API_TOKEN` secret on the repo. Without it CI still tests and builds, and skips deploying.
-- The Worker needs the `ANTHROPIC_API_KEY` Cloudflare secret, set once with `npm run wrangler -- secret put ANTHROPIC_API_KEY`. Every Worker secret is listed, with an empty value, in `.dev.vars.example`.
+- The Worker needs the `ANTHROPIC_API_KEY` Cloudflare secret. The production deploy step copies it from the GitHub org secret of the same name on every push to `main`, and preview versions inherit it. Every Worker secret is listed, with an empty value, in `.dev.vars.example`.
 
 ## The problem
 
