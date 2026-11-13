@@ -21,7 +21,8 @@ for (const id of ids) {
   const buckets = { monthly: {}, annual: {} };
   for (const [date, v] of rows) {
     const x = Number(v);
-    if (v === "." || Number.isNaN(x)) continue;
+    // FRED leaves a missing reading blank (or "."), and Number("") is 0, so skip those by hand.
+    if (v === undefined || v.trim() === "" || v === "." || Number.isNaN(x)) continue;
     for (const [k, b] of [[date.slice(0, 7), buckets.monthly], [date.slice(0, 4), buckets.annual]]) (b[k] ??= []).push(x);
   }
   const avg = (b) => Object.fromEntries(Object.entries(b).map(([k, xs]) => [k, round(xs.reduce((s, x) => s + x, 0) / xs.length)]));

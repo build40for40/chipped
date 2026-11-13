@@ -1,0 +1,58 @@
+{
+  "source": "Daniel E. Sichel, The Price of Nails since 1695: A Window into Economic Change, NBER Working Paper 29617 (December 2021), Table 1, column 1",
+  "url": "https://www.nber.org/papers/w29617",
+  "note": "eras is the paper’s average yearly percent change in the real price of nails (relative to consumer prices). index compounds those into six points, 1790 = 100. It is not a yearly series: the year-by-year prices from 1695 are in the paper’s replication package on openICPSR, which needs a login.",
+  "eras": [
+    {
+      "from": 1791,
+      "to": 1820,
+      "real_change_pct_per_year": -0.37
+    },
+    {
+      "from": 1821,
+      "to": 1860,
+      "real_change_pct_per_year": -1.89
+    },
+    {
+      "from": 1861,
+      "to": 1880,
+      "real_change_pct_per_year": 0.45
+    },
+    {
+      "from": 1881,
+      "to": 1930,
+      "real_change_pct_per_year": -2.89
+    },
+    {
+      "from": 1931,
+      "to": 2018,
+      "real_change_pct_per_year": 1.6
+    }
+  ],
+  "index": [
+    {
+      "year": 1790,
+      "real_index": 100
+    },
+    {
+      "year": 1820,
+      "real_index": 89.5
+    },
+    {
+      "year": 1860,
+      "real_index": 41.7
+    },
+    {
+      "year": 1880,
+      "real_index": 45.6
+    },
+    {
+      "year": 1930,
+      "real_index": 10.5
+    },
+    {
+      "year": 2018,
+      "real_index": 42.6
+    }
+  ]
+}

@@ -1,0 +1,128 @@
+{
+  "note": "Hand-built timeline. Every row was read off the page in its source on 13 November 2026. Add a row only with a source.",
+  "sources": {
+    "sichel": "https://data.nber.org/data-appendix/w29617/nails_Sichel_Dec21_APPENDIX.pdf",
+    "wiki_chips": "https://en.wikipedia.org/wiki/Potato_chip",
+    "wiki_polish": "https://en.wikipedia.org/wiki/Nail_polish",
+    "wiki_sp500": "https://en.wikipedia.org/wiki/S%26P_500"
+  },
+  "events": [
+    {
+      "year": 1645,
+      "thread": "nails",
+      "text": "Slitting mill in Saugus, Massachusetts cuts iron bars into rods for nailsmiths",
+      "source": "sichel"
+    },
+    {
+      "year": 1794,
+      "thread": "nails",
+      "text": "Nail cutting and heading machines running near Boston",
+      "source": "sichel"
+    },
+    {
+      "year": 1817,
+      "thread": "chips",
+      "text": "Earliest known potato chip recipe, in The Cook's Oracle, London",
+      "source": "wiki_chips"
+    },
+    {
+      "year": 1820,
+      "thread": "nails",
+      "text": "Roughly the end of the hand-forged nail, at about a minute per nail",
+      "source": "sichel"
+    },
+    {
+      "year": 1853,
+      "thread": "chips",
+      "text": "The Saratoga Springs invention story is set here. It is a myth",
+      "source": "wiki_chips"
+    },
+    {
+      "year": 1877,
+      "thread": "nails",
+      "text": "First American patent for wire nails",
+      "source": "sichel"
+    },
+    {
+      "year": 1880,
+      "thread": "nails",
+      "text": "Wire nails made on a large scale in the US",
+      "source": "sichel"
+    },
+    {
+      "year": 1905,
+      "thread": "chips",
+      "text": "Granite State Potato Chip Factory opens, one of America's first chip makers",
+      "source": "wiki_chips"
+    },
+    {
+      "year": 1920,
+      "thread": "chips",
+      "text": "Smiths Potato Crisps starts in the UK, bags with a twist of salt",
+      "source": "wiki_chips"
+    },
+    {
+      "year": 1920,
+      "thread": "nails",
+      "text": "Wire nails dominate. Only 8 percent of nails made are cut nails",
+      "source": "sichel"
+    },
+    {
+      "year": 1920,
+      "thread": "polish",
+      "approx": "1920s",
+      "text": "Coloured nail polish takes off. Antoine de Paris makes some of the first modern polishes",
+      "source": "wiki_polish"
+    },
+    {
+      "year": 1923,
+      "thread": "sp500",
+      "text": "Standard Statistics launches its first stock index, 233 companies",
+      "source": "wiki_sp500"
+    },
+    {
+      "year": 1940,
+      "thread": "polish",
+      "approx": "1940s",
+      "text": "Painting the whole nail becomes the fashion",
+      "source": "wiki_polish"
+    },
+    {
+      "year": 1954,
+      "thread": "chips",
+      "text": "Tayto makes the first seasoned crisp, cheese and onion",
+      "source": "wiki_chips"
+    },
+    {
+      "year": 1957,
+      "thread": "sp500",
+      "text": "The index grows to 500 companies and becomes the S&P 500 (4 March)",
+      "source": "wiki_sp500"
+    },
+    {
+      "year": 1967,
+      "thread": "chips",
+      "text": "Smith's launches salt and vinegar nationally",
+      "source": "wiki_chips"
+    },
+    {
+      "year": 1980,
+      "thread": "chips",
+      "text": "Cape Cod Potato Chips starts the kettle chip",
+      "source": "wiki_chips"
+    },
+    {
+      "year": 1982,
+      "thread": "nails",
+      "approx": "early 1980s",
+      "text": "Nail guns appear in the Sears catalogue for the first time",
+      "source": "sichel"
+    },
+    {
+      "year": 2012,
+      "thread": "polish",
+      "text": "US nail polish sales hit a record $768 million, up 32 percent on 2011",
+      "source": "wiki_polish"
+    }
+  ]
+}
