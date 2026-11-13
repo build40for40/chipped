@@ -44,7 +44,8 @@ My nails are always chipped
 `index.html` at `/chipped/`: the hero banner's polish, turned into a whole screen of nail polish floating on water, as a calm, soothing page.
 
 - A WebGL 2 fluid simulation. Drag through it and the polish drifts like a puddle; now and then a bead of polish lands and blooms. Polish beads use the area-preserving push of real water marbling, and the polish is carried with MacCormack advection so shades keep crisp edges.
-- The Paint toggle (top right, or P): a tap drops a bead, holding still stacks rings, dragging drops small beads and feathers them. A tray offers five shades, New pour and Wipe.
+- It must read as nail polish, not watercolour: every pixel snaps to one of the current shade's real colours, and the shading is thick glossy lacquer (raised seams, a hard specular, a faint studio reflection). Keep the drift slow and heavy.
+- Paint (top right, or P) is a magic brush, not free drawing: switching it on floods a base coat, and every stroke is mirrored into a symmetric design (5, 6 or 8-fold) and laid down as one nail-art motif, cycling bullseye rings, petals, hearts, polka dots and lace. Whatever the finger does should come out as a finished design. Changing shade floods a fresh base coat; the tray has five shades and Fresh base coat.
 - Music is generated with Web Audio (pads, bells, a water bed) and starts only after the visitor taps Begin. A breathing guide runs along the bottom. Without WebGL 2 it shows a still picture.
 
 ### The almanac (kept, unlinked, at `/chipped/almanac/`)

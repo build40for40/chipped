@@ -214,6 +214,25 @@ button:focus-visible { outline: 2px solid var(--lacquer); outline-offset: 3px; }
 .breath.show { opacity: 0.92; }
 body:not(.painting) .breath { bottom: calc(40px + env(safe-area-inset-bottom, 0px)); }
 
+/* The motif name, shown as a stroke begins */
+.motif {
+  position: fixed;
+  left: 0;
+  right: 0;
+  top: calc(72px + env(safe-area-inset-top, 0px));
+  text-align: center;
+  font-family: var(--display);
+  font-weight: 600;
+  font-size: 0.95rem;
+  letter-spacing: 0.02em;
+  color: #fff;
+  text-shadow: 0 1px 12px rgb(60 10 25 / 0.6), 0 0 2px rgb(60 10 25 / 0.35);
+  opacity: 0;
+  transition: opacity 0.6s ease;
+  pointer-events: none;
+}
+.motif.show { opacity: 0.95; }
+
 /* Quiet the chrome while someone is simply watching */
 body.idle .controls, body.idle .mark { opacity: 0.28; }
 body.idle .tray:not([hidden]) { opacity: 0.4; }
@@ -306,23 +325,23 @@ body.idle .tray:not([hidden]) { opacity: 0.4; }
 </div>
 
 <div class="breath" id="breathText" aria-live="off"></div>
+<div class="motif" id="motif" aria-live="polite"></div>
 
 <div class="tray glass" id="tray" hidden>
   <div id="shades" style="display:flex;gap:0.2rem"></div>
   <span class="sep"></span>
-  <button class="plain" id="pour" type="button" title="Cover the nail in a fresh marble of this shade">New pour</button>
-  <button class="plain" id="wipe" type="button" title="Back to a bare nail">Wipe</button>
+  <button class="plain" id="fresh" type="button" title="Flood a fresh base coat and start a new design">Fresh base coat</button>
 </div>
 
 <div class="welcome" id="welcome">
   <div class="card glass">
     <h1>water marble<span class="dot"></span></h1>
-    <p>Nail polish floating on still water. Drag through it and it drifts like a puddle. Switch on Paint and every touch drops a bead of lacquer that blooms into rings.</p>
+    <p>Glossy nail polish floating on still water. Drag through it and it drifts like a puddle. Switch on Paint and just move your finger: every stroke turns into a finished nail-art design.</p>
     <div class="row">
       <button class="primary" id="beginSound" type="button">Begin with music</button>
       <button class="secondary" id="beginQuiet" type="button">Begin quietly</button>
     </div>
-    <p class="tip">Headphones help. Hold still while painting to stack rings; drag to feather them.</p>
+    <p class="tip">Headphones help. Each stroke brings a new motif: rings, petals, hearts, polka dots, lace.</p>
   </div>
 </div>
 
@@ -333,15 +352,29 @@ body.idle .tray:not([hidden]) { opacity: 0.4; }
 // ---------- Shades ----------
 const hex = (h) => [1, 3, 5].map((i) => parseInt(h.slice(i, i + 2), 16) / 255);
 const SHADES = [
-  { name: 'Lacquer', sparkle: 0.25, colors: ['#c9405b', '#efcfc3', '#8c2539', '#e8a0a8', '#fbf3ee', '#a8324c'] },
-  { name: 'Lilac hour', sparkle: 0.45, colors: ['#8e72c7', '#f3e9f7', '#c9b6e4', '#5b4a8a', '#e7c6d9'] },
-  { name: 'Sea glass', sparkle: 0.35, colors: ['#4f9a94', '#e9f4ef', '#a8d5c9', '#2f5f6b', '#f2d8c9'] },
-  { name: 'Gold leaf', sparkle: 1.0, colors: ['#d9a441', '#fbf8f1', '#8a5a2b', '#f5e6c8', '#1f1a17'] },
-  { name: 'Cherry cola', sparkle: 0.3, colors: ['#9e1b32', '#f6d6d2', '#5a1020', '#e05a6d', '#2a0b10'] },
-].map((s) => ({ ...s, rgb: s.colors.map(hex) }));
+  { name: 'Lacquer', sparkle: 0.25, base: '#fbf3ee', colors: ['#c9405b', '#efcfc3', '#8c2539', '#e8a0a8', '#fbf3ee', '#a8324c'] },
+  { name: 'Lilac hour', sparkle: 0.45, base: '#f3e9f7', colors: ['#8e72c7', '#f3e9f7', '#c9b6e4', '#5b4a8a', '#e7c6d9'] },
+  { name: 'Sea glass', sparkle: 0.35, base: '#e9f4ef', colors: ['#4f9a94', '#e9f4ef', '#a8d5c9', '#2f5f6b', '#f2d8c9'] },
+  { name: 'Gold leaf', sparkle: 1.0, base: '#1f1a17', colors: ['#d9a441', '#fbf8f1', '#8a5a2b', '#f5e6c8', '#1f1a17'] },
+  { name: 'Cherry cola', sparkle: 0.3, base: '#f6d6d2', colors: ['#9e1b32', '#f6d6d2', '#5a1020', '#e05a6d', '#2a0b10'] },
+].map((s) => ({ ...s, rgb: s.colors.map(hex), baseRgb: hex(s.base), accents: s.colors.filter((c) => c !== s.base).map(hex) }));
 let shade = SHADES[0];
 let colorIdx = 0;
+let accentIdx = 0;
 const nextColor = () => shade.rgb[colorIdx++ % shade.rgb.length];
+const nextAccent = () => shade.accents[accentIdx++ % shade.accents.length];
+// Polish never blends like watercolour: every pixel snaps to one of the current shade's real colours. Changing shade
+// floods a fresh base coat, so older colours are pushed off the nail.
+function paletteArray() {
+  const data = new Float32Array(48);
+  shade.rgb.slice(0, 16).forEach((c, i) => data.set(c, i * 3));
+  return { n: Math.min(16, shade.rgb.length), data };
+}
+let palette = paletteArray();
+function useShade(s) {
+  shade = s; colorIdx = 0; accentIdx = 0;
+  palette = paletteArray();
+}
 
 const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
 const $ = (id) => document.getElementById(id);
@@ -379,15 +412,20 @@ const FS = {
     void main(){ vec2 p = vUv - point; p.x *= aspect; o = vec4(texture(uTarget, vUv).xyz + color * exp(-dot(p,p)/radius), 1.0); }`,
   // A bead of polish landing on the water: everything is pushed outward by an area-preserving radial move and the
   // bead fills the space it opens. Applied in small steps so the bead visibly blooms.
-  drop: `uniform sampler2D uDye; uniform float aspect; uniform vec2 center; uniform float rho2; uniform vec3 color;
+  drop: `uniform sampler2D uDye; uniform float aspect; uniform int count; uniform vec4 drops[16]; uniform vec3 colors[16];
     void main(){
-      vec2 d = vUv - center; d.x *= aspect;
-      float r2 = max(dot(d, d), 1e-9);
-      float s = sqrt(max(0.0, 1.0 - rho2 / r2));
-      vec2 src = center + vec2(d.x / aspect, d.y) * s;
-      vec4 pushed = texture(uDye, src);
-      float inside = 1.0 - smoothstep(rho2 * 0.92, rho2 * 1.08, r2);
-      o = mix(pushed, vec4(color, 1.0), inside);
+      vec2 p = vUv; vec3 acc = vec3(0.0); float accA = 0.0, w = 1.0;
+      for (int i = 15; i >= 0; i--){
+        if (i >= count) continue;
+        vec2 c = drops[i].xy; float rho2 = drops[i].z;
+        vec2 d = p - c; d.x *= aspect;
+        float r2 = max(dot(d, d), 1e-9);
+        float inside = 1.0 - smoothstep(rho2 * 0.9, rho2 * 1.1, r2);
+        acc += w * inside * colors[i]; accA += w * inside; w *= 1.0 - inside;
+        p = c + vec2(d.x / aspect, d.y) * sqrt(max(0.0, 1.0 - rho2 / r2));
+      }
+      vec4 t = texture(uDye, p);
+      o = vec4(acc + w * t.rgb, accA + w * t.a);
     }`,
   advect: `uniform sampler2D uVelocity, uSource; uniform vec2 simTexel; uniform float dt, dissipation;
     void main(){ vec2 c = vUv - dt * texture(uVelocity, vUv).xy * simTexel; o = texture(uSource, c) / (1.0 + dissipation * dt); }`,
@@ -430,40 +468,58 @@ const FS = {
   gradient: `uniform sampler2D uPressure, uVelocity;
     void main(){ float L = texture(uPressure, vL).x, R = texture(uPressure, vR).x, T = texture(uPressure, vT).x, B = texture(uPressure, vB).x;
       o = vec4(texture(uVelocity, vUv).xy - vec2(R - L, T - B), 0.0, 1.0); }`,
-  display: `uniform sampler2D uDye; uniform vec2 dyeTexel; uniform float time, aspect, sparkle;
-    float height(vec2 uv){ vec4 d = texture(uDye, uv); vec3 c = d.rgb / max(d.a, 1e-3); return d.a * 0.55 + d.a * dot(c, vec3(0.3, 0.5, 0.2)) * 0.45; }
+  display: `uniform sampler2D uDye; uniform vec2 dyeTexel; uniform float time, aspect, sparkle; uniform vec3 pal[16]; uniform int palN;
+    float height(vec2 uv){ vec4 d = texture(uDye, uv); return d.a * (0.55 + 0.45 * dot(d.rgb / max(d.a, 1e-3), vec3(0.3, 0.5, 0.2))); }
+    // Snap to the nearest real shade, with a hair of anti-aliasing where two shades meet.
+    vec3 snap(vec3 c){
+      if (palN == 0) return c;
+      vec3 b = c, s = c; float bd = 1e9, sd = 1e9;
+      for (int i = 0; i < 16; i++){
+        if (i >= palN) break;
+        vec3 q = pal[i]; float d = dot(c - q, c - q);
+        if (d < bd){ sd = bd; s = b; bd = d; b = q; } else if (d < sd){ sd = d; s = q; }
+      }
+      return mix(mix(b, s, 0.5), b, smoothstep(0.0, 0.04, sqrt(sd) - sqrt(bd)));
+    }
     void main(){
       vec2 q = vec2(vUv.x * aspect, vUv.y);
       vec4 d = texture(uDye, vUv);
-      float a = clamp(d.a, 0.0, 1.0);
-      vec3 polish = d.rgb / max(d.a, 1e-3);
+      float cover = smoothstep(0.4, 0.6, d.a);
+      vec3 polish = snap(d.rgb / max(d.a, 1e-3));
       // The bare nail under the polish, with the faint ridges of a real nail plate.
       vec3 nail = mix(vec3(0.965, 0.87, 0.835), vec3(0.93, 0.81, 0.77), noise(q * 40.0) * 0.6 + (1.0 - vUv.y) * 0.4);
       nail *= 0.975 + 0.025 * sin(q.x * 260.0 + noise(q * 6.0) * 6.0);
-      vec3 col = mix(nail, polish, smoothstep(0.04, 0.5, a));
-      // Wet gloss: raised edges where shades meet, plus a slow ripple on the water.
-      vec2 e = dyeTexel * 1.6;
+      // Thick lacquer: raised where shades meet, pooling slightly darker at the seams.
+      vec2 e = dyeTexel * 1.5;
       float hL = height(vUv - vec2(e.x, 0.0)), hR = height(vUv + vec2(e.x, 0.0));
       float hB = height(vUv - vec2(0.0, e.y)), hT = height(vUv + vec2(0.0, e.y));
-      float t = time * 0.06;
-      float w0 = fbm(q * 2.6 + vec2(t, -t * 0.7)), wx = fbm(q * 2.6 + vec2(t + 0.02, -t * 0.7)), wy = fbm(q * 2.6 + vec2(t, -t * 0.7 + 0.02));
-      vec3 n = normalize(vec3((hL - hR) * 5.0 + (w0 - wx) * 2.2, (hB - hT) * 5.0 + (w0 - wy) * 2.2, 1.0));
+      vec2 g = vec2(hL - hR, hB - hT);
+      float seam = clamp(length(g) * 7.0, 0.0, 1.0);
+      polish *= 1.0 - 0.16 * seam;
+      float l = dot(polish, vec3(0.299, 0.587, 0.114));
+      polish = clamp(mix(vec3(l), polish, 1.12), 0.0, 1.0);
+      vec3 col = mix(nail, polish, cover);
+      float t = time * 0.05;
+      float w0 = fbm(q * 2.2 + vec2(t, -t * 0.7)), wx = fbm(q * 2.2 + vec2(t + 0.02, -t * 0.7)), wy = fbm(q * 2.2 + vec2(t, -t * 0.7 + 0.02));
+      vec3 n = normalize(vec3(g * 8.0 + vec2(w0 - wx, w0 - wy) * 0.6, 1.0));
       vec3 L = normalize(vec3(-0.45, 0.6, 0.9));
       vec3 H = normalize(L + vec3(0.0, 0.0, 1.0));
-      float diff = dot(n, L);
-      float spec = pow(max(dot(n, H), 0.0), 60.0);
-      col *= 0.9 + 0.12 * diff;
-      col += vec3(spec * 0.42);
-      // A soft band of light drifting across the surface, and a sheen along the top.
+      col *= 0.9 + 0.12 * dot(n, L);
+      // Clear coat: a hard little specular, and a studio softbox reflected in the gloss, bent by the surface.
+      col += vec3(pow(max(dot(n, H), 0.0), 140.0) * 0.75);
+      vec2 r = vUv + n.xy * 0.55;
+      vec2 bx = abs(r - vec2(0.24, 0.82)) - vec2(0.15, 0.06);
+      float box = 1.0 - smoothstep(0.0, 0.012, length(max(bx, 0.0)) - 0.025);
+      float by = (r.y - 0.1 - 0.05 * r.x) / 0.025;
+      float bar = exp(-by * by) * smoothstep(0.1, 0.4, r.x) * (1.0 - smoothstep(0.6, 0.95, r.x));
+      col += vec3(box * 0.05 + bar * 0.025) * (0.35 + 0.65 * cover);
       float band = (vUv.x * 0.55 + (1.0 - vUv.y)) - (fract(time * 0.022) * 2.8 - 0.7);
-      col += vec3(exp(-band * band / 0.02) * 0.08);
-      col += vec3(smoothstep(0.7, 1.0, vUv.y) * 0.07);
+      col += vec3(exp(-band * band / 0.02) * 0.06);
       // Shimmer: a few flakes in the lacquer catch the light now and then.
       vec2 cell = floor(gl_FragCoord.xy / 2.5);
       float h = hash(cell);
       float tw = pow(0.5 + 0.5 * sin(time * 1.6 + h * 80.0), 10.0);
-      col += vec3(step(0.988, h) * tw * a * sparkle * 0.7);
-      // Gentle vignette.
+      col += vec3(step(0.988, h) * tw * cover * sparkle * 0.7);
       vec2 v = vUv - 0.5; col *= 1.0 - 0.22 * dot(v, v) * 2.0;
       o = vec4(col, 1.0);
     }`,
@@ -551,9 +607,11 @@ function sizeCanvas() {
 const aspect = () => canvas.width / canvas.height;
 
 // ---------- Simulation ----------
-const SIM = { velDissipation: 0.55, curl: 3, pressureIters: 20, ambient: reduced ? 0.6 : 2.2 };
+// Polish is thicker than water: it settles quickly and the drift is slow.
+const SIM = { velDissipation: 1.1, curl: 2, pressureIters: 20, ambient: reduced ? 0.3 : 0.9 };
 const splats = [];
 const drops = [];
+const pulls = [];
 let simTime = 0;
 
 function splat(x, y, dx, dy, radius) {
@@ -565,22 +623,30 @@ function splat(x, y, dx, dy, radius) {
   gl.uniform1f(u.radius, radius);
   blit(velocity.write); velocity.swap();
 }
-function dropPass(x, y, rho2, color) {
-  const u = use(P.drop, dye.texel);
-  gl.uniform1i(u.uDye, dye.read.bind(0));
-  gl.uniform1f(u.aspect, aspect());
-  gl.uniform2f(u.center, x, y);
-  gl.uniform1f(u.rho2, rho2);
-  gl.uniform3fv(u.color, color);
-  blit(dye.write); dye.swap();
+const dropBuf = new Float32Array(64), colBuf = new Float32Array(48);
+// Beads in one list are applied in order, 16 to a pass.
+function dropPasses(list) {
+  for (let i = 0; i < list.length; i += 16) {
+    const batch = list.slice(i, i + 16);
+    dropBuf.fill(0); colBuf.fill(0);
+    batch.forEach((d, j) => { dropBuf.set([d.x, d.y, d.rho2, 0], j * 4); colBuf.set(d.color, j * 3); });
+    const u = use(P.drop, dye.texel);
+    gl.uniform1i(u.uDye, dye.read.bind(0));
+    gl.uniform1f(u.aspect, aspect());
+    gl.uniform1i(u.count, batch.length);
+    gl.uniform4fv(u['drops[0]'], dropBuf);
+    gl.uniform3fv(u['colors[0]'], colBuf);
+    blit(dye.write); dye.swap();
+  }
 }
 // area is r squared, in screen-height units.
-function queueDrop(x, y, color, area, delay = 0) {
-  drops.push({ x, y, color, left: area, at: simTime + delay });
+function queueDrop(x, y, color, area, delay = 0, rate = 4.5) {
+  drops.push({ x, y, color, left: area, at: simTime + delay, rate });
 }
 
 function step(dt) {
   simTime += dt;
+  for (let i = 0; i < pulls.length; i++) if (pulls[i].at <= simTime) { splats.push(pulls[i]); pulls.splice(i--, 1); }
   for (const s of splats.splice(0)) splat(s.x, s.y, s.dx, s.dy, s.r);
 
   let u = use(P.ambient, velocity.texel);
@@ -631,17 +697,17 @@ function step(dt) {
   blit(dye.write); dye.swap();
 
   // Beads bloom quickly then slow, like polish spreading on water.
-  let n = 0;
-  for (let i = 0; i < drops.length && n < 10; i++) {
+  const batch = [];
+  for (let i = 0; i < drops.length && batch.length < 96; i++) {
     const d = drops[i];
     if (d.at > simTime) continue;
-    n++;
-    let s = d.left * (1 - Math.exp(-dt * 4.5));
+    let s = d.left * (1 - Math.exp(-dt * (d.rate || 4.5)));
     if (d.left - s < 2e-6) s = d.left;
-    dropPass(d.x, d.y, s, d.color);
+    batch.push({ x: d.x, y: d.y, rho2: s, color: d.color });
     d.left -= s;
     if (d.left <= 0) { drops.splice(i, 1); i--; }
   }
+  dropPasses(batch);
 }
 
 function render(time) {
@@ -652,12 +718,9 @@ function render(time) {
   gl.uniform1f(u.time, time);
   gl.uniform1f(u.aspect, aspect());
   gl.uniform1f(u.sparkle, shade.sparkle);
+  gl.uniform1i(u.palN, palette.n);
+  gl.uniform3fv(u['pal[0]'], palette.data);
   blit(null);
-}
-
-function clearDye() {
-  for (const f of [dye.read, dye.write]) { gl.bindFramebuffer(gl.FRAMEBUFFER, f.fb); gl.clearColor(0, 0, 0, 0); gl.clear(gl.COLOR_BUFFER_BIT); }
-  drops.length = 0;
 }
 
 // A full marble: clusters of nested rings, combed through a few times, then left to settle.
@@ -672,7 +735,7 @@ function pour(instant) {
     for (let r = 0; r < rings; r++) queued.push({ x, y, color: nextColor(), area: area / (1 + r * 0.35), delay: c * 0.18 + r * 0.32 });
   }
   if (instant) {
-    for (const q of queued) dropPass(q.x, q.y, q.area, q.color);
+    dropPasses(queued.map((q) => ({ x: q.x, y: q.y, rho2: q.area, color: q.color })));
     // Comb it: a couple of slow S-shaped strokes, then let the water carry it.
     for (let k = 0; k < 2; k++) {
       const vertical = Math.random() < 0.5, phase = Math.random() * 6.28, amp = 0.15 + Math.random() * 0.2, base = 0.2 + k * 0.3;
@@ -691,30 +754,106 @@ function pour(instant) {
   }
 }
 
-// ---------- Pointer ----------
+// ---------- Pointer and the magic brush ----------
+// Calm mode: touch moves the polish like a puddle. Paint mode: the finger only steers. Every stroke is mirrored into a
+// symmetric design around the middle of the screen and laid down as one nail-art motif, so whatever the finger does
+// comes out as a finished design.
 let painting = false;
 const pointers = new Map();
 let lastActivity = performance.now();
+const MOTIFS = [
+  { name: 'Bullseye rings', spacing: 0.075 },
+  { name: 'Petals', spacing: 0.085 },
+  { name: 'Hearts', spacing: 0.08 },
+  { name: 'Polka dots', spacing: 0.042 },
+  { name: 'Lace', spacing: 0.055 },
+];
+let motifIdx = 0;
+let fold = 6;
 
 function uv(e) {
   const r = canvas.getBoundingClientRect();
   return [(e.clientX - r.left) / r.width, 1 - (e.clientY - r.top) / r.height];
 }
+// Every copy of a point under the design's symmetry: `fold` rotations, each also mirrored. tf maps a direction.
+function mirrors(x, y) {
+  const asp = aspect(), px = (x - 0.5) * asp, py = y - 0.5;
+  if (Math.hypot(px, py) < 0.02) return [{ x: 0.5, y: 0.5, tf: (vx, vy) => [vx, vy] }];
+  const out = [];
+  for (let k = 0; k < fold; k++) {
+    const t = (k / fold) * Math.PI * 2, c = Math.cos(t), s = Math.sin(t);
+    for (const f of [1, -1]) {
+      const tf = (vx, vy) => [c * vx - s * vy * f, s * vx + c * vy * f];
+      const [qx, qy] = tf(px, py);
+      const X = qx / asp + 0.5, Y = qy + 0.5;
+      if (X > -0.08 && X < 1.08 && Y > -0.08 && Y < 1.08) out.push({ x: X, y: Y, tf });
+    }
+  }
+  return out;
+}
+const PULL = 140;
+function placeMotif(p, x, y, dirx, diry) {
+  const motif = MOTIFS[motifIdx % MOTIFS.length].name;
+  const a = nextAccent(), b = nextAccent(), c = nextAccent();
+  const sz = 1 + 0.3 * Math.sin(p.count * 0.9);
+  const side = p.count % 2 ? 1 : -1;
+  const asp = aspect();
+  p.count++;
+  for (const m of mirrors(x, y)) {
+    const [vx, vy] = m.tf(dirx, diry);
+    let tx = (0.5 - m.x) * asp, ty = 0.5 - m.y;
+    const tl = Math.hypot(tx, ty) || 1; tx /= tl; ty /= tl;
+    const pull = (ux, uy, k = 1, delay = 0.55) => pulls.push({ at: simTime + delay, x: m.x, y: m.y, dx: ux * PULL * k, dy: uy * PULL * k, r: 0.0009 });
+    if (motif === 'Bullseye rings') {
+      queueDrop(m.x, m.y, a, 0.0009 * sz); queueDrop(m.x, m.y, b, 0.0006 * sz, 0.14); queueDrop(m.x, m.y, c, 0.0004 * sz, 0.28);
+    } else if (motif === 'Petals') {
+      queueDrop(m.x, m.y, a, 0.0008 * sz); queueDrop(m.x, m.y, b, 0.0004 * sz, 0.14);
+      pull(tx, ty);
+    } else if (motif === 'Hearts') {
+      queueDrop(m.x, m.y, a, 0.0008 * sz); queueDrop(m.x, m.y, b, 0.00045 * sz, 0.14);
+      pull(vx, vy, 1.1);
+    } else if (motif === 'Polka dots') {
+      queueDrop(m.x, m.y, p.count % 2 ? a : b, 0.00022 * sz);
+    } else {
+      queueDrop(m.x, m.y, a, 0.0005 * sz); queueDrop(m.x, m.y, b, 0.00025 * sz, 0.12);
+      pull(-vy * side, vx * side, 0.9);
+    }
+  }
+}
+function baseCoat() {
+  const asp = aspect();
+  fold = [5, 6, 6, 8][Math.floor(Math.random() * 4)];
+  pulls.length = 0;
+  queueDrop(0.5, 0.5, shade.baseRgb, ((asp * asp) / 4 + 0.25) * 1.15, 0, 2.6);
+  music.note(0.25, 0.07);
+}
+const motifEl = $('motif');
+let motifTimer = 0;
+function showMotif() {
+  motifEl.textContent = MOTIFS[motifIdx % MOTIFS.length].name;
+  motifEl.classList.add('show');
+  clearTimeout(motifTimer);
+  motifTimer = setTimeout(() => motifEl.classList.remove('show'), 1600);
+}
+
 function onDown(e) {
   if (!started) return;
-  canvas.setPointerCapture?.(e.pointerId);
+  try { canvas.setPointerCapture(e.pointerId); } catch {}
   const [x, y] = uv(e);
-  const p = { x, y, sx: x, sy: y, travel: 0, moved: false, rings: 0, hold: 0 };
+  const p = { x, y, sx: x, sy: y, travel: 0, moved: false, rings: 0, hold: 0, count: 0, dx: 1, dy: 0 };
   pointers.set(e.pointerId, p);
   if (painting) {
-    queueDrop(x, y, nextColor(), 0.0016 + Math.random() * 0.0012);
+    showMotif();
+    placeMotif(p, x, y, 1, 0);
     music.note(y, 0.08);
+    // Holding still keeps stacking rings on the same spots.
     p.hold = setInterval(() => {
-      if (p.moved || p.rings >= 7) return;
+      if (p.moved || p.rings >= 6) return;
       p.rings++;
-      queueDrop(p.sx, p.sy, nextColor(), 0.0014 + Math.random() * 0.0008);
+      const col = nextAccent();
+      for (const m of mirrors(p.sx, p.sy)) queueDrop(m.x, m.y, col, 0.0005);
       music.note(p.sy + p.rings * 0.08, 0.06);
-    }, 430);
+    }, 450);
   }
 }
 function onMove(e) {
@@ -724,7 +863,7 @@ function onMove(e) {
   const [x, y] = uv(e);
   let p = pointers.get(e.pointerId);
   if (!p) {
-    // A hovering mouse nudges the water in calm mode, like the banner on the main page.
+    // A hovering mouse nudges the polish in calm mode.
     if (painting || e.pointerType !== 'mouse') return;
     p = { x, y, hover: true };
     pointers.set(e.pointerId, p);
@@ -733,22 +872,35 @@ function onMove(e) {
   const dx = x - p.x, dy = y - p.y;
   p.x = x; p.y = y;
   if (!dx && !dy) return;
-  const force = painting ? 3000 : p.hover ? 650 : 1900;
-  splats.push({ x, y, dx: dx * force * aspect(), dy: dy * force, r: painting ? 0.0028 : 0.0055 });
-  if (painting && !p.hover) {
-    const dist = Math.hypot(dx * aspect(), dy);
-    p.travel += dist;
-    if (Math.hypot((x - p.sx) * aspect(), y - p.sy) > 0.015) p.moved = true;
-    if (p.travel > 0.055) {
-      p.travel = 0;
-      queueDrop(x, y, nextColor(), 0.0003 + Math.random() * 0.0004);
-      music.note(y, 0.035);
-    }
+  const asp = aspect();
+  if (!painting || p.hover) {
+    const force = p.hover ? 650 : 1500;
+    splats.push({ x, y, dx: dx * force * asp, dy: dy * force, r: 0.0055 });
+    return;
+  }
+  const dist = Math.hypot(dx * asp, dy);
+  // A smoothed stroke direction, so motifs line up along the path.
+  p.dx = p.dx * 0.7 + (dx * asp / dist) * 0.3; p.dy = p.dy * 0.7 + (dy / dist) * 0.3;
+  const dl = Math.hypot(p.dx, p.dy) || 1;
+  // The finger combs gently through the design in every mirrored copy.
+  for (const m of mirrors(x, y)) {
+    const [vx, vy] = m.tf(dx * asp, dy);
+    splats.push({ x: m.x, y: m.y, dx: vx * 700, dy: vy * 700, r: 0.0014 });
+  }
+  if (Math.hypot((x - p.sx) * asp, y - p.sy) > 0.015) p.moved = true;
+  p.travel += dist;
+  if (p.travel > MOTIFS[motifIdx % MOTIFS.length].spacing) {
+    p.travel = 0;
+    placeMotif(p, x, y, p.dx / dl, p.dy / dl);
+    music.note(y, 0.04);
   }
 }
 function onUp(e) {
   const p = pointers.get(e.pointerId);
-  if (p) clearInterval(p.hold);
+  if (p) {
+    clearInterval(p.hold);
+    if (painting && !p.hover) motifIdx++;
+  }
   pointers.delete(e.pointerId);
 }
 canvas.addEventListener('pointerdown', onDown);
@@ -880,6 +1032,7 @@ function setPaint(v) {
   $('paint').setAttribute('aria-checked', String(v));
   document.body.classList.toggle('painting', v);
   $('tray').hidden = !v;
+  if (v && dye) baseCoat();
 }
 $('paint').addEventListener('click', () => { begin(false); setPaint(!painting); });
 
@@ -897,13 +1050,13 @@ SHADES.forEach((s) => {
   const c = s.colors;
   b.innerHTML = `<span class="swatch" style="background:conic-gradient(${c[0]} 0 35%, ${c[1]} 0 55%, ${c[2]} 0 75%, ${c[3]} 0 90%, ${c[4]} 0)"></span>${s.name}`;
   b.addEventListener('click', () => {
-    shade = s; colorIdx = 0;
+    useShade(s);
+    if (painting && dye) baseCoat();
     shadesEl.querySelectorAll('.shade').forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
   });
   shadesEl.appendChild(b);
 });
-$('pour').addEventListener('click', () => { if (dye) pour(false); });
-$('wipe').addEventListener('click', () => { if (dye) clearDye(); });
+$('fresh').addEventListener('click', () => { if (dye) baseCoat(); });
 
 addEventListener('keydown', (e) => {
   if (e.metaKey || e.ctrlKey || e.altKey) return;
