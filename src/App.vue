@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import ChipDay from './chip/ChipDay.vue'
 import DealFacts from './exhibits/DealFacts.vue'
 import ErRoom from './exhibits/ErRoom.vue'
 import TrueCost from './exhibits/TrueCost.vue'
@@ -12,6 +13,7 @@ import TrueCost from './exhibits/TrueCost.vue'
   </header>
   <main class="exhibits">
     <TrueCost />
+    <ChipDay />
     <DealFacts />
     <ErRoom />
   </main>
