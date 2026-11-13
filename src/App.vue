@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import ChipDay from './chip/ChipDay.vue'
+import CapitalLink from './exhibits/CapitalLink.vue'
 import DealFacts from './exhibits/DealFacts.vue'
 import ErRoom from './exhibits/ErRoom.vue'
 import PolishStripes from './exhibits/PolishStripes.vue'
@@ -15,6 +16,7 @@ import TrueCost from './exhibits/TrueCost.vue'
   </header>
   <main class="exhibits">
     <TrueCost />
+    <CapitalLink />
     <ChipDay />
     <DealFacts />
     <ErRoom />

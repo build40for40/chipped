@@ -18,6 +18,13 @@ describe('App', () => {
     expect(wrapper.text()).toContain('a bag in 1980, which is $7.97 in 2025 money')
   })
 
+  it('links to Chipped Capital under the base path', () => {
+    const wrapper = mount(App)
+    const link = wrapper.find('.capital a')
+    expect(link.attributes('href')).toBe(`${import.meta.env.BASE_URL}capital/`)
+    expect(wrapper.find('.capital').text()).toContain('$280')
+  })
+
   it('deals one fact per tap and shuffles at the end', async () => {
     const wrapper = mount(App)
     const stack = wrapper.find('.stack')
