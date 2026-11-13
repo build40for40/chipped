@@ -54,6 +54,7 @@ await writeFile(
   outPath,
   JSON.stringify({
     source: "CPSC National Electronic Injury Surveillance System (NEISS). Keyword matches on case narratives; estimate is the sum of case weights (national ER visits).",
+    licence: "US government work (CPSC), public domain.",
     caveat: "Keyword matching over free-text narratives: counts are indicative, not official product-code totals.",
     matchers: Object.fromEntries(Object.entries(MATCHERS).map(([k, re]) => [k, re.source])),
     years: out,

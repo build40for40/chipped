@@ -219,6 +219,19 @@ function onFocus(e: FocusEvent) {
       </div>
     </article>
 
+    <footer class="credits">
+      <h3>Data and credits</h3>
+      <p>
+        UK figures: Office for National Statistics, Nomis and HM Revenue &amp; Customs, under the Open Government Licence v3.0.
+        Eurostat and Our World in Data (with the UN, OECD, ILO, WHO and the Oxford Covid-19 Government Response Tracker), CC BY 4.0.
+        Activity: Sport England, Active Lives Adult Survey.
+        US jobs: Bureau of Labor Statistics. Protests: Crowd Counting Consortium.
+        Nail imports: derived from the UN Comtrade Database.
+        Page views: Wikimedia. Eating styles: our summaries of Wikipedia articles (CC BY-SA 4.0).
+      </p>
+      <p><a href="https://github.com/build40for40/chipped/blob/main/data/README.md">Every data file, its source and its licence</a>. UN Comtrade's figures are only shared as our per-woman figure.</p>
+    </footer>
+
     <div v-show="tip.show" class="tip" role="status" :style="{ left: `${tip.x}px`, top: `${tip.y}px` }">{{ tip.text }}</div>
   </section>
 </template>
@@ -278,6 +291,10 @@ figcaption { font-size: 12px; color: var(--sub); margin-bottom: 4px; }
 .needs { background: var(--tile); border-radius: 10px; padding: 12px 14px; font-size: 12.5px; color: var(--sub); }
 .needs strong { color: var(--text); }
 .needs ul { margin: 6px 0 0; padding-left: 18px; }
+.credits { font-size: 12.5px; color: var(--muted); display: flex; flex-direction: column; gap: 8px; }
+.credits > * { margin: 0; max-width: 80ch; }
+.credits h3 { font-size: 13px; color: var(--sub); }
+.credits a { color: var(--sub); }
 .tip { position: fixed; z-index: 20; width: auto; max-width: 240px; pointer-events: none; transform: translateY(-100%); background: var(--tile); color: var(--text); border: 1px solid var(--edge); border-radius: 8px; padding: 6px 10px; font-size: 12px; white-space: pre-line; box-shadow: 0 6px 20px rgb(0 0 0 / 0.25); }
 /* The charts arrive through v-html, so scoped styles need :deep to reach them. */
 [data-plot] :deep(svg) { display: block; width: 100%; height: auto; overflow: visible; }
