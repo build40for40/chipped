@@ -141,6 +141,27 @@ button:focus-visible { outline: 2px solid var(--lacquer); outline-offset: 3px; }
   transition: opacity 0.5s ease, transform 0.5s ease;
 }
 .tray[hidden] { display: flex !important; opacity: 0; pointer-events: none; transform: translateY(12px); }
+.shade {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  flex: none;
+  height: 2.3rem;
+  padding: 0 0.8rem 0 0.4rem;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  font-size: 0.8rem;
+  font-weight: 500;
+  white-space: nowrap;
+}
+.shade[aria-pressed="true"] { background: rgb(255 255 255 / 0.85); box-shadow: 0 1px 6px rgb(80 20 35 / 0.12); }
+.swatch {
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 50%;
+  box-shadow: inset 0 0 0 1px rgb(0 0 0 / 0.08);
+}
 .sep { width: 1px; height: 1.4rem; background: rgb(59 26 34 / 0.15); flex: none; }
 .plain {
   flex: none;
@@ -153,46 +174,7 @@ button:focus-visible { outline: 2px solid var(--lacquer); outline-offset: 3px; }
   font-weight: 600;
   white-space: nowrap;
 }
-.plain:hover, .step:hover { background: rgb(255 255 255 / 0.6); }
-
-/* The year picker: each year paints with its most searched colours */
-.step {
-  flex: none;
-  width: 2.3rem;
-  height: 2.3rem;
-  border: 0;
-  border-radius: 50%;
-  background: transparent;
-  font-size: 1.35rem;
-  line-height: 1;
-}
-.step:disabled { opacity: 0.3; cursor: default; }
-.year {
-  flex: none;
-  display: grid;
-  min-width: 6.5rem;
-  line-height: 1.15;
-  text-align: center;
-}
-.year b { font-family: var(--display); font-size: 1.15rem; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; }
-.year span { font-size: 0.68rem; color: var(--ink-soft); white-space: nowrap; }
-.dots { flex: none; display: flex; gap: 0.3rem; padding-inline: 0.3rem; }
-.dots i { width: 1.1rem; height: 1.1rem; border-radius: 50%; background: var(--c); box-shadow: inset 0 0 0 1px rgb(0 0 0 / 0.1); }
-.dots i.coty { box-shadow: 0 0 0 2px #fff, 0 0 0 3.5px var(--ink); }
-.caption {
-  position: fixed;
-  left: 50%;
-  bottom: calc(76px + env(safe-area-inset-bottom, 0px));
-  width: min(40rem, calc(100% - 32px));
-  transform: translateX(-50%);
-  text-align: center;
-  font-size: 0.75rem;
-  line-height: 1.45;
-  color: #fff;
-  text-shadow: 0 1px 10px rgb(60 10 25 / 0.75), 0 0 2px rgb(60 10 25 / 0.4);
-  pointer-events: none;
-  text-wrap: balance;
-}
+.plain:hover, .shade:hover { background: rgb(255 255 255 / 0.6); }
 
 /* Little hands: the top-left button, its hold ring, and the lock */
 .kid {
@@ -269,7 +251,7 @@ button:focus-visible { outline: 2px solid var(--lacquer); outline-offset: 3px; }
   position: fixed;
   left: 0;
   right: 0;
-  bottom: calc(128px + env(safe-area-inset-bottom, 0px));
+  bottom: calc(86px + env(safe-area-inset-bottom, 0px));
   text-align: center;
   font-family: var(--display);
   font-weight: 500;
@@ -363,18 +345,8 @@ body.idle .tray:not([hidden]) { opacity: 0.4; }
     radial-gradient(circle at 70% 60%, #e8a0a8 0 12%, #fbf3ee 12% 17%, #c9405b 17% 24%, transparent 24%),
     var(--nail);
 }
-@media (max-width: 480px) {
-  .tray { gap: 0.15rem; padding: 0.3rem; }
-  .tray .sep { display: none; }
-  .step { width: 1.9rem; }
-  .year { min-width: 0; max-width: 5.6rem; }
-  .year span { white-space: normal; font-size: 0.62rem; }
-  .dots { gap: 0.2rem; padding-inline: 0.1rem; }
-  .dots i { width: 0.9rem; height: 0.9rem; }
-  .plain { padding: 0 0.6rem; }
-}
 @media (prefers-reduced-motion: reduce) {
-  .knob, .tray, .breath, .welcome, .controls, .kid, .caption { transition: none; }
+  .knob, .tray, .breath, .welcome, .controls, .kid { transition: none; }
   .night svg { animation: none; }
 }
 </style>
@@ -408,14 +380,10 @@ body.idle .tray:not([hidden]) { opacity: 0.4; }
 <div class="breath" id="breathText" aria-live="off"></div>
 <div class="motif" id="motif" aria-live="polite"></div>
 
-<div class="caption" id="caption" hidden></div>
 <div class="tray glass" id="tray" hidden>
-  <button class="step" id="yearPrev" type="button" aria-label="Previous year">&lsaquo;</button>
-  <div class="year"><b id="yearLabel">2026</b><span id="yearSub"></span></div>
-  <button class="step" id="yearNext" type="button" aria-label="Next year">&rsaquo;</button>
-  <div class="dots" id="dots"></div>
+  <div id="shades" style="display:flex;gap:0.2rem"></div>
   <span class="sep"></span>
-  <button class="plain" id="fresh" type="button" title="Flood a fresh base coat and start a new design">New coat</button>
+  <button class="plain" id="fresh" type="button" title="Flood a fresh base coat and start a new design">Fresh base coat</button>
 </div>
 
 <div class="sheet" id="timerSheet" hidden>
@@ -477,7 +445,6 @@ body.idle .tray:not([hidden]) { opacity: 0.4; }
   <div class="card glass">
     <h1>chipped<span class="dot"></span></h1>
     <p>Glossy nail polish floating on still water. Drag through it and it drifts like a puddle. Switch on Paint and just move your finger: every stroke turns into a finished nail-art design.</p>
-    <p>The colours are real: each year's most searched nail polish shades worldwide, from Google Trends.</p>
     <div class="row">
       <button class="primary" id="beginSound" type="button">Begin with music</button>
       <button class="secondary" id="beginQuiet" type="button">Begin quietly</button>
@@ -486,43 +453,26 @@ body.idle .tray:not([hidden]) { opacity: 0.4; }
   </div>
 </div>
 
-<script type="module">
-import { colours as TREND_COLOURS, years as TREND_YEARS } from './data/parts/nail-colour-trends.json';
-
+<script>
 (() => {
 'use strict';
 
-// ---------- Shades: the real colours of each year ----------
-// Each year paints with its most searched nail polish colours worldwide (data/parts/nail-colour-trends.json, from
-// data/scripts/fetch-google-trends-colours.mjs): its top four plus its colour of the year. The most searched colour is
-// the base coat; the others come round, and bloom bigger, in proportion to their share of searches.
+// ---------- Shades ----------
 const hex = (h) => [1, 3, 5].map((i) => parseInt(h.slice(i, i + 2), 16) / 255);
-const COLOURS = Object.fromEntries(TREND_COLOURS.map((c) => [c.id, c]));
-function makeShade(name, entries, extra = {}) {
-  const rgb = entries.map((e) => hex(e.hex));
-  const rest = entries.slice(1);
-  const mean = rest.reduce((s, e) => s + (e.share ?? 1), 0) / rest.length;
-  // The colour of the year always gets at least an average share, so the headline colour shows in every design.
-  const weight = (e) => Math.max((e.share ?? mean) / mean, e.id && e.id === extra.coty?.id ? 1 : 0);
-  const accents = rest.map((e) => Object.assign(hex(e.hex), { k: Math.max(0.5, Math.min(1.8, weight(e))) }));
-  const counts = rest.map((e) => Math.max(1, Math.round(weight(e) * 2)));
-  const seq = [];
-  for (let round = 0; seq.length < counts.reduce((a, b) => a + b, 0); round++) counts.forEach((n, i) => round < n && seq.push(i));
-  return { name, colors: entries.map((e) => e.hex), rgb, baseRgb: rgb[0], accents, seq, sparkle: entries.some((e) => e.sparkle) ? 1 : 0.25, ...extra };
-}
-const YEARS = TREND_YEARS.filter((y) => !y.thin).map((y) =>
-  makeShade(y.year, y.palette.map((p) => ({ ...COLOURS[p.id], share: p.share })), { year: y.year, partial: y.partial, top: y.top, coty: y.colourOfTheYear }),
-);
-const FALLBACK = makeShade('Lacquer', ['#fbf3ee', '#c9405b', '#efcfc3', '#8c2539', '#e8a0a8', '#a8324c'].map((h) => ({ hex: h })));
-let yearIdx = YEARS.length - 1; // Paint opens on this year.
-let driftIdx = YEARS.length - 1; // Calm mode drifts on through the years.
-let shade = YEARS[yearIdx] ?? FALLBACK;
+const SHADES = [
+  { name: 'Lacquer', sparkle: 0.25, base: '#fbf3ee', colors: ['#c9405b', '#efcfc3', '#8c2539', '#e8a0a8', '#fbf3ee', '#a8324c'] },
+  { name: 'Lilac hour', sparkle: 0.45, base: '#f3e9f7', colors: ['#8e72c7', '#f3e9f7', '#c9b6e4', '#5b4a8a', '#e7c6d9'] },
+  { name: 'Sea glass', sparkle: 0.35, base: '#e9f4ef', colors: ['#4f9a94', '#e9f4ef', '#a8d5c9', '#2f5f6b', '#f2d8c9'] },
+  { name: 'Gold leaf', sparkle: 1.0, base: '#1f1a17', colors: ['#d9a441', '#fbf8f1', '#8a5a2b', '#f5e6c8', '#1f1a17'] },
+  { name: 'Cherry cola', sparkle: 0.3, base: '#f6d6d2', colors: ['#9e1b32', '#f6d6d2', '#5a1020', '#e05a6d', '#2a0b10'] },
+].map((s) => ({ ...s, rgb: s.colors.map(hex), baseRgb: hex(s.base), accents: s.colors.filter((c) => c !== s.base).map(hex) }));
+let shade = SHADES[0];
 let colorIdx = 0;
 let accentIdx = 0;
 const nextColor = () => shade.rgb[colorIdx++ % shade.rgb.length];
-const nextAccent = () => shade.accents[shade.seq[accentIdx++ % shade.seq.length]];
-// Polish never blends like watercolour: every pixel snaps to one of the current year's real colours. When the year
-// changes, the whole marble cross-fades from the old year's colours to the new year's.
+const nextAccent = () => shade.accents[accentIdx++ % shade.accents.length];
+// Polish never blends like watercolour: every pixel snaps to one of the current shade's real colours. Changing shade
+// floods a fresh base coat, and the colours cross-fade while it does.
 function paletteArray(sh) {
   const data = new Float32Array(48);
   sh.rgb.slice(0, 16).forEach((c, i) => data.set(c, i * 3));
@@ -536,7 +486,6 @@ function useShade(s) {
   shade = s; colorIdx = 0; accentIdx = 0;
   palette = paletteArray(s);
 }
-const colourName = (id) => COLOURS[id]?.name ?? id;
 
 const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
 const $ = (id) => document.getElementById(id);
@@ -804,8 +753,7 @@ function dropPasses(list) {
 }
 // area is r squared, in screen-height units.
 function queueDrop(x, y, color, area, delay = 0, rate = 4.5) {
-  // Accent colours carry k: more searched colours bloom bigger.
-  drops.push({ x, y, color, left: area * (color.k || 1), at: simTime + delay, rate });
+  drops.push({ x, y, color, left: area, at: simTime + delay, rate });
 }
 
 function step(dt) {
@@ -1241,8 +1189,6 @@ function setPaint(v) {
   $('paint').setAttribute('aria-checked', String(v));
   document.body.classList.toggle('painting', v);
   $('tray').hidden = !v;
-  $('caption').hidden = !v;
-  if (v && YEARS.length) { useShade(YEARS[yearIdx]); renderYear(); }
   if (v && dye) baseCoat();
 }
 $('paint').addEventListener('click', () => { begin(false); setPaint(!painting); });
@@ -1253,39 +1199,21 @@ $('breathe').addEventListener('click', () => {
   if (started) breathe(0);
 });
 
-// ---------- Years ----------
-const pct = (x) => `${Math.round(x * 100)}%`;
-function renderYear() {
-  const y = YEARS[yearIdx];
-  if (!y) { $('tray').querySelector('.year').hidden = true; return; }
-  $('yearLabel').textContent = y.partial ? `${y.year} so far` : y.year;
-  $('yearSub').textContent = y.coty ? `Colour of the year: ${colourName(y.coty.id)}` : 'Top five';
-  $('yearPrev').disabled = yearIdx === 0;
-  $('yearNext').disabled = yearIdx === YEARS.length - 1;
-  $('dots').innerHTML = '';
-  y.colors.forEach((c, i) => {
-    const id = TREND_YEARS.find((t) => t.year === y.year).palette[i].id;
-    const dot = document.createElement('i');
-    dot.style.setProperty('--c', c);
-    dot.title = colourName(id);
-    if (y.coty?.id === id) dot.className = 'coty';
-    $('dots').appendChild(dot);
+const shadesEl = $('shades');
+SHADES.forEach((s) => {
+  const b = document.createElement('button');
+  b.type = 'button'; b.className = 'shade'; b.id = 'shade-' + s.name.toLowerCase().replace(/\s+/g, '-');
+  b.setAttribute('aria-pressed', String(s === shade));
+  const c = s.colors;
+  b.innerHTML = `<span class="swatch" style="background:conic-gradient(${c[0]} 0 35%, ${c[1]} 0 55%, ${c[2]} 0 75%, ${c[3]} 0 90%, ${c[4]} 0)"></span>${s.name}`;
+  b.addEventListener('click', () => {
+    useShade(s);
+    if (painting && dye) baseCoat();
+    shadesEl.querySelectorAll('.shade').forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
   });
-  const top = y.top.map((t, i) => `${i + 1} ${colourName(t.id)} ${pct(t.share)}`).join(' · ');
-  const coty = y.coty ? ` Colour of the year: ${colourName(y.coty.id)} (${COLOURS[y.coty.id].search}), up ${pct(y.coty.growth)} on the year before.` : '';
-  $('caption').textContent = `${y.year}${y.partial ? ' so far' : ''}, worldwide searches for nail polish colours (Google Trends): ${top}.${coty}`;
-}
-function setYear(i) {
-  if (!YEARS.length) return;
-  yearIdx = Math.max(0, Math.min(YEARS.length - 1, i));
-  useShade(YEARS[yearIdx]);
-  renderYear();
-  if (painting && dye) baseCoat();
-}
-$('yearPrev').addEventListener('click', () => setYear(yearIdx - 1));
-$('yearNext').addEventListener('click', () => setYear(yearIdx + 1));
+  shadesEl.appendChild(b);
+});
 $('fresh').addEventListener('click', () => { if (dye) baseCoat(); });
-renderYear();
 
 // ---------- Session timer ----------
 const AMBIENT = SIM.ambient;
@@ -1405,10 +1333,9 @@ function setKid(v) {
     document.exitFullscreen?.().catch(() => {});
   }
 }
-// The night-light bottle glows in the last year's headline colour, lifted towards white if it is too dark to glow.
+// The night-light bottle glows in the shade's lead colour, lifted towards white if it is too dark to glow.
 function glowColour() {
-  const id = shade.coty?.id;
-  const c = hex(id ? COLOURS[id].hex : shade.colors[0]);
+  const c = hex(shade.colors[0]);
   const lum = 0.299 * c[0] + 0.587 * c[1] + 0.114 * c[2];
   const k = lum < 0.35 ? 0.5 : 0;
   return `rgb(${c.map((v) => Math.round((v + (1 - v) * k) * 255)).join(',')})`;
@@ -1496,8 +1423,6 @@ addEventListener('keydown', (e) => {
   if (e.metaKey || e.ctrlKey || e.altKey || kid) return;
   if (e.key === 'p' || e.key === 'P') { begin(false); setPaint(!painting); }
   if (e.key === 'm' || e.key === 'M') { begin(false); setSound(!music.on); }
-  if (painting && e.key === 'ArrowLeft') setYear(yearIdx - 1);
-  if (painting && e.key === 'ArrowRight') setYear(yearIdx + 1);
 });
 document.addEventListener('visibilitychange', () => (document.hidden ? music.pause() : music.resume()));
 
@@ -1530,15 +1455,9 @@ if (dye) {
     const frac = tickSession();
     drawBottle(frac);
     if (!document.hidden) {
-      // While watching, a bead of polish lands now and then, each in the next year's colours.
+      // While watching, a bead of polish lands now and then.
       if (started && !painting && !frozen && !session?.fading && simTime > nextDrip) {
         nextDrip = simTime + (reduced ? 18 : 8) + Math.random() * 6;
-        if (YEARS.length) {
-          driftIdx = (driftIdx + 1) % YEARS.length;
-          const y = YEARS[driftIdx];
-          useShade(y);
-          showLabel(y.coty ? `${y.year} · ${colourName(y.coty.id)} rising` : `${y.year}`, 3200);
-        }
         const x = 0.15 + Math.random() * 0.7, y = 0.15 + Math.random() * 0.7;
         const rings = 1 + Math.floor(Math.random() * 3);
         for (let r = 0; r < rings; r++) queueDrop(x, y, nextColor(), 0.0025 + Math.random() * 0.003, r * 0.6);
