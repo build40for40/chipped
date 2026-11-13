@@ -36,3 +36,26 @@ describe('exhibits', () => {
     expect(FACTS.find((f) => f.text.includes('Huang'))!.text).toContain('alleged')
   })
 })
+
+describe('polish stripes', async () => {
+  const { colour, stripes, stripesSvg } = await import('./stripes')
+
+  it('paints one stripe per month plus the lockdown line', () => {
+    const s = stripes()
+    expect(s.months.length).toBeGreaterThan(300)
+    expect(stripesSvg(s.months).match(/<rect x="\d+" y="0" width="1.06"/g)).toHaveLength(s.months.length)
+    expect(stripesSvg(s.months)).toContain('opacity="0.9"')
+  })
+
+  it('runs from nude for the quietest month to deep lacquer for the busiest', () => {
+    expect(colour(0)).toBe('rgb(239,207,195)')
+    expect(colour(1)).toBe('rgb(140,37,57)')
+  })
+
+  it('finds the 2016 peak and the 2000 start', () => {
+    const s = stripes()
+    expect(s.firstYear).toBe('2000')
+    expect(s.peakYear).toBe('2016')
+    expect(s.peakTotal).toBeGreaterThan(s.firstTotal * 2)
+  })
+})
