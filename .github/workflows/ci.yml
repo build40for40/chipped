@@ -41,6 +41,11 @@ jobs:
         with:
           apiToken: ${{ env.CLOUDFLARE_API_TOKEN }}
           command: deploy
+          # Copies the org's ANTHROPIC_API_KEY onto the Worker. Preview versions inherit it.
+          secrets: |
+            ANTHROPIC_API_KEY
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
 
       # Preview aliases must be a lowercase DNS label short enough to sit before "-chipped".
       - name: Name the preview
