@@ -4,7 +4,7 @@ Written 13 November 2026. Every number in `data/parts/` came from a response one
 
 Three things are true across every lens, so read them first.
 
-- **There is no free nail polish sales series anywhere.** Polish is measured here by imports (trade, not tills). Shop prices exist in ONS files we have not parsed yet. Sales never.
+- **There is no free nail polish sales series anywhere.** Polish is measured here by imports (trade, not tills). Shop prices now exist, see "The manicure index" below. Sales never.
 - **Every UK and European salon series mixes hair and beauty.** The official industry code (SIC and NACE 96.02) is "hairdressing and other beauty treatment". Nail bars cannot be split out. Only the US counts nail salons on their own, and only as jobs.
 - **"Direct" below means the series measures the thing the lens asks about.** "Stand-in" means it measures something nearby and the chart must say so.
 
@@ -138,6 +138,51 @@ Gaps:
 - The only monthly polish series is UK imports, and the protest data is American.
 - Protest data ends in May 2026.
 
+## The manicure index
+
+The only official UK numbers that are only about nails. Country: UK. Files: `uk-manicure-prices.json` and `uk-manicure-affordability.json`.
+
+| File | What it is | Years | Grain | Source | Licence | Direct or stand-in |
+| --- | --- | --- | --- | --- | --- | --- |
+| `uk-manicure-prices.json` (`manicure_median_gbp`, `manicure_mean_gbp`, `manicure_quotes`) | The price of a basic manicure as ONS price collectors found it in salons (item 520331) | Jan 2010 to Sep 2026 | Monthly and yearly | ONS CPI price quotes | OGL v3 | Direct |
+| `uk-manicure-prices.json` (`nail_varnish_median_gbp`, `nail_varnish_mean_gbp`, `nail_varnish_quotes`) | The price of a bottle of nail varnish, 6 to 14 ml, in shops (item 520250) | Feb 2016 to Sep 2026 | Monthly and yearly | ONS CPI price quotes | OGL v3 | Direct |
+| `uk-manicure-prices.json` (`manicure_by_region`) | Median manicure price in each of 12 regions | 2026 (Jan to Sep) | One row per region | ONS CPI price quotes | OGL v3 | Direct, but thin (35 to 163 quotes a region) |
+| `uk-manicure-affordability.json` (`women_median_hourly_pay_gbp`, `all_median_hourly_pay_gbp`) | Median gross hourly pay of women employees, and of all employees, full-time and part-time together, each April | 1997 to 2025 | Yearly | ONS Annual Survey of Hours and Earnings via Nomis | OGL v3 | Direct |
+| `uk-manicure-affordability.json` (`KAB9`) | Mean weekly pay, everyone, Great Britain, seasonally adjusted | Jan 2000 to Aug 2026 | Monthly and yearly | ONS average weekly earnings | OGL v3 | Direct |
+| `uk-manicure-affordability.json` (`D7BT`) | Consumer prices index, all items, 2015 = 100 | Jan 1988 to Sep 2026 | Monthly and yearly | ONS | OGL v3 | Direct. An index, not a price |
+| `uk-manicure-affordability.json` (`manicure_minutes_of_work`, `nail_varnish_minutes_of_work`) | Minutes a woman on median hourly pay works to pay for one. Year's median price divided by hourly pay, times 60 | Manicure 2010 to 2025, varnish 2016 to 2025 | Yearly | Derived | OGL v3 | Derived |
+| `uk-manicure-affordability.json` (`manicure_real_gbp`, `nail_varnish_real_gbp`) | The median price in September 2026 money. Price times the all-items index for September 2026, divided by the index for the same month | Same months and years as the prices | Monthly and yearly | Derived | OGL v3 | Derived |
+| `uk-manicure-affordability.json` (`manicure_pct_of_weekly_pay`, `nail_varnish_pct_of_weekly_pay`) | The median price as a percentage of mean weekly pay | To Aug 2026 | Monthly | Derived | OGL v3 | Derived |
+
+What it says:
+
+- A basic manicure cost a median £18 in 2010 and £25 in 2026 (January to September). In September 2026 it was £25, from 121 quotes.
+- In September 2026 money that is £29.00 in 2010 and £25.37 in 2026. Manicures rose more slowly than prices in general.
+- A woman on median hourly pay worked 109 minutes for a manicure in 2010 and 90 minutes in 2025.
+- A bottle of nail varnish cost a median £3.99 in 2016 and £4.49 in 2026. In September 2026 money that is £5.71 and £4.56. It took 22 minutes of work in 2016 and 14 in 2025.
+- In 2026 the dearest region was Northern Ireland (median £33, only 35 quotes) and the cheapest were the North, the North West and the East Midlands (£20). London was £25.
+
+The rule for a valid quote: the ONS used it in that month's index, and the price is above zero. In files up to January 2025 that means validity code 3 or 4. From February 2025 it means `VALIDITY` is true. Quotes marked missing, out of stock or not validated are dropped. About 5% of manicure rows were dropped.
+
+Months covered:
+
+- Manicure: 184 months from January 2010 to September 2026. A month rests on about 125 quotes up to 2020 and about 110 to 120 since.
+- Nail varnish: 119 months from February 2016, when the ONS added it to the basket, to September 2026. A month rests on about 200 quotes.
+- The ONS page has no file for January and February 2017 or for January to July 2019. Those months are missing for both items, so 2017 is ten months and 2019 is five.
+- Manicures have no valid quotes for April, May, June and November 2020 or January to April 2021, because salons were shut. July 2020 has 63 and May 2021 has 74.
+- A yearly figure pools every valid quote of that year. `coverage.months_in_year` in the file says how many months that was. 2026 is nine months.
+
+Caveats:
+
+- The sample of salons and shops changes every February, and salons come and go in between. A move of a pound can be the sample, not the price.
+- "Basic manicure" is the collector's pick of the plainest manicure a salon sells. We cannot tell whether it includes polish. It should not include gel or acrylics, but the file does not say what was priced.
+- Medians sit on round numbers (£18, £20, £25), so the median moves in steps. The mean is smoother (£18.09 in 2010, £25.75 in 2026).
+- Quotes are not weighted. The ONS weights them by region and shop type when it builds its index, so these are not official average prices.
+- A chain that is priced centrally shows up once per region at the same price. For nail varnish this means a few chains set the median, and the mean (£8.74 in 2026) is far above the median (£4.49) because some bottles cost over £20.
+- Pay is before tax and is measured each April. The 2026 pay figure was not on Nomis yet, so minutes of work stop at 2025.
+- Weekly pay covers Great Britain, not Northern Ireland, and is a mean, so it is pulled up by high earners.
+- Prices start in 2010 because that is the first year of price quote files. The ONS item index for manicures goes back to 2005 but it is an index, not a price, and we did not use it.
+
 ## Things we tried that did not work
 
 | Source | What happened |
@@ -148,7 +193,7 @@ Gaps:
 | FRED | Does not carry the detailed BLS series for fitness centres or personal care |
 | Stooq share prices (for owners of nail polish brands) | Now answers with a browser check instead of a CSV. We do not get round those. No share price data added |
 | Sport England Active Lives | Worked in the end, by reading the newest workbook linked from their data tables page. The link changes with each release, so that script is the most likely to break |
-| ONS CPI item indices (basic manicure, nail varnish bottle) | Not attempted in the time. About 100 files with changing layouts. This is the best next thing to add, because "basic manicure" is the only official UK series that is only about nails |
+| ONS CPI price quotes (basic manicure, nail varnish bottle) | Worked. All 113 price quote files are read, see "The manicure index" above. The ONS page links no file for January and February 2017 or January to July 2019, and guessing their addresses got a 404 and then a rate limit, so those nine months are left out. The item index files (which go back to 2005) were not parsed, so there is nothing before 2010 |
 | Google Trends | No free API |
 | OpenStreetMap count of nail shops | Not added. It is a snapshot with no history |
 
