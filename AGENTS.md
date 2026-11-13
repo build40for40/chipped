@@ -2,13 +2,13 @@
 
 Day 10 of 40 for 40, built live on Twitch on Friday 13 November 2026. The problem is "Chipped nails", from <problem owner>. Work is tracked on the Superthread `day10` board and the "Day 10" page.
 
-- **Form factor:** a web app at https://build40for40.com/chipped/. Since 13 November 2026 that URL is Water Marble, a mindfulness page; the data almanac is kept, unlinked, at `/chipped/almanac/`.
+- **Form factor:** a web app at https://build40for40.com/chipped/. Since 13 November 2026 that URL is the mindfulness page (polish floating on water, called "chipped." on its welcome card); the data almanac is kept, unlinked, at `/chipped/almanac/`.
 
 Shared 40 for 40 context, services and rules live in `../AGENTS.md`.
 
 ## Stack
 
-- Vue 3 with `<script setup lang="ts">`, built with Vite. Vite builds two pages: `index.html` (Water Marble, plain HTML with one inline script, no Vue) and `almanac/index.html` (the Vue app in `src/`).
+- Vue 3 with `<script setup lang="ts">`, built with Vite. Vite builds two pages: `index.html` (the mindfulness page: plain HTML with one inline module script, no Vue, which imports `years` and `colours` from `data/parts/nail-colour-trends.json` so Vite bundles only those) and `almanac/index.html` (the Vue app in `src/`).
 - Vitest with jsdom and `@vue/test-utils`. Unit tests sit next to their source as `*.test.ts`. Tests for Worker code start with `// @vitest-environment node`.
 - `@/` resolves to `src/`.
 - The Worker in `worker/` serves the API under `/chipped/api/*`. Everything else under `/chipped/` is a static file from `dist/chipped/`.
@@ -18,7 +18,7 @@ Shared 40 for 40 context, services and rules live in `../AGENTS.md`.
 
 ## Commands
 
-- `npm run dev`: Vite on port 5173 plus `wrangler dev` on 8787, with Vite proxying `/chipped/api` to the Worker. Open http://localhost:5173/chipped/ for Water Marble and http://localhost:5173/chipped/almanac/ for the almanac. Copy `.dev.vars.example` to `.dev.vars` and add an `ANTHROPIC_API_KEY` first.
+- `npm run dev`: Vite on port 5173 plus `wrangler dev` on 8787, with Vite proxying `/chipped/api` to the Worker. Open http://localhost:5173/chipped/ for the mindfulness page and http://localhost:5173/chipped/almanac/ for the almanac. Copy `.dev.vars.example` to `.dev.vars` and add an `ANTHROPIC_API_KEY` first.
 - `npm run fake`: Vite only, with `dev/fake-api.ts` standing in for the Worker, so the page clicks through with no key. Answers are canned, and production builds leave it out.
 - `npm test`: unit tests.
 - `npm run build`: type-check with `vue-tsc`, then build to `dist/chipped/`.
@@ -39,14 +39,19 @@ My nails are always chipped
 
 ## What we're building
 
-### Water Marble (the front page)
+### The mindfulness page (the front page)
 
-`index.html` at `/chipped/`: the hero banner's polish, turned into a whole screen of nail polish floating on water, as a calm, soothing page.
+`index.html` at `/chipped/`: the hero banner's polish, turned into a whole screen of nail polish floating on water, as a calm, soothing page. No branding on the main screen; "chipped." appears only on the welcome card and in the tab.
 
-- A WebGL 2 fluid simulation. Drag through it and the polish drifts like a puddle; now and then a bead of polish lands and blooms. Polish beads use the area-preserving push of real water marbling, and the polish is carried with MacCormack advection so shades keep crisp edges.
-- It must read as nail polish, not watercolour: every pixel snaps to one of the current shade's real colours, and the shading is thick glossy lacquer (raised seams, a hard specular, a faint studio reflection). Keep the drift slow and heavy.
-- Paint (top right, or P) is a magic brush, not free drawing: switching it on floods a base coat, and every stroke is mirrored into a symmetric design (5, 6 or 8-fold) and laid down as one nail-art motif, cycling bullseye rings, petals, hearts, polka dots and lace. Whatever the finger does should come out as a finished design. Changing shade floods a fresh base coat; the tray has five shades and Fresh base coat.
-- Music is generated with Web Audio (pads, bells, a water bed) and starts only after the visitor taps Begin. A breathing guide runs along the bottom. Without WebGL 2 it shows a still picture.
+- A WebGL 2 fluid simulation. Drag through it and the polish drifts like a puddle; now and then a bead of polish lands and blooms. Beads use the area-preserving push of real water marbling, and the polish is carried with MacCormack advection so shades keep crisp edges.
+- It must read as nail polish, not watercolour: every pixel snaps to one of the current year's real colours, and the shading is thick glossy lacquer (raised seams, a hard specular, a faint studio reflection). Keep the drift slow and heavy.
+- The colours are data: each year's palette is its four most searched nail polish colours worldwide plus its colour of the year (the biggest rise in share on the year before), from `data/parts/nail-colour-trends.json` (`node data/scripts/fetch-google-trends-colours.mjs`, then `npm run data:publish`). The most searched colour is the base coat; the others come round, and bloom bigger, in proportion to their share of searches, and the colour of the year always gets at least an average share. Colours are named (Pillar-box, Peony, Ink…) but the caption always gives the plain search. 2004 is too thin and is left out.
+- Calm mode drifts through the years: every drip moves to the next year, the whole marble cross-fades into its colours over 2.5 seconds, and a label names the year and its rising colour.
+- Paint (top right, or P) is a magic brush, not free drawing: switching it on floods a base coat, and every stroke is mirrored into a symmetric design (5, 6 or 8-fold) and laid down as one nail-art motif, cycling bullseye rings, petals, hearts, polka dots and lace. The tray picks the year (arrows, or the arrow keys), shows its five colours with the colour of the year ringed, and offers New coat; a caption above it gives the year's shares and source.
+- Top right: the session timer (a polish bottle whose lacquer drains as the session runs), breathing guide, music, Paint. The timer defaults to 5 minutes, has quick picks of 3, 5, 10 and 20, and goes up or down a minute at a time with no cap. Over the last minute the music fades and the polish stills; then a soft chime and an "All done." card with Back to it and Another 5 minutes.
+- Top left: Little hands, a toddler mode. Locking it goes full screen, keeps the screen awake, softens the music to 0.3 and blocks the timer card; Paint, music and breathing still work, and every finger paints at once. A locked session ends on a dim glowing bottle in the year's colour of the year (lightened if dark) and stays there. Unlocking takes a 3-second hold on the button, then tapping three colours named in words in a random order; a wrong tap closes the card. The lock, a running session and the night screen survive a reload (localStorage: `chipped-little-hands`, `chipped-little-hands-done`, `chipped-session`). The page cannot stop someone leaving the browser; the card points to Guided Access and App pinning for that.
+- Everywhere: no pinch or double-tap zoom, no pull-to-refresh, no text selection or long-press menu.
+- Music is generated with Web Audio (pads, bells, a water bed) and starts only after the visitor taps Begin. Without WebGL 2 it shows a still picture.
 
 ### The almanac (kept, unlinked, at `/chipped/almanac/`)
 
