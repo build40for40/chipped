@@ -4,54 +4,16 @@
 //   96.02 hairdressing and other beauty treatment (nail bars are in here, mixed with hairdressers)
 //   96.04 physical well-being activities (spas, saunas, massage)
 //   93.13 fitness facilities (gyms, most yoga and Pilates studios)
-// The workbook is an .xlsx, which is a zip of XML, read here with Node's own zlib: no dependencies.
+// The workbook is an .xlsx, which is a zip of XML; readXlsx in lens-lib.mjs reads it with Node's own zlib.
 // Run: node data/scripts/fetch-ons-abs.mjs   (add --fresh to ignore the data/raw/ cache)
-import { inflateRawSync } from "node:zlib";
-import { cached, writePart } from "./lens-lib.mjs";
+import { cached, readXlsx, writePart } from "./lens-lib.mjs";
 
 const URL =
   "https://www.ons.gov.uk/file?uri=/businessindustryandtrade/business/businessservices/datasets/uknonfinancialbusinesseconomyannualbusinesssurveysectionsas/current/abssectionsas.xlsx";
 const WANT = { "96.02": "Section S", "96.04": "Section S", "93.13": "Section R" };
 const MEASURES = { enterprises: "Number of enterprises", turnover_million_gbp: "Total turnover", gva_million_gbp: "Approximate gross value added", employment_costs_million_gbp: "Total employment costs" };
 
-// Reads every file out of a zip by walking its central directory.
-function unzip(buf) {
-  const files = {};
-  let eocd = buf.length - 22;
-  while (eocd >= 0 && buf.readUInt32LE(eocd) !== 0x06054b50) eocd--;
-  if (eocd < 0) throw new Error("not a zip file");
-  let p = buf.readUInt32LE(eocd + 16);
-  for (let n = buf.readUInt16LE(eocd + 10); n > 0; n--) {
-    const method = buf.readUInt16LE(p + 10);
-    const size = buf.readUInt32LE(p + 20);
-    const nameLen = buf.readUInt16LE(p + 28);
-    const local = buf.readUInt32LE(p + 42);
-    const name = buf.toString("utf8", p + 46, p + 46 + nameLen);
-    const start = local + 30 + buf.readUInt16LE(local + 26) + buf.readUInt16LE(local + 28);
-    const raw = buf.subarray(start, start + size);
-    files[name] = () => (method === 0 ? raw : inflateRawSync(raw)).toString("utf8");
-    p += 46 + nameLen + buf.readUInt16LE(p + 30) + buf.readUInt16LE(p + 32);
-  }
-  return files;
-}
-const unescape = (s) => s.replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&quot;/g, '"').replace(/&apos;/g, "'").replace(/&amp;/g, "&");
-
-const files = unzip(await cached("ons-abs-sections-a-s.xlsx", URL));
-const strings = [...files["xl/sharedStrings.xml"]().matchAll(/<si>(.*?)<\/si>/gs)].map((m) => unescape([...m[1].matchAll(/<t[^>]*>(.*?)<\/t>/gs)].map((t) => t[1]).join("")));
-const rels = files["xl/_rels/workbook.xml.rels"]();
-function sheet(name) {
-  const rid = files["xl/workbook.xml"]().match(new RegExp(`<sheet name="${name}"[^>]*r:id="([^"]+)"`))?.[1];
-  const target = rid && rels.match(new RegExp(`<Relationship[^>]*Id="${rid}"[^>]*>`))?.[0].match(/Target="([^"]+)"/)?.[1];
-  if (!target) throw new Error(`no sheet "${name}"`);
-  return [...files[`xl/${target.replace(/^\//, "").replace(/^xl\//, "")}`]().matchAll(/<row [^>]*>(.*?)<\/row>/gs)].map((r) => {
-    const cells = {};
-    for (const c of r[1].matchAll(/<c r="([A-Z]+)\d+"([^>]*?)(?:\/>|>(.*?)<\/c>)/gs)) {
-      const v = c[3]?.match(/<v>(.*?)<\/v>/s)?.[1];
-      if (v !== undefined) cells[c[1]] = /t="s"/.test(c[2]) ? strings[Number(v)] : unescape(v);
-    }
-    return cells;
-  });
-}
+const { sheet } = readXlsx(await cached("ons-abs-sections-a-s.xlsx", URL));
 
 const series = {};
 for (const [sic, sheetName] of Object.entries(WANT)) {

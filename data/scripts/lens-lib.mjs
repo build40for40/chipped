@@ -3,6 +3,7 @@
 // or pass --fresh.
 import { mkdir, readFile, writeFile, stat } from "node:fs/promises";
 import { dirname, join } from "node:path";
+import { inflateRawSync } from "node:zlib";
 import { fileURLToPath } from "node:url";
 
 export const root = join(dirname(fileURLToPath(import.meta.url)), "..");
@@ -107,3 +108,53 @@ export function jsonStat(j) {
   }
   return rows;
 }
+
+// Reads every file out of a zip by walking its central directory.
+function unzip(buf) {
+  const files = {};
+  let eocd = buf.length - 22;
+  while (eocd >= 0 && buf.readUInt32LE(eocd) !== 0x06054b50) eocd--;
+  if (eocd < 0) throw new Error("not a zip file");
+  let p = buf.readUInt32LE(eocd + 16);
+  for (let n = buf.readUInt16LE(eocd + 10); n > 0; n--) {
+    const method = buf.readUInt16LE(p + 10);
+    const size = buf.readUInt32LE(p + 20);
+    const nameLen = buf.readUInt16LE(p + 28);
+    const local = buf.readUInt32LE(p + 42);
+    const name = buf.toString("utf8", p + 46, p + 46 + nameLen);
+    const start = local + 30 + buf.readUInt16LE(local + 26) + buf.readUInt16LE(local + 28);
+    const raw = buf.subarray(start, start + size);
+    files[name] = () => (method === 0 ? raw : inflateRawSync(raw)).toString("utf8");
+    p += 46 + nameLen + buf.readUInt16LE(p + 30) + buf.readUInt16LE(p + 32);
+  }
+  return files;
+}
+const unescapeXml = (s) => s.replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&quot;/g, '"').replace(/&apos;/g, "'").replace(/&amp;/g, "&");
+
+// Opens an .xlsx (a zip of XML) with no dependencies. Returns { sheetNames, sheet(name) }, where sheet() gives
+// one object per row keyed by column letter, e.g. { A: "96.02", C: "2008", E: "3401" }. Values are strings.
+export function readXlsx(buf) {
+  const files = unzip(buf);
+  const strings = [...files["xl/sharedStrings.xml"]().matchAll(/<si>(.*?)<\/si>/gs)].map((m) => unescapeXml([...m[1].matchAll(/<t[^>]*>(.*?)<\/t>/gs)].map((x) => x[1]).join("")));
+  const workbook = files["xl/workbook.xml"]();
+  const rels = files["xl/_rels/workbook.xml.rels"]();
+  const sheetNames = [...workbook.matchAll(/<sheet [^>]*name="([^"]+)"/g)].map((m) => unescapeXml(m[1]));
+  function sheet(name) {
+    const tag = [...workbook.matchAll(/<sheet [^>]*>/g)].map((m) => m[0]).find((x) => unescapeXml(x.match(/name="([^"]+)"/)[1]) === name);
+    const rid = tag?.match(/r:id="([^"]+)"/)?.[1];
+    const target = rid && rels.match(new RegExp(`<Relationship[^>]*Id="${rid}"[^>]*>`))?.[0].match(/Target="([^"]+)"/)?.[1];
+    if (!target) throw new Error(`no sheet "${name}"`);
+    return [...files[`xl/${target.replace(/^\//, "").replace(/^xl\//, "")}`]().matchAll(/<row [^>]*>(.*?)<\/row>/gs)].map((r) => {
+      const cells = {};
+      for (const c of r[1].matchAll(/<c r="([A-Z]+)\d+"([^>]*?)(?:\/>|>(.*?)<\/c>)/gs)) {
+        const v = c[3]?.match(/<v>(.*?)<\/v>/s)?.[1];
+        if (v !== undefined) cells[c[1]] = /t="s"/.test(c[2]) ? strings[Number(v)] : unescapeXml(v);
+      }
+      return cells;
+    });
+  }
+  return { sheetNames, sheet };
+}
+// Column letter <-> number, A = 1.
+export const colNum = (letters) => [...letters].reduce((n, ch) => n * 26 + ch.charCodeAt(0) - 64, 0);
+export const colName = (n) => (n <= 0 ? "" : colName(Math.floor((n - 1) / 26)) + String.fromCharCode(65 + ((n - 1) % 26)));
