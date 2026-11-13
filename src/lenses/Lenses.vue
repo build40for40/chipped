@@ -1,75 +1,125 @@
 <script setup lang="ts">
 // The seven questions we want answered about chipped nails, one chart each.
-// Every number comes from ./dummy.ts until the real series land.
+// Every number is real and comes from ./data.json. Where the data could not answer what was asked,
+// the card shows the reworded question and says what stands in for what.
 import { onBeforeUnmount, onMounted, reactive, ref } from 'vue'
 
 import { PLOTS, type PlotKey } from './charts'
+import { data } from './data'
 
 interface Lens {
   id: string
+  // What the team asked, and what the data we could find can actually answer.
+  asked: string
   question: string
   how: string
+  status: 'Real data' | 'Needs a poll'
   legend?: { label: string; colour?: string }[]
   plots: { key: PlotKey; title?: string }[]
-  needs: string[]
+  source: string
+  caveats: string[]
 }
+
+const industry = data.industry
+const protestMonths = data.protest.events.map((e) => new Date(`${e.month}-15`).toLocaleDateString('en-GB', { month: 'short', year: 'numeric' })).join(', ')
 
 const LENSES: Lens[] = [
   {
     id: 'pride',
-    question: 'Do nail salon sales move with the things that give women pride?',
-    how: 'Three small charts, one per pride measure. Each dot is a year. A tight diagonal cloud means the two move together. The line is the best fit and the number is the correlation.',
+    asked: 'Do nail salon sales move with pregnancies, promotions and dates?',
+    question: 'Does hair and beauty spending in the UK move with births, women managers and marriages?',
+    how: 'Three small charts. Each dot is a year. A tight diagonal cloud means the two move together. The line is the best fit, r is the correlation, and the year on year number is the honest version.',
+    status: 'Real data',
     plots: [
-      { key: 'pride-births', title: 'Births per 1,000 women' },
-      { key: 'pride-promotions', title: 'Share of promotions going to women' },
-      { key: 'pride-dates', title: 'First dates per 1,000 adults' },
+      { key: 'pride-births', title: 'Births per 1,000 people' },
+      { key: 'pride-managers', title: "Women's share of manager jobs" },
+      { key: 'pride-marriages', title: 'Marriages per 1,000 people' },
     ],
-    needs: ['Nail salon sales or jobs, by year', 'Birth or pregnancy rate', "Women's promotions, or women's share of management jobs", 'A dating measure, such as dating app use'],
+    source: 'UK. Office for National Statistics (business survey, population survey), UN and OECD figures via Our World in Data. 2008 onwards.',
+    caveats: [
+      'Nail salons cannot be split from hairdressers in UK figures, so this is all hair and beauty turnover, not adjusted for inflation.',
+      'Nobody counts promotions or dates. Women in manager jobs and marriages stand in for them.',
+      'Births have fallen and turnover has risen for unrelated reasons. Trust the year on year number, not r.',
+    ],
   },
   {
     id: 'work',
-    question: 'When more women do manual jobs or play sport, does nail polish fall or rise?',
-    how: 'Three lines on one scale, all set to 100 in the first year so they can share an axis. If polish dips as manual work climbs, the lines cross. It could go either way.',
-    legend: [{ label: 'Nail polish sales', colour: 'var(--c1)' }, { label: 'Women in manual jobs', colour: 'var(--c2)' }, { label: 'Women playing sport weekly', colour: 'var(--c3)' }],
+    asked: 'When more women do manual jobs or play sport, does nail polish fall or rise?',
+    question: 'As women in the UK move in or out of manual jobs and get more active, what happens to nail polish imports?',
+    how: `Three lines on one scale, all set to 100 in ${data.work.years[0]}, the first year all three exist. Hover for each year.`,
+    status: 'Real data',
+    legend: data.work.series.map((s, i) => ({ label: s.name, colour: `var(--c${i + 1})` })),
     plots: [{ key: 'work' }],
-    needs: ['Nail polish sales, by year', 'Women employed in manual occupations', 'Women taking part in sport at least weekly'],
+    source: 'UK imports from HMRC, women in manual jobs from the ONS, activity from Sport England (England only).',
+    caveats: [
+      'There are no nail polish sales figures anywhere. Imports stand in, and they include removers and gels.',
+      'Being active counts walking and gardening as well as sport.',
+      'Ten points is too few to call anything a link. Manual jobs here means skilled trades, machine operatives and elementary jobs, which is our own grouping.',
+    ],
   },
   {
     id: 'industry',
-    question: 'Who wears nail polish at work, industry by industry?',
-    how: "One bar per industry, using the UK government's industry groups, longest at the top. The dashed line is the average for all working women.",
+    asked: 'Who wears nail polish at work, industry by industry?',
+    question: 'Nobody knows who wears nail polish at work. Here is who we would have to ask.',
+    how: `No one publishes nail polish by industry, so this needs a poll. This is the share of jobs held by women in each UK industry in June ${industry.year}, which is what the poll answers would be weighted by.`,
+    status: 'Needs a poll',
     plots: [{ key: 'industry' }],
-    needs: ['Share of women wearing polish, split by industry. Nobody publishes this, so it needs a poll'],
+    source: 'UK workforce jobs, Office for National Statistics via Nomis.',
+    caveats: ['This chart says nothing about nail polish yet.', 'It counts jobs, so someone with two jobs is counted twice.'],
   },
   {
-    id: 'covid',
-    question: 'Where Covid hit harder, did home hobbies like painting your nails grow more than outdoor ones?',
-    how: 'Each country appears twice. Further right means a stricter lockdown. Higher means interest grew more. If lockdowns pushed people to their nail polish, the first colour climbs to the right and the second does not.',
-    legend: [{ label: 'Painting nails at home', colour: 'var(--c1)' }, { label: 'Outdoor hobbies', colour: 'var(--c2)' }],
-    plots: [{ key: 'covid' }],
-    needs: ['How hard Covid hit each country: lockdown strictness or cases per 100,000', 'Change in interest for each hobby from 2019 to 2020, by country'],
+    id: 'hobbies',
+    asked: 'Where Covid hit harder, did home hobbies like painting your nails grow more than outdoor ones?',
+    question: 'Where lockdown was stricter, did people read up on home hobbies more than outdoor ones?',
+    how: 'Each country appears twice. Further right means a stricter lockdown in 2020. Higher means more Wikipedia reading about that kind of hobby in 2020 than in 2019. The dashed lines are the trends.',
+    status: 'Real data',
+    legend: [{ label: 'Home hobbies, nail polish included', colour: 'var(--c1)' }, { label: 'Outdoor hobbies', colour: 'var(--c2)' }],
+    plots: [{ key: 'hobbies' }],
+    source: 'Lockdown strictness from the Oxford tracker via Our World in Data. Page views from Wikimedia, by language.',
+    caveats: [
+      'Reading about knitting is not knitting.',
+      'A language is not a country, so the UK, the US, India and every Spanish speaking country are missing.',
+      'Turkey is left out because Wikipedia was blocked there for most of 2019.',
+    ],
   },
   {
     id: 'hands',
-    question: 'Do countries that eat with their hands buy less nail polish than countries that use cutlery?',
-    how: 'Each dot is a country, placed by how much polish it buys. The rows are how most people there eat at home. The tick is the middle country in each row.',
+    asked: 'Do countries that eat with their hands buy less nail polish than countries that use cutlery?',
+    question: 'Do countries that eat with their hands import less nail polish per woman?',
+    how: `Each dot is a country, placed by its nail polish imports per woman in ${data.hands.year}. The rows are how most people there eat. The tick is the middle of each row.`,
+    status: 'Real data',
     plots: [{ key: 'hands' }],
-    needs: ['Nail polish bought per woman per year, by country', 'The main way people eat at home in each country. Most places do a mix, so this needs a source'],
+    source: 'Imports from UN Comtrade, population from Our World in Data. Eating styles sorted by hand from Wikipedia.',
+    caveats: [
+      `Only ${data.hands.rows.length} countries, which is far too few to prove anything.`,
+      'Imports are not purchases. Countries that make their own polish, like India and China, show close to zero.',
+      'Richer countries import more of everything, and most of the cutlery row is rich.',
+    ],
   },
   {
     id: 'selfcare',
-    question: 'Do nail salons rise and fall with the rest of self care?',
-    how: 'The hollow dot is the easy correlation, flattered by everything growing over time. The solid dot is the honest one, comparing year on year changes. The gap is how much of the link is just time passing.',
+    asked: 'Do nail salons rise and fall with yoga, Pilates, the gym, massage and spas?',
+    question: 'Does UK hair and beauty rise and fall with spas, massage and gyms?',
+    how: 'Each row compares hair and beauty with another kind of self care on one money measure. The hollow dot is the easy correlation, flattered by everything growing. The solid dot compares year on year changes. The gap is how much of the link is just time passing.',
+    status: 'Real data',
     legend: [{ label: 'Raw correlation' }, { label: 'Year on year correlation', colour: 'var(--c1)' }],
     plots: [{ key: 'selfcare' }],
-    needs: ['Nail salon sales or jobs, by year', 'Yoga, Pilates, gym, massage and spa: memberships, spend or jobs for each'],
+    source: 'UK Annual Business Survey, Office for National Statistics, 2008 to 2024.',
+    caveats: ['Nails are counted with hairdressers.', 'Yoga and Pilates studios are counted with gyms, so they cannot be shown apart.', 'Money is not adjusted for inflation.'],
   },
   {
     id: 'protest',
-    question: 'After women turn out to protest, do nail salon sales go up a few weeks later?',
-    how: 'Every big protest is lined up at week zero and the weeks around it are averaged. The band is how much the protests disagree with each other. A bump to the right of zero is the lag.',
+    asked: 'After women turn out to protest, do nail salon sales go up a few weeks later?',
+    question: 'In the months after a big protest about women’s rights in the US, do nail salons pull ahead of hair salons?',
+    how: 'Six big protest months are lined up at zero and averaged. The line is how fast nail salon jobs grew compared with hair salon jobs, in percentage points, against the three months before. The band is the spread across the six. Above zero means nail salons pulled ahead.',
+    status: 'Real data',
     plots: [{ key: 'protest' }],
-    needs: ['Protest dates, places and how many women took part', 'Weekly nail salon sales or bookings for the same places'],
+    source: `US. Protests from the Crowd Counting Consortium, salon jobs from the Bureau of Labor Statistics. Months used: ${protestMonths}.`,
+    caveats: [
+      'Nothing is weekly, so a few weeks became a few months, and it is jobs, which move slowly.',
+      'Nobody counts how many protesters were women. These are protests about women’s issues.',
+      'Six events is very few, and protests during the lockdown collapse of 2020 and 2021 are left out.',
+    ],
   },
 ]
 
@@ -119,15 +169,16 @@ function onFocus(e: FocusEvent) {
   <section ref="root" class="lenses" @pointermove="onPointer" @pointerdown="onPointer" @pointerleave="tip.show = false" @focusin="onFocus" @focusout="tip.show = false">
     <header>
       <h2>Seven lenses on chipped nails</h2>
-      <p class="dummy">Every number in these charts is made up. They show the shape of the answer, not the answer.</p>
+      <p class="note">Real numbers, with stand ins. We could not find data for everything we asked, so each card shows what we asked, what the data can answer, and where it is shaky. Correlation is not cause.</p>
       <nav aria-label="Lenses">
         <a v-for="(lens, i) in LENSES" :key="lens.id" :href="`#${lens.id}`">{{ i + 1 }} {{ lens.id }}</a>
       </nav>
     </header>
 
     <article v-for="(lens, i) in LENSES" :id="lens.id" :key="lens.id" class="lens">
-      <p class="eyebrow">Lens {{ i + 1 }} <span class="tag">Dummy data</span></p>
+      <p class="eyebrow">Lens {{ i + 1 }} <span class="tag" :class="{ poll: lens.status !== 'Real data' }">{{ lens.status }}</span></p>
       <h3 class="question">{{ lens.question }}</h3>
+      <p class="asked">We asked: {{ lens.asked }}</p>
       <p class="how">{{ lens.how }}</p>
       <p v-if="lens.legend" class="legend">
         <span v-for="item in lens.legend" :key="item.label"><i :class="{ ring: !item.colour }" :style="item.colour ? { background: item.colour } : undefined" />{{ item.label }}</span>
@@ -140,10 +191,11 @@ function onFocus(e: FocusEvent) {
         </figure>
       </div>
       <div class="needs">
-        <strong>To make it real we need:</strong>
+        <strong>Where it is shaky</strong>
         <ul>
-          <li v-for="need in lens.needs" :key="need">{{ need }}</li>
+          <li v-for="caveat in lens.caveats" :key="caveat">{{ caveat }}</li>
         </ul>
+        <p class="source">Source: {{ lens.source }}</p>
       </div>
     </article>
 
@@ -157,7 +209,7 @@ function onFocus(e: FocusEvent) {
   --bg: #081633; --panel: #10224a; --tile: #172c58; --line: #1e3260; --edge: #2e4170;
   --text: #f2f0ea; --sub: #c9cfe0; --muted: #9aa6c4; --bracket: #ffd400;
   --c1: #3b82e6; --c2: #d94a97; --c3: #b38a1d; --neutral: #7f8bab; --band: rgb(59 130 230 / 0.22);
-  --warn-bg: #3a2f05; --warn-ink: #ffe27a;
+  --warn-bg: #3a2f05; --warn-ink: #ffe27a; --ok-bg: #12351f; --ok-ink: #9be7b4;
   background: var(--bg);
   color: var(--text);
   font-family: 'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
@@ -174,20 +226,23 @@ function onFocus(e: FocusEvent) {
     --bg: #f2f0ea; --panel: #fff; --tile: #f7f5ef; --line: #e3dfd6; --edge: #cfc9bc;
     --text: #1b1a17; --sub: #4a4740; --muted: #6b675f; --bracket: #b38a00;
     --c1: #1f6fd6; --c2: #c2268a; --c3: #a86a00; --neutral: #8a857b; --band: rgb(31 111 214 / 0.16);
-    --warn-bg: #fff3bf; --warn-ink: #5c4500;
+    --warn-bg: #fff3bf; --warn-ink: #5c4500; --ok-bg: #dcf5e3; --ok-ink: #14532d;
   }
 }
 .lenses > * { width: 100%; max-width: 860px; min-width: 0; }
 header { display: flex; flex-direction: column; gap: 10px; }
 h2 { margin: 0; font-size: clamp(22px, 6vw, 30px); line-height: 1.15; font-weight: 800; text-wrap: balance; }
-.dummy { margin: 0; background: var(--warn-bg); color: var(--warn-ink); border-radius: 8px; padding: 10px 14px; font-weight: 500; }
+.note { margin: 0; background: var(--tile); color: var(--sub); border-radius: 8px; padding: 10px 14px; max-width: 70ch; }
 nav { display: flex; flex-wrap: wrap; gap: 8px; }
 nav a { color: var(--sub); text-decoration: none; border: 1px solid var(--edge); border-radius: 999px; padding: 4px 12px; font-size: 12px; }
 nav a:hover, nav a:focus-visible { color: var(--text); border-color: var(--text); outline: none; }
 .lens { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 20px; display: flex; flex-direction: column; gap: 14px; }
 .lens > * { margin: 0; }
 .eyebrow { font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); display: flex; gap: 10px; align-items: center; }
-.tag { background: var(--warn-bg); color: var(--warn-ink); border-radius: 4px; padding: 1px 6px; letter-spacing: 0.06em; }
+.tag { background: var(--ok-bg); color: var(--ok-ink); border-radius: 4px; padding: 1px 6px; letter-spacing: 0.06em; }
+.tag.poll { background: var(--warn-bg); color: var(--warn-ink); }
+.asked { color: var(--muted); font-size: 12.5px; }
+.source { margin: 8px 0 0; color: var(--muted); }
 .question { font-size: 17px; line-height: 1.35; font-weight: 700; text-wrap: balance; }
 .question::before { content: '[ '; color: var(--bracket); }
 .question::after { content: ' ]'; color: var(--bracket); }

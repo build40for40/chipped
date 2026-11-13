@@ -52,6 +52,7 @@ node data/scripts/fetch-sport-england.mjs        # finds the newest workbook on 
 node data/scripts/fetch-ons-cpi.mjs
 node data/scripts/fetch-ccc-protests.mjs          # downloads about 200 MB
 node data/scripts/fetch-bls-selfcare.mjs          # not run yet: writes bls-selfcare.json, needs 4 of the 25 keyless BLS calls a day
+node data/scripts/build-lenses.mjs      # rewrites src/lenses/data.json, the numbers the seven lens charts draw
 npm run data:publish
 ```
 

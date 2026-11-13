@@ -1,0 +1,803 @@
+{
+ "pride": [
+  {
+   "key": "births",
+   "title": "Births per 1,000 people",
+   "yName": "Births per 1,000",
+   "points": [
+    {
+     "year": 2008,
+     "x": 3401,
+     "y": 12.891
+    },
+    {
+     "year": 2009,
+     "x": 3558,
+     "y": 12.764
+    },
+    {
+     "year": 2010,
+     "x": 3604,
+     "y": 12.888
+    },
+    {
+     "year": 2011,
+     "x": 3534,
+     "y": 12.828
+    },
+    {
+     "year": 2012,
+     "x": 3402,
+     "y": 12.779
+    },
+    {
+     "year": 2013,
+     "x": 3471,
+     "y": 12.197
+    },
+    {
+     "year": 2014,
+     "x": 3533,
+     "y": 12.018
+    },
+    {
+     "year": 2015,
+     "x": 3577,
+     "y": 11.918
+    },
+    {
+     "year": 2016,
+     "x": 4234,
+     "y": 11.777
+    },
+    {
+     "year": 2017,
+     "x": 4600,
+     "y": 11.411
+    },
+    {
+     "year": 2018,
+     "x": 4541,
+     "y": 10.982
+    },
+    {
+     "year": 2019,
+     "x": 4671,
+     "y": 10.645
+    },
+    {
+     "year": 2020,
+     "x": 3028,
+     "y": 10.204
+    },
+    {
+     "year": 2021,
+     "x": 3946,
+     "y": 10.241
+    },
+    {
+     "year": 2022,
+     "x": 5298,
+     "y": 10.1
+    },
+    {
+     "year": 2023,
+     "x": 5403,
+     "y": 10.023
+    }
+   ]
+  },
+  {
+   "key": "managers",
+   "title": "Women's share of manager jobs",
+   "yName": "Women managers",
+   "unit": "%",
+   "points": [
+    {
+     "year": 2008,
+     "x": 3401,
+     "y": 32.86
+    },
+    {
+     "year": 2009,
+     "x": 3558,
+     "y": 33.7
+    },
+    {
+     "year": 2010,
+     "x": 3604,
+     "y": 33.46
+    },
+    {
+     "year": 2011,
+     "x": 3534,
+     "y": 32.57
+    },
+    {
+     "year": 2012,
+     "x": 3402,
+     "y": 33.27
+    },
+    {
+     "year": 2013,
+     "x": 3471,
+     "y": 32.58
+    },
+    {
+     "year": 2014,
+     "x": 3533,
+     "y": 33.43
+    },
+    {
+     "year": 2015,
+     "x": 3577,
+     "y": 33.95
+    },
+    {
+     "year": 2016,
+     "x": 4234,
+     "y": 34.41
+    },
+    {
+     "year": 2017,
+     "x": 4600,
+     "y": 34.87
+    },
+    {
+     "year": 2018,
+     "x": 4541,
+     "y": 35.05
+    },
+    {
+     "year": 2019,
+     "x": 4671,
+     "y": 35.71
+    },
+    {
+     "year": 2020,
+     "x": 3028,
+     "y": 36.6
+    },
+    {
+     "year": 2021,
+     "x": 3946,
+     "y": 37.44
+    },
+    {
+     "year": 2022,
+     "x": 5298,
+     "y": 37.18
+    },
+    {
+     "year": 2023,
+     "x": 5403,
+     "y": 36.93
+    },
+    {
+     "year": 2024,
+     "x": 5133,
+     "y": 37.89
+    }
+   ]
+  },
+  {
+   "key": "marriages",
+   "title": "Marriages per 1,000 people",
+   "yName": "Marriages per 1,000",
+   "points": [
+    {
+     "year": 2008,
+     "x": 3401,
+     "y": 4.4
+    },
+    {
+     "year": 2009,
+     "x": 3558,
+     "y": 4.3
+    },
+    {
+     "year": 2010,
+     "x": 3604,
+     "y": 4.4
+    },
+    {
+     "year": 2011,
+     "x": 3534,
+     "y": 4.4
+    },
+    {
+     "year": 2012,
+     "x": 3402,
+     "y": 4.7
+    },
+    {
+     "year": 2013,
+     "x": 3471,
+     "y": 4.2
+    },
+    {
+     "year": 2014,
+     "x": 3533,
+     "y": 4.4
+    },
+    {
+     "year": 2015,
+     "x": 3577,
+     "y": 4.2
+    },
+    {
+     "year": 2016,
+     "x": 4234,
+     "y": 4.3
+    },
+    {
+     "year": 2017,
+     "x": 4600,
+     "y": 4.1
+    },
+    {
+     "year": 2018,
+     "x": 4541,
+     "y": 4
+    },
+    {
+     "year": 2019,
+     "x": 4671,
+     "y": 3.7
+    },
+    {
+     "year": 2020,
+     "x": 3028,
+     "y": 1.4
+    }
+   ]
+  }
+ ],
+ "work": {
+  "years": [
+   2016,
+   2017,
+   2018,
+   2019,
+   2020,
+   2021,
+   2022,
+   2023,
+   2024,
+   2025
+  ],
+  "series": [
+   {
+    "name": "Nail polish imports",
+    "values": [
+     100,
+     94.8,
+     78.6,
+     78.6,
+     74,
+     59.7,
+     71,
+     70.4,
+     68.6,
+     69.6
+    ],
+    "first": 101939271,
+    "last": 70953404
+   },
+   {
+    "name": "Women in manual jobs",
+    "values": [
+     100,
+     99.8,
+     98.4,
+     101.6,
+     92.2,
+     92.6,
+     95.1,
+     92.9,
+     90.8,
+     93.1
+    ],
+    "first": 2145800,
+    "last": 1998000
+   },
+   {
+    "name": "Women who are active",
+    "values": [
+     100,
+     99.6,
+     101.5,
+     102.6,
+     100.3,
+     99.8,
+     101.7,
+     102.3,
+     102.6,
+     103.8
+    ],
+    "first": 59.91,
+    "last": 62.2
+   }
+  ]
+ },
+ "industry": {
+  "year": 2026,
+  "average": 49,
+  "rows": [
+   {
+    "name": "Health and social work",
+    "share": 76.4,
+    "jobs": 3842144
+   },
+   {
+    "name": "Education",
+    "share": 70,
+    "jobs": 2191098
+   },
+   {
+    "name": "Other services",
+    "share": 63.6,
+    "jobs": 621903
+   },
+   {
+    "name": "Hotels and restaurants",
+    "share": 53.7,
+    "jobs": 1417579
+   },
+   {
+    "name": "Public administration",
+    "share": 53.5,
+    "jobs": 964818
+   },
+   {
+    "name": "Property",
+    "share": 51.1,
+    "jobs": 373465
+   },
+   {
+    "name": "Arts and recreation",
+    "share": 50.8,
+    "jobs": 559890
+   },
+   {
+    "name": "Professional and scientific",
+    "share": 47.2,
+    "jobs": 1653451
+   },
+   {
+    "name": "Finance and insurance",
+    "share": 46,
+    "jobs": 515556
+   },
+   {
+    "name": "Shops and wholesale",
+    "share": 45.4,
+    "jobs": 2075327
+   },
+   {
+    "name": "Admin and support",
+    "share": 44.5,
+    "jobs": 1316119
+   },
+   {
+    "name": "Information and communication",
+    "share": 35.6,
+    "jobs": 571863
+   },
+   {
+    "name": "Farming and fishing",
+    "share": 34,
+    "jobs": 125948
+   },
+   {
+    "name": "Energy",
+    "share": 28.6,
+    "jobs": 42120
+   },
+   {
+    "name": "Manufacturing",
+    "share": 27.4,
+    "jobs": 673298
+   },
+   {
+    "name": "Water and waste",
+    "share": 27.4,
+    "jobs": 67661
+   },
+   {
+    "name": "Transport and storage",
+    "share": 26.6,
+    "jobs": 511260
+   },
+   {
+    "name": "Construction",
+    "share": 18,
+    "jobs": 412706
+   },
+   {
+    "name": "Mining",
+    "share": 16.1,
+    "jobs": 8811
+   }
+  ]
+ },
+ "hobbies": [
+  {
+   "country": "Japan",
+   "shared": false,
+   "strict": 32.9,
+   "home": 0.1,
+   "outdoor": -3.1
+  },
+  {
+   "country": "South Korea",
+   "shared": false,
+   "strict": 50,
+   "home": -23.2,
+   "outdoor": 5.6
+  },
+  {
+   "country": "Italy",
+   "shared": false,
+   "strict": 65.4,
+   "home": 17.4,
+   "outdoor": 54.7
+  },
+  {
+   "country": "Sweden",
+   "shared": false,
+   "strict": 49.5,
+   "home": -12.4,
+   "outdoor": -5.3
+  },
+  {
+   "country": "Poland",
+   "shared": false,
+   "strict": 48.8,
+   "home": 18.6,
+   "outdoor": 24
+  },
+  {
+   "country": "Netherlands",
+   "shared": false,
+   "strict": 50.7,
+   "home": 27.5,
+   "outdoor": 9
+  },
+  {
+   "country": "Finland",
+   "shared": false,
+   "strict": 39.2,
+   "home": 1.7,
+   "outdoor": 20.3
+  },
+  {
+   "country": "Denmark",
+   "shared": false,
+   "strict": 46.9,
+   "home": -3.9,
+   "outdoor": 4.9
+  },
+  {
+   "country": "Norway",
+   "shared": false,
+   "strict": 42.2,
+   "home": -7.1,
+   "outdoor": 1.4
+  },
+  {
+   "country": "Czechia",
+   "shared": false,
+   "strict": 45.3,
+   "home": 3.4,
+   "outdoor": 15
+  },
+  {
+   "country": "Hungary",
+   "shared": false,
+   "strict": 47.7,
+   "home": -6.9,
+   "outdoor": 36.1
+  },
+  {
+   "country": "Greece",
+   "shared": false,
+   "strict": 55.1,
+   "home": 14.9,
+   "outdoor": 38.5
+  },
+  {
+   "country": "Thailand",
+   "shared": false,
+   "strict": 46.5,
+   "home": -26.2,
+   "outdoor": -27.4
+  },
+  {
+   "country": "Vietnam",
+   "shared": false,
+   "strict": 58.3,
+   "home": 5.2,
+   "outdoor": 5.6
+  },
+  {
+   "country": "Indonesia",
+   "shared": false,
+   "strict": 55.6,
+   "home": 26.8,
+   "outdoor": -17.3
+  },
+  {
+   "country": "Israel",
+   "shared": false,
+   "strict": 58.7,
+   "home": 7.2,
+   "outdoor": 19.2
+  },
+  {
+   "country": "Ukraine",
+   "shared": false,
+   "strict": 53.7,
+   "home": 20.9,
+   "outdoor": 82.8
+  },
+  {
+   "country": "Romania",
+   "shared": false,
+   "strict": 52.4,
+   "home": 16.1,
+   "outdoor": 79.6
+  },
+  {
+   "country": "Bulgaria",
+   "shared": false,
+   "strict": 41.5,
+   "home": 15.3,
+   "outdoor": 112.3
+  },
+  {
+   "country": "Croatia",
+   "shared": false,
+   "strict": 43.9,
+   "home": -1.3,
+   "outdoor": 63.7
+  },
+  {
+   "country": "Slovakia",
+   "shared": false,
+   "strict": 46,
+   "home": 5,
+   "outdoor": 68
+  },
+  {
+   "country": "Lithuania",
+   "shared": false,
+   "strict": 47.6,
+   "home": 4.3,
+   "outdoor": 98.9
+  },
+  {
+   "country": "Germany",
+   "shared": true,
+   "strict": 52.4,
+   "home": 1.1,
+   "outdoor": 11.7
+  },
+  {
+   "country": "France",
+   "shared": true,
+   "strict": 54.9,
+   "home": 9.5,
+   "outdoor": 3.2
+  }
+ ],
+ "hands": {
+  "year": 2023,
+  "rows": [
+   {
+    "group": "Mostly hands",
+    "country": "India",
+    "value": 0
+   },
+   {
+    "group": "Mostly hands",
+    "country": "Ethiopia",
+    "value": 0.01
+   },
+   {
+    "group": "Mostly hands",
+    "country": "Morocco",
+    "value": 0.23
+   },
+   {
+    "group": "Mostly hands",
+    "country": "Myanmar",
+    "value": 0
+   },
+   {
+    "group": "Mostly chopsticks",
+    "country": "China",
+    "value": 0.01
+   },
+   {
+    "group": "Mostly chopsticks",
+    "country": "Japan",
+    "value": 0.96
+   },
+   {
+    "group": "Mostly chopsticks",
+    "country": "South Korea",
+    "value": 0.26
+   },
+   {
+    "group": "Mostly chopsticks",
+    "country": "Vietnam",
+    "value": 0.02
+   },
+   {
+    "group": "Mostly cutlery",
+    "country": "Thailand",
+    "value": 0.05
+   },
+   {
+    "group": "Mostly cutlery",
+    "country": "Indonesia",
+    "value": 0.04
+   },
+   {
+    "group": "Mostly cutlery",
+    "country": "United Kingdom",
+    "value": 2.56
+   },
+   {
+    "group": "Mostly cutlery",
+    "country": "France",
+    "value": 2.37
+   },
+   {
+    "group": "Mostly cutlery",
+    "country": "Germany",
+    "value": 3.97
+   },
+   {
+    "group": "Mostly cutlery",
+    "country": "United States",
+    "value": 0.79
+   }
+  ]
+ },
+ "selfcare": [
+  {
+   "name": "Spas and massage, turnover",
+   "raw": 0.843,
+   "yearOnYear": 0.571,
+   "from": 2008,
+   "to": 2024
+  },
+  {
+   "name": "Spas and massage, wage bill",
+   "raw": 0.813,
+   "yearOnYear": -0.327,
+   "from": 2008,
+   "to": 2024
+  },
+  {
+   "name": "Spas and massage, value added",
+   "raw": 0.62,
+   "yearOnYear": -0.049,
+   "from": 2008,
+   "to": 2024
+  },
+  {
+   "name": "Gyms, turnover",
+   "raw": 0.909,
+   "yearOnYear": 0.873,
+   "from": 2008,
+   "to": 2024
+  },
+  {
+   "name": "Gyms, wage bill",
+   "raw": 0.874,
+   "yearOnYear": 0.355,
+   "from": 2008,
+   "to": 2024
+  },
+  {
+   "name": "Gyms, value added",
+   "raw": 0.849,
+   "yearOnYear": 0.898,
+   "from": 2008,
+   "to": 2024
+  }
+ ],
+ "protest": {
+  "events": [
+   {
+    "month": "2017-01",
+    "people": 4306279
+   },
+   {
+    "month": "2018-01",
+    "people": 2474871
+   },
+   {
+    "month": "2023-06",
+    "people": 1938579
+   },
+   {
+    "month": "2022-06",
+    "people": 1318379
+   },
+   {
+    "month": "2019-01",
+    "people": 740107
+   },
+   {
+    "month": "2024-10",
+    "people": 274517
+   }
+  ],
+  "rows": [
+   {
+    "month": -3,
+    "mean": 0.18,
+    "low": -2.65,
+    "high": 3.35
+   },
+   {
+    "month": -2,
+    "mean": 0.12,
+    "low": -1.43,
+    "high": 1.53
+   },
+   {
+    "month": -1,
+    "mean": -0.3,
+    "low": -2.31,
+    "high": 1.76
+   },
+   {
+    "month": 0,
+    "mean": 0.24,
+    "low": -7.82,
+    "high": 5.8
+   },
+   {
+    "month": 1,
+    "mean": -1.51,
+    "low": -5.8,
+    "high": 3.06
+   },
+   {
+    "month": 2,
+    "mean": -2.46,
+    "low": -4.8,
+    "high": -0.55
+   },
+   {
+    "month": 3,
+    "mean": -2.02,
+    "low": -8.28,
+    "high": 2.23
+   },
+   {
+    "month": 4,
+    "mean": -2.28,
+    "low": -8.07,
+    "high": 1.66
+   },
+   {
+    "month": 5,
+    "mean": -2.1,
+    "low": -11.16,
+    "high": 1.7
+   },
+   {
+    "month": 6,
+    "mean": -1.3,
+    "low": -8.81,
+    "high": 1.51
+   }
+  ]
+ }
+}
