@@ -34,16 +34,20 @@ jobs:
 
       - run: npm run build
 
+      # Names the Worker secrets that deploys and previews upload with their version. The file holds
+      # only names: wrangler takes each value from the step's environment, so the key never touches disk.
+      # Setting them on the version avoids `wrangler secret`, which fails while a preview is the latest version.
+      - name: List the Worker secrets
+        if: env.CLOUDFLARE_API_TOKEN != ''
+        run: echo "ANTHROPIC_API_KEY=" > "$RUNNER_TEMP/secrets.env"
+
       # The secret is absent until it's added to the repo, and on pull requests from forks.
       - name: Deploy to production
         if: env.CLOUDFLARE_API_TOKEN != '' && github.event_name == 'push'
         uses: cloudflare/wrangler-action@953926a2e2182532811c01a25e53647d93bf07c0 # v4.1.3
         with:
           apiToken: ${{ env.CLOUDFLARE_API_TOKEN }}
-          command: deploy
-          # Copies the org's ANTHROPIC_API_KEY onto the Worker. Preview versions inherit it.
-          secrets: |
-            ANTHROPIC_API_KEY
+          command: deploy --secrets-file ${{ runner.temp }}/secrets.env
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
 
@@ -60,7 +64,9 @@ jobs:
         uses: cloudflare/wrangler-action@953926a2e2182532811c01a25e53647d93bf07c0 # v4.1.3
         with:
           apiToken: ${{ env.CLOUDFLARE_API_TOKEN }}
-          command: versions upload --preview-alias ${{ env.PREVIEW_ALIAS }}
+          command: versions upload --preview-alias ${{ env.PREVIEW_ALIAS }} --secrets-file ${{ runner.temp }}/secrets.env
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
 
       - name: Comment the preview link
         if: steps.preview.outcome == 'success'
