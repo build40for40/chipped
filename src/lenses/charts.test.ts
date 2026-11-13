@@ -25,13 +25,13 @@ describe('lens charts', () => {
 })
 
 describe('Lenses', () => {
-  it('shows all seven questions, each with a chart, what was asked and where the data came from', async () => {
+  it('shows all eight questions, each with a chart, what was asked and where the data came from', async () => {
     const wrapper = mount(Lenses)
     await flushPromises()
 
-    expect(wrapper.findAll('article')).toHaveLength(7)
-    expect(wrapper.findAll('.tag').map((tag) => tag.text())).toEqual(['Real data', 'Real data', 'Needs a poll', 'Real data', 'Real data', 'Real data', 'Real data'])
-    expect(wrapper.findAll('.asked')).toHaveLength(7)
+    expect(wrapper.findAll('article')).toHaveLength(8)
+    expect(wrapper.findAll('.tag').map((tag) => tag.text())).toEqual(['Real data', 'Real data', 'Needs a poll', 'Real data', 'Real data', 'Real data', 'Real data', 'Real data'])
+    expect(wrapper.findAll('.asked')).toHaveLength(8)
     expect(wrapper.findAll('.source').every((source) => source.text().length > 20)).toBe(true)
     expect(wrapper.text()).not.toMatch(/dummy|made up/i)
     expect(wrapper.findAll('[data-plot] svg')).toHaveLength(keys.length)

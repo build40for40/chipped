@@ -1,5 +1,5 @@
 <script setup lang="ts">
-// The seven questions we want answered about chipped nails, one chart each.
+// The questions we want answered about chipped nails, one card each.
 // Every number is real and comes from ./data.json. Where the data could not answer what was asked,
 // the card shows the reworded question and says what stands in for what.
 import { onBeforeUnmount, onMounted, reactive, ref } from 'vue'
@@ -21,6 +21,7 @@ interface Lens {
 }
 
 const industry = data.industry
+const mani = data.manicure
 const protestMonths = data.protest.events.map((e) => new Date(`${e.month}-15`).toLocaleDateString('en-GB', { month: 'short', year: 'numeric' })).join(', ')
 
 const LENSES: Lens[] = [
@@ -121,6 +122,25 @@ const LENSES: Lens[] = [
       'Six events is very few, and protests during the lockdown collapse of 2020 and 2021 are left out.',
     ],
   },
+  {
+    id: 'manicure',
+    asked: 'How affordable is a manicure?',
+    question: 'How long does a woman in the UK work to pay for a basic manicure?',
+    how: `The first chart is the manicure index: the middle shop price divided by the middle hourly pay for women. In ${mani.minutes.years[0]} it took ${Math.round(mani.minutes.values[0]!)} minutes of work and in ${mani.minutes.years[mani.minutes.years.length - 1]} it took ${Math.round(mani.minutes.values[mani.minutes.values.length - 1]!)}. The second shows why: the price on the day went up, but once you allow for inflation it went down. The third is the middle price in each region.`,
+    status: 'Real data',
+    legend: [{ label: 'Price on the day', colour: 'var(--c1)' }, { label: "In today's money", colour: 'var(--c2)' }],
+    plots: [
+      { key: 'manicure-minutes', title: 'The manicure index: minutes of work to pay for one' },
+      { key: 'manicure-price', title: 'The price, on the day and in today’s money' },
+      { key: 'manicure-regions', title: `Where it costs most, ${mani.regions.year}` },
+    ],
+    source: 'UK. Shop prices collected by the Office for National Statistics for the inflation figures, about 120 a month. Women’s middle hourly pay from the ONS earnings survey.',
+    caveats: [
+      'A basic manicure is the ONS’s own item and probably leaves out gel.',
+      'The shops sampled change over time, and some months are missing, including most of the 2020 and 2021 lockdowns.',
+      'Pay is for all women employees, full time and part time together, and stops at 2025. Northern Ireland rests on only 35 prices.',
+    ],
+  },
 ]
 
 const root = ref<HTMLElement | null>(null)
@@ -168,7 +188,7 @@ function onFocus(e: FocusEvent) {
 <template>
   <section ref="root" class="lenses" @pointermove="onPointer" @pointerdown="onPointer" @pointerleave="tip.show = false" @focusin="onFocus" @focusout="tip.show = false">
     <header>
-      <h2>Seven lenses on chipped nails</h2>
+      <h2>Eight lenses on chipped nails</h2>
       <p class="note">Real numbers, with stand ins. We could not find data for everything we asked, so each card shows what we asked, what the data can answer, and where it is shaky. Correlation is not cause.</p>
       <nav aria-label="Lenses">
         <a v-for="(lens, i) in LENSES" :key="lens.id" :href="`#${lens.id}`">{{ i + 1 }} {{ lens.id }}</a>

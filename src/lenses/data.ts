@@ -1,4 +1,4 @@
-// The real numbers behind the seven lenses. data.json is written by data/scripts/build-lenses.mjs from the
+// The real numbers behind the lenses. data.json is written by data/scripts/build-lenses.mjs from the
 // files in data/parts/, so nothing here is typed in by hand. data/LENSES.md says where each series falls short.
 import raw from './data.json'
 

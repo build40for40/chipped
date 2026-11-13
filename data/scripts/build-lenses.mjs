@@ -156,9 +156,27 @@ const protest = {
   }),
 };
 
-const out = { pride, work, industry, hobbies, hands, selfcare, protest };
+// Lens 8. The manicure index: the middle shop price of a basic manicure in the UK, the same in today's money,
+// and how many minutes a woman on the middle hourly wage works to pay for one.
+const quotes = await part("uk-manicure-prices");
+const afford = (await part("uk-manicure-affordability")).series;
+const minuteYears = Object.keys(afford.manicure_minutes_of_work.annual).sort();
+const priceYears = Object.keys(quotes.series.manicure_median_gbp.annual).filter((y) => afford.manicure_real_gbp.annual[y] != null).sort();
+const manicure = {
+  minutes: { years: minuteYears.map(Number), values: minuteYears.map((y) => round(afford.manicure_minutes_of_work.annual[y], 1)) },
+  price: {
+    years: priceYears.map(Number),
+    sticker: priceYears.map((y) => round(quotes.series.manicure_median_gbp.annual[y])),
+    real: priceYears.map((y) => round(afford.manicure_real_gbp.annual[y])),
+  },
+  pay: { first: afford.women_median_hourly_pay_gbp.annual[minuteYears[0]], last: afford.women_median_hourly_pay_gbp.annual[minuteYears.at(-1)] },
+  regions: { year: Number(quotes.manicure_by_region.year), rows: quotes.manicure_by_region.regions.map((r) => ({ name: r.region, price: r.median_gbp, quotes: r.quotes })) },
+};
+
+const out = { pride, work, industry, hobbies, hands, selfcare, protest, manicure };
 await writeFile(join(root, "..", "src", "lenses", "data.json"), JSON.stringify(out, null, 1) + "\n");
 console.log(`pride: ${pride.map((p) => `${p.key} ${p.points[0].year}-${p.points.at(-1).year}`).join(", ")}`);
 console.log(`work: ${work.years[0]}-${work.years.at(-1)}; industry: ${industry.rows.length} rows, ${industry.year}; hobbies: ${hobbies.length} countries`);
 console.log(`hands: ${hands.rows.length} countries; selfcare: ${selfcare.map((r) => `${r.name} ${r.raw}/${r.yearOnYear}`).join("; ")}`);
+console.log(`manicure: minutes ${manicure.minutes.years[0]}:${manicure.minutes.values[0]} to ${manicure.minutes.years.at(-1)}:${manicure.minutes.values.at(-1)}; price ${manicure.price.years[0]} to ${manicure.price.years.at(-1)}`);
 console.log(`protest events: ${chosen.join(", ")}; mean by month: ${protest.rows.map((r) => `${r.month}:${r.mean}`).join(" ")}`);

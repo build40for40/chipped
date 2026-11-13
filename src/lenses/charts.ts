@@ -260,7 +260,68 @@ function protestLag(w: number) {
   return `${s}</svg>`
 }
 
+// Lens 8: one or two yearly lines in the same unit. A single line gets its first, lowest and last points labelled.
+function yearLines(years: number[], series: { name: string; values: number[] }[], fmt: (v: number) => string, label: string) {
+  return (w: number) => {
+    const wide = w > 520
+    const many = series.length > 1
+    const h = wide ? 300 : 250
+    const m = { l: 44, r: wide && many ? 150 : 22, t: 26, b: 28 }
+    const first = years[0]!
+    const last = years[years.length - 1]!
+    const ey = extent(series.flatMap((q) => q.values), 0.14)
+    const x = lin(first, last, m.l, w - m.r)
+    const y = lin(ey[0], ey[1], h - m.b, m.t)
+    let s = open(w, h, label)
+    s += gridY(ticks(ey[0], ey[1], 4), y, m.l, w - m.r, fmt) + ticksX(years.filter((yr) => (wide ? yr % 3 === 0 : yr % 5 === 0)), x, h - m.b)
+    series.forEach((q, i) => {
+      s += `<path fill="none" stroke="${COLOURS[i]}" stroke-width="2" stroke-linejoin="round" d="${path(q.values.map((v, j) => [x(years[j]!), y(v)]))}"/>`
+      s += `<circle cx="${x(last)}" cy="${y(q.values[q.values.length - 1]!)}" r="4" fill="${COLOURS[i]}" stroke="var(--panel)" stroke-width="2"/>`
+      if (wide && many) s += `<text class="lab" x="${x(last) + 10}" y="${y(q.values[q.values.length - 1]!) + 4}">${q.name}</text>`
+    })
+    if (!many) {
+      const values = series[0]!.values
+      const low = values.indexOf(Math.min(...values))
+      const marks = [...new Set([0, low, values.length - 1])]
+      for (const j of marks) {
+        const anchor = j === 0 ? 'start' : j >= values.length - 3 ? 'end' : 'middle'
+        s += `<circle cx="${x(years[j]!)}" cy="${y(values[j]!)}" r="4" fill="${COLOURS[0]}" stroke="var(--panel)" stroke-width="2"/>`
+        s += `<text class="strong" x="${x(years[j]!)}" y="${y(values[j]!) + (j === low && j !== 0 && j !== values.length - 1 ? 20 : -10)}" text-anchor="${anchor}">${fmt(values[j]!)} in ${years[j]}</text>`
+      }
+    }
+    const column = (w - m.l - m.r) / (years.length - 1)
+    years.forEach((year, j) => {
+      const tip = `${year}\n${series.map((q) => `${q.name}: ${fmt(q.values[j]!)}`).join('\n')}`
+      s += `<rect x="${x(year) - column / 2}" y="${m.t}" width="${column}" height="${h - m.t - m.b}" fill="transparent" tabindex="0" data-tip="${esc(tip)}"/>`
+    })
+    return `${s}</svg>`
+  }
+}
+
+// Lens 8: the middle manicure price in each UK region, dearest first.
+function regionBars(w: number) {
+  const { rows, year } = data.manicure.regions
+  const labelWidth = w > 520 ? 200 : 0
+  const step = labelWidth ? 28 : 42
+  const m = { l: labelWidth + 4, r: 44, t: 6, b: 6 }
+  const h = m.t + rows.length * step + m.b
+  const x = lin(0, Math.max(...rows.map((r) => r.price)), m.l, w - m.r)
+  let s = open(w, h, `Middle price of a basic manicure in each UK region in ${year}`)
+  rows.forEach((d, i) => {
+    const top = m.t + i * step
+    const barTop = labelWidth ? top + 5 : top + 16
+    const width = x(d.price) - x(0)
+    s += labelWidth
+      ? `<text class="lab" x="${labelWidth - 6}" y="${top + 19}" text-anchor="end" font-size="12">${esc(d.name)}</text>`
+      : `<text class="lab" x="${m.l}" y="${top + 10}" font-size="12">${esc(d.name)}</text>`
+    s += `<path d="M${x(0)} ${barTop}h${width - 4}a4 4 0 0 1 4 4v10a4 4 0 0 1 -4 4h-${width - 4}z" fill="var(--c1)" tabindex="0" data-tip="${esc(`${d.name}\nMiddle price £${d.price}\nFrom ${d.quotes} shop prices in ${year}`)}"/>`
+    s += `<text class="strong" x="${x(d.price) + 6}" y="${barTop + 13}">£${d.price}</text>`
+  })
+  return `${s}</svg>`
+}
+
 const [prideBirths, prideManagers, prideMarriages] = data.pride
+const manicure = data.manicure
 
 export const PLOTS = {
   'pride-births': scatter(prideBirths!.points, 'Turnover £m', prideBirths!.yName),
@@ -272,6 +333,14 @@ export const PLOTS = {
   hands: eatingStrips,
   selfcare: selfCareDumbbells,
   protest: protestLag,
+  'manicure-minutes': yearLines(manicure.minutes.years, [{ name: 'Minutes of work', values: manicure.minutes.values }], (v) => `${Math.round(v)} min`, 'Minutes a woman on the middle UK hourly wage works to pay for a basic manicure, by year'),
+  'manicure-price': yearLines(
+    manicure.price.years,
+    [{ name: 'Price on the day', values: manicure.price.sticker }, { name: "In today's money", values: manicure.price.real }],
+    (v) => `£${v.toFixed(v % 1 ? 2 : 0)}`,
+    'Middle UK price of a basic manicure by year, as charged at the time and in today\u2019s money',
+  ),
+  'manicure-regions': regionBars,
 } satisfies Record<string, (w: number) => string>
 
 export type PlotKey = keyof typeof PLOTS
