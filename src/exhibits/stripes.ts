@@ -9,9 +9,19 @@ const LACQUER = [201, 64, 91]
 const DEEP = [140, 37, 57]
 
 // t from 0 (quietest month) to 1 (busiest): nude to lacquer for the first 60%, then lacquer to deep.
-export function colour(t: number): string {
+export function colourRgb(t: number): [number, number, number] {
   const [a, b, u] = t < 0.6 ? [NUDE, LACQUER, t / 0.6] : [LACQUER, DEEP, (t - 0.6) / 0.4]
-  return `rgb(${a.map((x, i) => Math.round(x + (b[i]! - x) * u)).join(',')})`
+  return a.map((x, i) => Math.round(x + (b[i]! - x) * u)) as [number, number, number]
+}
+
+export function colour(t: number): string {
+  return `rgb(${colourRgb(t).join(',')})`
+}
+
+// One colour per month, each ranked against every other month.
+export function stripeColours(months: [string, number][]): [number, number, number][] {
+  const sorted = months.map((m) => m[1]).sort((x, y) => x - y)
+  return months.map(([, v]) => colourRgb(sorted.indexOf(v) / (sorted.length - 1)))
 }
 
 export function stripesSvg(months: [string, number][]): string {
