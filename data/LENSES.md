@@ -183,6 +183,45 @@ Caveats:
 - Weekly pay covers Great Britain, not Northern Ireland, and is a mean, so it is pulled up by high earners.
 - Prices start in 2010 because that is the first year of price quote files. The ONS item index for manicures goes back to 2005 but it is an index, not a price, and we did not use it.
 
+### Other countries
+
+File: `grooming-affordability-by-country.json`. Script: `fetch-grooming-affordability.mjs`. 34 countries, each compared only with itself.
+
+| File | What it is | Countries | Years | Source | Direct or stand-in |
+| --- | --- | --- | --- | --- | --- |
+| `grooming-affordability-by-country.json` (`countries[].price_index`) | Price index for hairdressing and personal grooming | 28 in Europe (Eurostat), plus UK (ONS), US (BLS via FRED), Canada (Statistics Canada), Australia (ABS) | Mostly 1996 to 2025 | National consumer price indexes | Stand-in for manicures. Mostly haircuts |
+| `grooming-affordability-by-country.json` (`countries[].price_index`, Brazil) | Price index for the item "Manicure" | Brazil | 2012 to 2025 | IBGE IPCA | Direct for nails, but an index and not a price |
+| `grooming-affordability-by-country.json` (`countries[].wage`) | Mean yearly wage of a full-time equivalent employee, both sexes, in the country's own money | All but Brazil | 1990 to 2025 | OECD average annual wages | Direct |
+| `grooming-affordability-by-country.json` (`countries[].price_to_pay_index`) | The price index divided by the pay index, both set to 2015 = 100 | All 34 | As above | Derived | Derived |
+
+Which tier each country is in:
+
+- **Tier A, a real manicure price in money: the UK only.** No other statistics office we checked publishes one. So there are no minutes of work for any other country.
+- **Tier B, an index only: 34 countries.** 33 use the hairdressing and grooming index. Brazil is the odd one out. Its statistics office tracks manicures as their own item, so its index is about nails alone (`nail_specific: true`). It is still an index, not a price.
+
+What the index means: `price_to_pay_index` is 100 in 2015, and a figure above 100 means a trip to the salon takes more work to pay for than it did in 2015, and below 100 means less.
+
+What it says (2024, the latest year with all 34 countries):
+
+- Easiest to afford compared with 2015: Romania 56.6, Türkiye 58.4, Hungary 76.9. Pay there rose much faster than salon prices.
+- Hardest to afford compared with 2015: Sweden 113.0, Slovakia 111.7, the Netherlands 108.5.
+- UK 102.4, US 98.5, Brazil (manicures alone) 94.8.
+- The UK shows how much the pay measure matters. Against the OECD mean wage the UK index is 102.6 in 2025. Against women's median hourly pay it is 90.5. The real manicure figure, minutes of work, is 87.2 on the same 2015 = 100 scale. All three are in the UK entry.
+- The US also carries women's median weekly pay (full-time only): 96.8 in 2024.
+
+Caveats:
+
+- The grooming index is mostly haircuts. It also covers barbers, beauty treatments and nails, in shares we cannot see. It is a stand-in for manicures everywhere except Brazil.
+- An index cannot say what anything costs. It cannot say which country is dearer. It only says how one country has moved against its own past.
+- Pay is a mean for both sexes, so high earners pull it up. The UK manicure index uses the median for women. The two can point different ways, as the UK shows.
+- Pay measures differ by country. The OECD wage is from national accounts and counts full-time equivalents. Brazil uses a household survey of monthly earnings. The UK and US women's figures are medians from pay surveys, hourly for the UK and weekly for full-time workers in the US.
+- Türkiye's figures are swamped by inflation. Its salon index rose about elevenfold from 2015 to 2024 and wages about nineteenfold.
+- Some years are worked out here, not published: the US and Brazil yearly index is the mean of 12 months, Australia's is the mean of 4 quarters. A year with a missing month is left out, which is why the US has no 2025 (the October 2025 figure was never published).
+- Brazil's index is chained here from the monthly percentage changes that IBGE publishes, starting from December 2011 = 100.
+- Wages stop at 2024 for Bulgaria, Croatia, Iceland, Romania and Türkiye.
+- Cyprus, Malta, Albania, Kosovo, Montenegro, North Macedonia and Serbia have the grooming index but are not in the OECD wage table, so they are left out.
+- Nothing is converted between currencies.
+
 ## Things we tried that did not work
 
 | Source | What happened |
@@ -195,6 +234,7 @@ Caveats:
 | Sport England Active Lives | Worked in the end, by reading the newest workbook linked from their data tables page. The link changes with each release, so that script is the most likely to break |
 | ONS CPI price quotes (basic manicure, nail varnish bottle) | Worked. All 113 price quote files are read, see "The manicure index" above. The ONS page links no file for January and February 2017 or January to July 2019, and guessing their addresses got a 404 and then a rate limit, so those nine months are left out. The item index files (which go back to 2005) were not parsed, so there is nothing before 2010 |
 | Google Trends | No free API |
+| A manicure price in money outside the UK | Not found. Ireland (CSO national average prices) lists three haircuts and no manicure. Poland (GUS local data bank) has a men's haircut only. Russia (Rosstat) does publish a manicure price but its data site refused the request, and we do not get round that. Kazakhstan's data site had no price table we could find and then returned errors. Japan and South Korea need an API key. The US, Canada and Australia publish no price for any salon service, only indexes. Brazil publishes a manicure index, which we used |
 | OpenStreetMap count of nail shops | Not added. It is a snapshot with no history |
 
 ## Summary
