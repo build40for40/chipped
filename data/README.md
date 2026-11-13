@@ -26,6 +26,7 @@ Everything "chip" and "nail", as JSON you can chart. `npm run data:publish` copi
 | `parts/uk-grooming-prices.json` | https://build40for40.com/chipped/data/uk-grooming-prices.json | ONS consumer price index for hairdressing and personal grooming (`D7EY`, 2015 = 100), monthly from 1988 |
 | `parts/us-protests.json` | https://build40for40.com/chipped/data/us-protests.json | US protest events and estimated crowds from the Crowd Counting Consortium, Jan 2017 to May 2026: `events_all`, `people_all`, and `events_women`, `people_women` for protests tagged women's rights or reproductive rights. Each has `.weekly` (keyed by the Monday), `.monthly` and `.annual` |
 | `parts/eating-styles.json` | https://build40for40.com/chipped/data/eating-styles.json | **Hand-coded, not fetched.** 14 countries sorted into hands, chopsticks or cutlery, each with the Wikipedia article it rests on |
+| `parts/lenses.json` | https://build40for40.com/chipped/data/lenses.json | An earlier pull of the non-nail side of the lenses, under `lenses.<name>`. Most of it overlaps the lens files above; use those first. Only here: `selfCare.jobs` (US fitness-centre, nail and hair salon jobs, yearly 2005–2025, until `bls-selfcare.json` can be fetched), `protests` daily English "Nail salon" pageviews 2016–2021, and Ngram book counts for dating and promotion phrases in `pride` |
 
 Every entry is keyed by the same `id` across files. The lens files above are not entries: [`LENSES.md`](LENSES.md) says which of the seven lenses each one serves, what is a stand-in, and what is still missing. The baseline everything is compared against is `chipped-nails`.
 
@@ -54,6 +55,8 @@ node data/scripts/fetch-bls-selfcare.mjs          # not run yet: writes bls-self
 npm run data:publish
 ```
 
+`node data/scripts/fetch-lenses.mjs` refreshes `lenses.json` (about 5 minutes; it caches a 185 MB Covid file and a 37 MB protest file in `data/raw/lenses/`).
+
 `reduce-neiss.mjs` needs the NEISS yearly spreadsheets downloaded by hand; its header says how.
 
 ## Pub facts so far
@@ -66,6 +69,13 @@ npm run data:publish
 - A nail cost about ten times more in 1790 than in 1930, in real terms. Since 1930 the price has roughly quadrupled.
 - Jensen Huang's Wikipedia page went from about 6,000 views a day to 1.07 million on 12 November 2026, the day he resigned amid reports of an affair with an *alleged* Chinese spy.
 
+## What the lens data says so far (US nail salon jobs, 2005–2025, from `lenses.json`)
+
+- **Self care:** when gyms hire, nail salons hire. Fitness-centre jobs track nail-salon jobs even year on year and before Covid (rΔ 0.86), far more than hair salons do (0.34).
+- **Covid hobbies:** painting your nails didn't boom. Across 22 languages, the median change in "Nail polish" views in 2020 was +1%, unrelated to how strict lockdown was (r 0.11). Sourdough was +78%, jigsaws +34%. Turkish shows +1,240%, but from 653 views, so ignore it.
+- **Protests:** salon interest does rise in the weeks after the big women's protests, but they all fall in January, and salon interest rises every spring anyway. The lag is the season, not the march.
+- **Pride:** births fell as salon jobs rose (r −0.95), and women's share of management rose with them (0.96), but year on year both links mostly vanish: three things changing over 20 years.
+
 ## Licences
 
-Ngram CC BY 3.0 (credit Google Books Ngram Viewer). Wikipedia pageviews CC0. FRED: credit the Federal Reserve Bank of St. Louis and each series' source. BLS and NEISS: US government, public domain. S&P 500: Robert Shiller's dataset via `datasets/s-and-p-500` (Open Data Commons PDDL). Nail prices: figures from Sichel, NBER Working Paper 29617, Table 1. Events: Sichel's data appendix and Wikipedia (CC BY-SA 4.0), reworded. Lens files: HMRC and ONS under the Open Government Licence v3.0; Eurostat and Our World in Data CC BY 4.0; UN Comtrade free with credit; Crowd Counting Consortium CC0; Sport England with credit; each file's `source` and `licence` fields have the detail.
+Ngram CC BY 3.0 (credit Google Books Ngram Viewer). Wikipedia pageviews CC0. FRED: credit the Federal Reserve Bank of St. Louis and each series' source. BLS and NEISS: US government, public domain. S&P 500: Robert Shiller's dataset via `datasets/s-and-p-500` (Open Data Commons PDDL). Nail prices: figures from Sichel, NBER Working Paper 29617, Table 1. Events: Sichel's data appendix and Wikipedia (CC BY-SA 4.0), reworded. Lens files: HMRC and ONS under the Open Government Licence v3.0; Eurostat and Our World in Data CC BY 4.0; UN Comtrade free with credit; Crowd Counting Consortium CC0; Sport England with credit; World Bank CC BY 4.0; BLS public domain; each file's `source` and `licence` fields have the detail.
