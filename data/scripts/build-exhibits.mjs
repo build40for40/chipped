@@ -13,6 +13,7 @@ const outPath = join(root, "..", "src", "exhibits", "data.json");
 const prices = await read("real-prices.json");
 const nails = await read("nail-prices.json");
 const neiss = await read("neiss.json");
+const trade = await read("uk-nail-trade.json");
 
 const ORDER = ["salon", "polish", "potato-chips", "microchips", "computers", "steel-nails"];
 const items = [
@@ -42,6 +43,12 @@ await writeFile(
   JSON.stringify(
     {
       prices: { note: prices.note, items },
+      stripes: {
+        source: trade.source,
+        licence: trade.licence,
+        monthly: trade.series.imports_gbp.monthly,
+        annual: trade.series.imports_gbp.annual,
+      },
       er: { from: Number(years[0]), to: Number(years.at(-1)), manicure: mean("nail-cosmetics"), nailGun: mean("nail-guns"), caveat: neiss.caveat },
     },
     null,
