@@ -1,0 +1,26 @@
+node_modules
+dist
+coverage
+*.local
+*.log
+*.tsbuildinfo
+.DS_Store
+
+# Editors
+.vscode/*
+!.vscode/extensions.json
+.idea
+
+# Vitest and Vite
+__screenshots__/
+*.timestamp-*-*.mjs
+
+# Environment and Cloudflare
+.env*
+!.env.example
+.dev.vars*
+!.dev.vars.example
+.wrangler/
+
+# Reddit sample: other people's posts, kept local only
+research/samples/reddit-*

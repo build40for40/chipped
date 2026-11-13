@@ -1,0 +1,70 @@
+{
+  "meta": {
+    "disclaimer": "Do not rely on openFDA to make decisions regarding medical care. While we make every effort to ensure that data is accurate, you should assume all results are unvalidated. We may limit or otherwise restrict your access to the API in line with our Terms of Service. Submission of an adverse event report does not constitute an admission that a product caused or contributed to an event. The information in these reports has not been scientifically or otherwise verified as to a cause and effect relationship and cannot be used to estimate incidence (occurrence rate) or to estimate risk.",
+    "terms": "https://open.fda.gov/terms/",
+    "license": "https://open.fda.gov/license/",
+    "last_updated": "2026-07-07"
+  },
+  "results": [
+    {
+      "term": "NAIL INJURY",
+      "count": 18
+    },
+    {
+      "term": "PAIN IN EXTREMITY",
+      "count": 16
+    },
+    {
+      "term": "Pain",
+      "count": 16
+    },
+    {
+      "term": "BURNING SENSATION",
+      "count": 15
+    },
+    {
+      "term": "ONYCHOLYSIS",
+      "count": 15
+    },
+    {
+      "term": "CHEMICAL INJURY",
+      "count": 14
+    },
+    {
+      "term": "ONYCHOMYCOSIS",
+      "count": 13
+    },
+    {
+      "term": "PAIN",
+      "count": 12
+    },
+    {
+      "term": "Pruritus",
+      "count": 11
+    },
+    {
+      "term": "ALOPECIA",
+      "count": 9
+    },
+    {
+      "term": "Hypersensitivity",
+      "count": 9
+    },
+    {
+      "term": "NAIL DISCOLOURATION",
+      "count": 9
+    },
+    {
+      "term": "SWELLING",
+      "count": 9
+    },
+    {
+      "term": "Blister",
+      "count": 8
+    },
+    {
+      "term": "Chemical injury",
+      "count": 8
+    }
+  ]
+}
