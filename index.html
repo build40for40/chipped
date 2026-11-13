@@ -235,23 +235,9 @@ button:focus-visible { outline: 2px solid var(--lacquer); outline-offset: 3px; }
 .shake { animation: shake 0.4s; }
 @keyframes shake { 20%, 60% { transform: translateX(-8px); } 40%, 80% { transform: translateX(8px); } }
 
-/* Night: the toddler session is over. A dim glowing bottle in the last colour. */
-.night {
-  position: fixed;
-  inset: 0;
-  z-index: 25;
-  display: grid;
-  place-items: center;
-  background: rgb(12 5 9 / 0.88);
-}
-.night svg { width: min(38vmin, 220px); height: auto; animation: glow 5s ease-in-out infinite; }
-.night .bottle-fill { fill: var(--glow); }
-.night .bottle-line { fill: none; stroke: rgb(255 255 255 / 0.35); stroke-width: 0.5; }
-.night .bottle-cap { fill: #2a2226; }
-@keyframes glow {
-  0%, 100% { filter: drop-shadow(0 0 10px var(--glow)) brightness(0.75); }
-  50% { filter: drop-shadow(0 0 36px var(--glow)) brightness(1); }
-}
+/* Night: the toddler session is over. The polish dries, the lights go down, and the controls fade away. */
+body.night .controls, body.night .tray, body.night .breath { opacity: 0 !important; pointer-events: none; transition: opacity 3s ease; }
+body.night .kid { opacity: 0.3; }
 
 /* Breath */
 .breath {
@@ -272,25 +258,6 @@ button:focus-visible { outline: 2px solid var(--lacquer); outline-offset: 3px; }
 }
 .breath.show { opacity: 0.92; }
 body:not(.painting) .breath { bottom: calc(40px + env(safe-area-inset-bottom, 0px)); }
-
-/* The motif name, shown as a stroke begins */
-.motif {
-  position: fixed;
-  left: 0;
-  right: 0;
-  top: calc(72px + env(safe-area-inset-top, 0px));
-  text-align: center;
-  font-family: var(--display);
-  font-weight: 600;
-  font-size: 0.95rem;
-  letter-spacing: 0.02em;
-  color: #fff;
-  text-shadow: 0 1px 12px rgb(60 10 25 / 0.6), 0 0 2px rgb(60 10 25 / 0.35);
-  opacity: 0;
-  transition: opacity 0.6s ease;
-  pointer-events: none;
-}
-.motif.show { opacity: 0.95; }
 
 /* Quiet the chrome while someone is simply watching */
 body.idle .controls, body.idle .kid { opacity: 0.28; }
@@ -354,7 +321,6 @@ body.idle .tray:not([hidden]) { opacity: 0.4; }
 }
 @media (prefers-reduced-motion: reduce) {
   .knob, .tray, .breath, .welcome, .controls, .kid { transition: none; }
-  .night svg { animation: none; }
 }
 </style>
 </head>
@@ -382,53 +348,45 @@ body.idle .tray:not([hidden]) { opacity: 0.4; }
 </div>
 
 <div class="breath" id="breathText" aria-live="off"></div>
-<div class="motif" id="motif" aria-live="polite"></div>
 
 <div class="tray glass" id="tray" hidden>
   <div id="shades" style="display:flex;gap:0.2rem"></div>
   <span class="sep"></span>
-  <button class="plain" id="fresh" type="button" title="Flood a fresh base coat and start a new design">Fresh base coat</button>
+  <button class="plain" id="fresh" type="button" title="Start a new design">New coat</button>
 </div>
 
 <div class="sheet" id="kidSheet" hidden>
   <div class="card glass" role="dialog" aria-labelledby="kidTitle">
-    <p class="eyebrow">Little hands</p>
-    <h2 id="kidTitle">Lock it for a toddler</h2>
-    <p>Full screen, no zooming, softer music, and every finger paints. Paint, music and breathing still work.</p>
+    <h2 id="kidTitle">Little hands</h2>
+    <p>Locks the screen for small children. They can still paint.</p>
     <p class="eyebrow">End after</p>
     <div class="picks" id="picks">
       <label class="custom" for="customMins"><input id="customMins" type="number" inputmode="numeric" min="1" max="600" placeholder="Other" aria-label="Other number of minutes"> min</label>
     </div>
-    <p class="note" id="endNote">When time is up, the music fades, the polish settles and a softly glowing bottle stays on screen until you unlock.</p>
-    <p class="note">To unlock, hold the lock button for 3 seconds, then tap the colours it asks for. For a full lock, also turn on Guided Access (iPhone) or App pinning (Android).</p>
+    <p class="note">To unlock, hold the lock for 3 seconds.<br>For a full lock, also use Guided Access or App pinning.</p>
     <div class="row">
-      <button class="primary" id="lockKid" type="button">Lock for little hands</button>
-      <button class="secondary" id="closeKid" type="button">Not now</button>
+      <button class="primary" id="lockKid" type="button">Lock</button>
+      <button class="secondary" id="closeKid" type="button">Cancel</button>
     </div>
   </div>
 </div>
 
 <div class="sheet" id="unlockSheet" hidden>
   <div class="card glass" role="dialog" aria-labelledby="unlockAsk">
-    <p class="eyebrow">Grown-ups only</p>
     <h2 id="unlockAsk"></h2>
     <div class="swatches" id="unlockDots"></div>
   </div>
 </div>
 
-<div class="night" id="night" hidden>
-  <svg viewBox="0 0 24 24" aria-label="All done"><defs><clipPath id="nightClip"><path d="M8 10.5h8a1.5 1.5 0 0 1 1.5 1.5v7.5a2 2 0 0 1-2 2h-7a2 2 0 0 1-2-2V12A1.5 1.5 0 0 1 8 10.5z"/></clipPath></defs><rect class="bottle-fill" x="5" y="10.5" width="14" height="11" clip-path="url(#nightClip)"/><path class="bottle-line" d="M8 10.5h8a1.5 1.5 0 0 1 1.5 1.5v7.5a2 2 0 0 1-2 2h-7a2 2 0 0 1-2-2V12A1.5 1.5 0 0 1 8 10.5z"/><path class="bottle-line" d="M10.2 10.5V8.4h3.6v2.1"/><rect class="bottle-cap" x="9.4" y="2.6" width="5.2" height="5.8" rx="1"/></svg>
-</div>
-
 <div class="welcome" id="welcome">
   <div class="card glass">
     <h1>chipped<span class="dot"></span></h1>
-    <p>Glossy nail polish floating on still water. Drag through it and it drifts like a puddle. Switch on Paint and just move your finger: every stroke turns into a finished nail-art design.</p>
+    <p>Nail polish on still water. Touch to move it. Turn on Paint to make a design.</p>
     <div class="row">
       <button class="primary" id="beginSound" type="button">Begin with music</button>
       <button class="secondary" id="beginQuiet" type="button">Begin quietly</button>
     </div>
-    <p class="tip">Headphones help. Each stroke brings a new motif: rings, petals, hearts, polka dots, lace.</p>
+    <p class="tip">Best with headphones.</p>
   </div>
 </div>
 
@@ -474,7 +432,7 @@ const canvas = $('pool');
 const gl = canvas.getContext('webgl2', { alpha: false, antialias: false, depth: false, stencil: false, preserveDrawingBuffer: false });
 if (!gl || !(gl.getExtension('EXT_color_buffer_float') || gl.getExtension('EXT_color_buffer_half_float'))) {
   document.body.insertAdjacentHTML('afterbegin', '<div class="fallback"></div>');
-  $('beginSound').closest('.card').querySelector('p').textContent = 'This browser cannot run the moving polish (it needs WebGL 2), so here is a still. The music still plays.';
+  $('beginSound').closest('.card').querySelector('p').textContent = "This browser can't show the moving polish, so here's a still.";
   canvas.remove();
 }
 
@@ -558,7 +516,7 @@ const FS = {
   gradient: `uniform sampler2D uPressure, uVelocity;
     void main(){ float L = texture(uPressure, vL).x, R = texture(uPressure, vR).x, T = texture(uPressure, vT).x, B = texture(uPressure, vB).x;
       o = vec4(texture(uVelocity, vUv).xy - vec2(R - L, T - B), 0.0, 1.0); }`,
-  display: `uniform sampler2D uDye; uniform vec2 dyeTexel; uniform float time, aspect, sparkle; uniform vec3 pal[16], prevPal[16]; uniform int palN, prevPalN; uniform float palMix;
+  display: `uniform sampler2D uDye; uniform vec2 dyeTexel; uniform float time, aspect, sparkle, dry, dim; uniform vec3 pal[16], prevPal[16]; uniform int palN, prevPalN; uniform float palMix;
     float height(vec2 uv){ vec4 d = texture(uDye, uv); return d.a * (0.55 + 0.45 * dot(d.rgb / max(d.a, 1e-3), vec3(0.3, 0.5, 0.2))); }
     // Snap to the nearest real shade, with a hair of anti-aliasing where two shades meet.
     vec3 snapTo(vec3 c, vec3 P[16], int n){
@@ -592,26 +550,31 @@ const FS = {
       vec3 col = mix(nail, polish, cover);
       float t = time * 0.05;
       float w0 = fbm(q * 2.2 + vec2(t, -t * 0.7)), wx = fbm(q * 2.2 + vec2(t + 0.02, -t * 0.7)), wy = fbm(q * 2.2 + vec2(t, -t * 0.7 + 0.02));
-      vec3 n = normalize(vec3(g * 8.0 + vec2(w0 - wx, w0 - wy) * 0.6, 1.0));
+      // Drying flattens the water's ripple and softens the raised seams.
+      vec3 n = normalize(vec3(g * mix(8.0, 4.0, dry) + vec2(w0 - wx, w0 - wy) * 0.6 * (1.0 - dry), 1.0));
       vec3 L = normalize(vec3(-0.45, 0.6, 0.9));
       vec3 H = normalize(L + vec3(0.0, 0.0, 1.0));
       col *= 0.9 + 0.12 * dot(n, L);
       // Clear coat: a hard little specular, and a studio softbox reflected in the gloss, bent by the surface.
-      col += vec3(pow(max(dot(n, H), 0.0), 140.0) * 0.75);
+      float wet = 1.0 - dry;
+      col += vec3(pow(max(dot(n, H), 0.0), 140.0) * 0.75 * wet);
       vec2 r = vUv + n.xy * 0.55;
       vec2 bx = abs(r - vec2(0.24, 0.82)) - vec2(0.15, 0.06);
       float box = 1.0 - smoothstep(0.0, 0.012, length(max(bx, 0.0)) - 0.025);
       float by = (r.y - 0.1 - 0.05 * r.x) / 0.025;
       float bar = exp(-by * by) * smoothstep(0.1, 0.4, r.x) * (1.0 - smoothstep(0.6, 0.95, r.x));
-      col += vec3(box * 0.05 + bar * 0.025) * (0.35 + 0.65 * cover);
+      col += vec3(box * 0.05 + bar * 0.025) * (0.35 + 0.65 * cover) * wet;
       float band = (vUv.x * 0.55 + (1.0 - vUv.y)) - (fract(time * 0.022) * 2.8 - 0.7);
-      col += vec3(exp(-band * band / 0.02) * 0.06);
+      col += vec3(exp(-band * band / 0.02) * 0.06) * wet;
       // Shimmer: a few flakes in the lacquer catch the light now and then.
       vec2 cell = floor(gl_FragCoord.xy / 2.5);
       float h = hash(cell);
       float tw = pow(0.5 + 0.5 * sin(time * 1.6 + h * 80.0), 10.0);
-      col += vec3(step(0.988, h) * tw * cover * sparkle * 0.7);
+      col += vec3(step(0.988, h) * tw * cover * sparkle * 0.7) * wet;
       vec2 v = vUv - 0.5; col *= 1.0 - 0.22 * dot(v, v) * 2.0;
+      // A dry, matte finish, then the lights go down until only a low glow of the design is left.
+      col *= 1.0 - 0.05 * dry;
+      col *= mix(1.0, 0.2, dim);
       o = vec4(col, 1.0);
     }`,
 };
@@ -809,6 +772,11 @@ function render(time) {
   gl.uniform1f(u.time, time);
   gl.uniform1f(u.aspect, aspect());
   gl.uniform1f(u.sparkle, shade.sparkle);
+  // Night: 10 seconds of drying, then 20 seconds of dimming, then a slow breath of light.
+  const since = nightSince === null ? -1 : (performance.now() - nightSince) / 1000;
+  const ease = (x) => { const t = Math.max(0, Math.min(1, x)); return t * t * (3 - 2 * t); };
+  gl.uniform1f(u.dry, since < 0 ? 0 : ease(since / 10));
+  gl.uniform1f(u.dim, since < 0 ? 0 : ease((since - 6) / 20) * (1 - 0.12 * (0.5 + 0.5 * Math.sin(since * 0.7))));
   gl.uniform1i(u.palN, palette.n);
   gl.uniform3fv(u['pal[0]'], palette.data);
   const t = Math.min(1, (performance.now() - paletteSince) / 2500);
@@ -924,15 +892,6 @@ function baseCoat() {
   queueDrop(0.5, 0.5, shade.baseRgb, ((asp * asp) / 4 + 0.25) * 1.15, 0, 2.6);
   music.note(0.25, 0.07);
 }
-const motifEl = $('motif');
-let motifTimer = 0;
-function showLabel(text, ms = 1600) {
-  motifEl.textContent = text;
-  motifEl.classList.add('show');
-  clearTimeout(motifTimer);
-  motifTimer = setTimeout(() => motifEl.classList.remove('show'), ms);
-}
-const showMotif = () => showLabel(MOTIFS[motifIdx % MOTIFS.length].name);
 
 function onDown(e) {
   if (!started || frozen) return;
@@ -941,7 +900,6 @@ function onDown(e) {
   const p = { x, y, sx: x, sy: y, travel: 0, moved: false, rings: 0, hold: 0, count: 0, dx: 1, dy: 0 };
   pointers.set(e.pointerId, p);
   if (painting) {
-    showMotif();
     placeMotif(p, x, y, 1, 0);
     music.note(y, 0.08);
     // Holding still keeps stacking rings on the same spots.
@@ -1119,7 +1077,7 @@ let breathOn = true, breathTimer = 0;
 function breathe(phase = 0) {
   clearTimeout(breathTimer);
   if (!breathOn) { breathEl.classList.remove('show'); return; }
-  const steps = [['Breathe in', 4000], ['Hold', 2000], ['Breathe out', 6000], ['', 1500]];
+  const steps = [['breathe in', 4000], ['hold', 2000], ['breathe out', 6000], ['', 1500]];
   const [text, ms] = steps[phase % steps.length];
   breathEl.classList.remove('show');
   setTimeout(() => { breathEl.textContent = text; if (text && breathOn) breathEl.classList.add('show'); }, 700);
@@ -1187,7 +1145,7 @@ SHADES.forEach((s) => {
 $('fresh').addEventListener('click', () => { if (dye) baseCoat(); });
 
 // ---------- Little hands session ----------
-// Little hands can end itself: over the last minute the music fades and the polish stills, then the night-light bottle.
+// Little hands can end itself: over the last minute the music fades and the polish stills, then the polish dries and the lights go down.
 const AMBIENT = SIM.ambient;
 const PICKS = [5, 10, 20, 0]; // 0 means no limit.
 let mins = 5;
@@ -1214,7 +1172,6 @@ function renderMins() {
   const custom = !!$('customMins').value && mins >= 1;
   $('picks').querySelectorAll('.pick').forEach((b) => b.setAttribute('aria-pressed', String(!custom && Number(b.dataset.m) === mins)));
   $('picks').querySelector('.custom').classList.toggle('on', custom);
-  $('endNote').hidden = !mins;
 }
 renderMins();
 function startSession(m) {
@@ -1267,16 +1224,10 @@ function setKid(v) {
     document.exitFullscreen?.().catch(() => {});
   }
 }
-// The night-light bottle glows in the shade's lead colour, lifted towards white if it is too dark to glow.
-function glowColour() {
-  const c = hex(shade.colors[0]);
-  const lum = 0.299 * c[0] + 0.587 * c[1] + 0.114 * c[2];
-  const k = lum < 0.35 ? 0.5 : 0;
-  return `rgb(${c.map((v) => Math.round((v + (1 - v) * k) * 255)).join(',')})`;
-}
-function showNight() {
-  $('night').style.setProperty('--glow', glowColour());
-  sheet('night', true);
+let nightSince = null;
+function showNight(instant = false) {
+  nightSince = performance.now() - (instant ? 60000 : 0);
+  document.body.classList.add('night');
   setSound(false);
   clearTimeout(breathTimer);
   breathEl.classList.remove('show');
@@ -1341,8 +1292,9 @@ function unlock() {
   setKid(false);
   store.set(NIGHT_KEY, null);
   if (session) stopSession();
-  if (!$('night').hidden) {
-    sheet('night', false);
+  if (nightSince !== null) {
+    nightSince = null;
+    document.body.classList.remove('night');
     resume();
     breathe(0);
     music.fadeTo(1, 0.1);
@@ -1369,14 +1321,14 @@ if (store.get(KID_KEY) === '1') {
     started = true;
     frozen = true;
     $('welcome').remove();
-    showNight();
+    showNight(true);
   }
 }
 try {
   const saved = JSON.parse(store.get(SESSION_KEY) || 'null');
   if (saved && !frozen) {
     if (saved.endAt > Date.now() && kid) session = { ...saved, fading: false };
-    else if (kid) { started = true; frozen = true; $('welcome')?.remove(); store.set(NIGHT_KEY, '1'); showNight(); store.set(SESSION_KEY, null); }
+    else if (kid) { started = true; frozen = true; $('welcome')?.remove(); store.set(NIGHT_KEY, '1'); showNight(true); store.set(SESSION_KEY, null); }
     else store.set(SESSION_KEY, null);
   }
 } catch {}
