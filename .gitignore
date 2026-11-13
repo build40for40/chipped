@@ -24,3 +24,6 @@ __screenshots__/
 
 # Reddit sample: other people's posts, kept local only
 research/samples/reddit-*
+
+# Day 10 data cache: refetchable, kept out of git
+data/raw/

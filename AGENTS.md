@@ -39,8 +39,14 @@ My nails are always chipped
 
 ## What we're building
 
-<The MVP in a few bullets, and what was cut.>
+The authority on everything "chipped" and "nail": a data almanac of every meaning of both words, serious and silly, direct (fingernails) and indirect (microchips, Chippendales, "nailed it").
+
+- Each entry: what it is, its data curve, how it correlates with chipped nails, and a one-line fact to repeat to friends.
+- Data lives in `data/`: `entries.json` is the catalogue, `scripts/` fetch each source into `parts/`, `raw/` is a git-ignored cache.
 
 ## Decided
 
-<Product and design decisions as the team makes them. Leave out anything still open.>
+- Scope is every variant of "chip" and "nail", both serious and comedy, direct and indirect. An entry earns its place by having real data behind it.
+- Pub-ready: the page is something you pull up over dinner, coffee or at the pub. Every entry leads with a takeaway someone can repeat to impress their friends; the chart backs it up.
+- Spurious correlations are part of the joke, but say so: show the honest year-on-year correlation (`summarise.mjs`'s rΔ) next to the raw one.
+- Jensen Huang's resignation (12 November 2026) is reported as an affair with an *alleged* Chinese spy. Always say "alleged".
