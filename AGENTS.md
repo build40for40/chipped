@@ -27,7 +27,7 @@ Shared 40 for 40 context, services and rules live in `../AGENTS.md`.
 
 ## Hosting
 
-- A Cloudflare Worker named `chipped` serves `dist/` as static assets on the `build40for40.com/chipped` and `build40for40.com/chipped/*` routes. Those routes run before the site's Worker, which owns the rest of the domain.
+- A Cloudflare Worker named `chipped` serves `dist/` as static assets on the one `build40for40.com/chipped*` route, so `/chipped?utm_source=…` reaches it too (an exact `/chipped` route misses a query string). It also catches any path that starts with `chipped`, such as `/chippedfoo`, which gets this Worker's 404. Those routes run before the site's Worker, which owns the rest of the domain.
 - Vite builds with `base: '/chipped/'` into `dist/chipped/`, so the asset paths match the URL path. `run_worker_first` sends only `/chipped/api/*` to the Worker code.
 - CI (`.github/workflows/ci.yml`) tests and builds every push and PR. Pushes to `main` deploy to production. PRs upload a preview version and comment its public `workers.dev` link, which is named after the branch.
 - Deploys need the `CLOUDFLARE_API_TOKEN` secret on the repo. Without it CI still tests and builds, and skips deploying.
