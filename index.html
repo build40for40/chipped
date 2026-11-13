@@ -191,11 +191,6 @@ button:focus-visible { outline: 2px solid var(--lacquer); outline-offset: 3px; }
 .kid[aria-pressed="true"] .lock-body { fill: var(--lacquer); stroke: var(--lacquer); }
 .kid[aria-pressed="true"] .heart { fill: #fff; }
 
-/* The polish-bottle timer: the lacquer drains as the session runs */
-.icon .bottle-fill { stroke: none; transition: fill 1s ease; }
-.icon .bottle-cap { fill: var(--ink); stroke: none; }
-.icon .bottle-glint { stroke: #fff; stroke-width: 1.2; opacity: 0.8; }
-
 /* Sheets: frosted cards that rise from the bottom */
 .sheet {
   position: fixed;
@@ -212,16 +207,10 @@ button:focus-visible { outline: 2px solid var(--lacquer); outline-offset: 3px; }
 .eyebrow { margin: 0; font-size: 0.72rem; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-soft); }
 .card h2 { margin: 0; font-family: var(--display); font-weight: 700; font-size: 1.6rem; line-height: 1.05; letter-spacing: -0.03em; text-wrap: balance; }
 .card .note { font-size: 0.8rem; }
-.dial { display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
-.dial output { font-family: var(--display); font-weight: 700; font-size: 3.2rem; line-height: 1; letter-spacing: -0.04em; font-variant-numeric: tabular-nums; }
-.dial output small { font-family: var(--body); font-size: 1rem; font-weight: 500; letter-spacing: 0; color: var(--ink-soft); }
-.round { width: 3rem; height: 3rem; border-radius: 50%; border: 1px solid rgb(59 26 34 / 0.15); background: rgb(255 255 255 / 0.6); font-size: 1.4rem; line-height: 1; }
 .picks { display: flex; flex-wrap: wrap; gap: 0.4rem; }
 .pick { display: flex; align-items: center; gap: 0.45rem; height: 2.2rem; padding: 0 0.85rem 0 0.55rem; border: 0; border-radius: 999px; background: rgb(255 255 255 / 0.5); font-weight: 600; font-size: 0.85rem; }
 .pick i { width: 0.8rem; height: 0.8rem; border-radius: 50%; background: var(--c); box-shadow: inset 0 0 0 1px rgb(0 0 0 / 0.1); }
 .pick[aria-pressed="true"] { background: #fff; box-shadow: 0 1px 6px rgb(80 20 35 / 0.15); }
-.running .dial, .running .picks { display: none; }
-.left { font-family: var(--display); font-weight: 700; font-size: 2.6rem; line-height: 1; letter-spacing: -0.04em; font-variant-numeric: tabular-nums; }
 .swatches { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.75rem; padding-block: 0.3rem; }
 .swatches button { width: 3rem; height: 3rem; border-radius: 50%; border: 3px solid #fff; background: var(--c); box-shadow: 0 2px 8px rgb(0 0 0 / 0.15); transition: transform 0.2s ease, opacity 0.2s ease; }
 .swatches button.done { transform: scale(0.8); opacity: 0.45; }
@@ -361,9 +350,6 @@ body.idle .tray:not([hidden]) { opacity: 0.4; }
 </button>
 
 <div class="controls">
-  <button id="timer" class="icon glass" type="button" aria-label="Session timer" title="Session timer">
-    <svg viewBox="0 0 24 24"><defs><clipPath id="bottleClip"><path d="M8 10.5h8a1.5 1.5 0 0 1 1.5 1.5v7.5a2 2 0 0 1-2 2h-7a2 2 0 0 1-2-2V12A1.5 1.5 0 0 1 8 10.5z"/></clipPath></defs><rect id="bottleFill" class="bottle-fill" x="5" y="10.5" width="14" height="11" clip-path="url(#bottleClip)"/><path d="M8 10.5h8a1.5 1.5 0 0 1 1.5 1.5v7.5a2 2 0 0 1-2 2h-7a2 2 0 0 1-2-2V12A1.5 1.5 0 0 1 8 10.5z"/><path d="M10.2 10.5V8.4h3.6v2.1"/><rect class="bottle-cap" x="9.4" y="2.6" width="5.2" height="5.8" rx="1"/><path class="bottle-glint" d="M9 13.3v4"/></svg>
-  </button>
   <button id="breathe" class="icon glass" type="button" aria-pressed="true" aria-label="Breathing guide" title="Breathing guide">
     <svg viewBox="0 0 24 24" class="on"><path d="M4 12c2.5-4 5.5-4 8 0s5.5 4 8 0"/><path d="M4 17c2.5-4 5.5-4 8 0s5.5 4 8 0" opacity=".5"/><path d="M4 7c2.5-4 5.5-4 8 0s5.5 4 8 0" opacity=".5"/></svg>
     <svg viewBox="0 0 24 24" class="off"><path d="M4 12h16" opacity=".6"/></svg>
@@ -386,42 +372,15 @@ body.idle .tray:not([hidden]) { opacity: 0.4; }
   <button class="plain" id="fresh" type="button" title="Flood a fresh base coat and start a new design">Fresh base coat</button>
 </div>
 
-<div class="sheet" id="timerSheet" hidden>
-  <div class="card glass" role="dialog" aria-labelledby="timerTitle">
-    <p class="eyebrow" id="timerTitle">Session</p>
-    <div class="left" id="timeLeft" hidden></div>
-    <div class="dial">
-      <button class="round" id="minus" type="button" aria-label="One minute less">&minus;</button>
-      <output id="mins" aria-live="polite">5<small> min</small></output>
-      <button class="round" id="plus" type="button" aria-label="One minute more">+</button>
-    </div>
-    <div class="picks" id="picks"></div>
-    <p class="note" id="timerNote">When time is up, the music fades and the polish settles.</p>
-    <div class="row">
-      <button class="primary" id="startSession" type="button">Start</button>
-      <button class="secondary" id="closeTimer" type="button">Not now</button>
-    </div>
-  </div>
-</div>
-
-<div class="sheet" id="endSheet" hidden>
-  <div class="card glass" role="dialog" aria-labelledby="endTitle">
-    <p class="eyebrow">Session complete</p>
-    <h2 id="endTitle">All done.</h2>
-    <p>Take one slow breath before you go.</p>
-    <div class="row">
-      <button class="primary" id="backToIt" type="button">Back to it</button>
-      <button class="secondary" id="fiveMore" type="button">Another 5 minutes</button>
-    </div>
-  </div>
-</div>
-
 <div class="sheet" id="kidSheet" hidden>
   <div class="card glass" role="dialog" aria-labelledby="kidTitle">
     <p class="eyebrow">Little hands</p>
     <h2 id="kidTitle">Lock it for a toddler</h2>
-    <p>Full screen, no zooming, softer music, and every finger paints. Paint, music and breathing still work. If a session timer is running, it ends with a dim glowing bottle.</p>
-    <p class="note">To unlock, hold this button for 3 seconds, then tap the colours it asks for. For a full lock, also turn on Guided Access (iPhone) or App pinning (Android).</p>
+    <p>Full screen, no zooming, softer music, and every finger paints. Paint, music and breathing still work.</p>
+    <p class="eyebrow">End after</p>
+    <div class="picks" id="picks"></div>
+    <p class="note" id="endNote">When time is up, the music fades, the polish settles and a softly glowing bottle stays on screen until you unlock.</p>
+    <p class="note">To unlock, hold the lock button for 3 seconds, then tap the colours it asks for. For a full lock, also turn on Guided Access (iPhone) or App pinning (Android).</p>
     <div class="row">
       <button class="primary" id="lockKid" type="button">Lock for little hands</button>
       <button class="secondary" id="closeKid" type="button">Not now</button>
@@ -1120,14 +1079,6 @@ const music = (() => {
       master.gain.setValueAtTime(master.gain.value, t);
       master.gain.linearRampToValueAtTime(target(), t + sec);
     },
-    // Three soft bells when a session ends, past the faded mix.
-    chime() {
-      if (!ctx || !on) return;
-      const g = ctx.createGain();
-      g.gain.value = level;
-      g.connect(ctx.destination);
-      [74, 81, 86].forEach((m, i) => setTimeout(() => bell(m, 0.09, g), i * 420));
-    },
     // A plucked note for each bead, higher up the screen is higher up the scale.
     note(y, vol) {
       if (!ctx || !on) return;
@@ -1215,64 +1166,45 @@ SHADES.forEach((s) => {
 });
 $('fresh').addEventListener('click', () => { if (dye) baseCoat(); });
 
-// ---------- Session timer ----------
+// ---------- Little hands session ----------
+// Little hands can end itself: over the last minute the music fades and the polish stills, then the night-light bottle.
 const AMBIENT = SIM.ambient;
-const PICKS = [3, 5, 10, 20];
+const PICKS = [5, 10, 20, 0]; // 0 means no limit.
 let mins = 5;
 let session = null; // { endAt, total, fading }
 let nextDrip = 6;
 const sheet = (id, show) => { $(id).hidden = !show; };
-function renderMins() {
-  $('mins').innerHTML = `${mins}<small> min</small>`;
-  $('picks').querySelectorAll('.pick').forEach((b) => b.setAttribute('aria-pressed', String(Number(b.dataset.m) === mins)));
-}
 PICKS.forEach((m, i) => {
   const b = document.createElement('button');
   b.type = 'button'; b.className = 'pick'; b.dataset.m = m;
-  b.innerHTML = `<i style="--c:${shade.colors[i % shade.colors.length]}"></i>${m} min`;
+  b.innerHTML = `<i style="--c:${shade.colors[i % shade.colors.length]}"></i>${m ? `${m} min` : 'No limit'}`;
   b.addEventListener('click', () => { mins = m; renderMins(); });
   $('picks').appendChild(b);
 });
-renderMins();
-$('minus').addEventListener('click', () => { mins = Math.max(1, mins - 1); renderMins(); });
-$('plus').addEventListener('click', () => { mins += 1; renderMins(); });
-const clock = (ms) => { const s = Math.ceil(ms / 1000); return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`; };
-function openTimer() {
-  const running = !!session;
-  $('timerSheet').querySelector('.card').classList.toggle('running', running);
-  $('timeLeft').hidden = !running;
-  $('timerTitle').textContent = running ? 'Time left' : 'Session';
-  $('timerNote').textContent = running ? 'The music fades over the last minute.' : 'When time is up, the music fades and the polish settles.';
-  $('startSession').textContent = running ? 'End now' : 'Start';
-  $('closeTimer').textContent = running ? 'Close' : 'Not now';
-  if (running) $('timeLeft').textContent = clock(session.endAt - Date.now());
-  sheet('timerSheet', true);
+function renderMins() {
+  $('picks').querySelectorAll('.pick').forEach((b) => b.setAttribute('aria-pressed', String(Number(b.dataset.m) === mins)));
+  $('endNote').hidden = !mins;
 }
-$('timer').addEventListener('click', () => { if (!kid) { begin(false); openTimer(); } });
-$('closeTimer').addEventListener('click', () => sheet('timerSheet', false));
-$('startSession').addEventListener('click', () => {
-  sheet('timerSheet', false);
-  if (session) endSession(); else startSession(mins);
-});
+renderMins();
 function startSession(m) {
   session = { endAt: Date.now() + m * 60000, total: m * 60000, fading: false };
   store.set(SESSION_KEY, JSON.stringify(session));
-  frozen = false;
+}
+function stopSession() {
+  session = null;
+  store.set(SESSION_KEY, null);
   SIM.ambient = AMBIENT;
-  music.fadeTo(1, 2);
+  music.fadeTo(1, 0.5);
 }
 function tickSession() {
-  if (!session) return 1;
+  if (!session) return;
   const left = session.endAt - Date.now();
   if (left <= 60000 && !session.fading) {
     session.fading = true;
     music.fadeTo(0, Math.max(1, left / 1000));
   }
-  // Over the last minute the polish slows to stillness.
   if (session.fading) SIM.ambient = AMBIENT * Math.max(0, left / 60000);
-  if (!$('timerSheet').hidden && !$('timeLeft').hidden) $('timeLeft').textContent = clock(Math.max(0, left));
-  if (left <= 0) { endSession(); return 0; }
-  return Math.max(0, left / session.total);
+  if (left <= 0) endSession();
 }
 function endSession() {
   session = null;
@@ -1280,42 +1212,13 @@ function endSession() {
   frozen = true;
   pointers.forEach((p) => clearInterval(p.hold));
   pointers.clear();
-  sheet('timerSheet', false);
-  if (kid) {
-    store.set(NIGHT_KEY, '1');
-    showNight();
-  } else {
-    music.chime();
-    music.fadeTo(0, 2);
-    sheet('endSheet', true);
-  }
+  store.set(NIGHT_KEY, '1');
+  showNight();
 }
 function resume() {
   frozen = false;
   SIM.ambient = AMBIENT;
   nextDrip = simTime + 4;
-}
-$('backToIt').addEventListener('click', () => {
-  sheet('endSheet', false);
-  resume();
-  setSound(false);
-  music.fadeTo(1, 0.1);
-});
-$('fiveMore').addEventListener('click', () => {
-  sheet('endSheet', false);
-  resume();
-  startSession(5);
-});
-let lastFill = '';
-function drawBottle(frac) {
-  const h = (11 * frac).toFixed(2);
-  const key = `${h}${shade.colors[0]}`;
-  if (key === lastFill) return;
-  lastFill = key;
-  const f = $('bottleFill');
-  f.setAttribute('y', (10.5 + 11 * (1 - frac)).toFixed(2));
-  f.setAttribute('height', h);
-  f.style.fill = shade.colors[0];
 }
 
 // ---------- Little hands ----------
@@ -1356,6 +1259,7 @@ $('lockKid').addEventListener('click', () => {
   sheet('kidSheet', false);
   setKid(true);
   begin(false);
+  if (mins) startSession(mins);
 });
 let holdTimer = 0;
 const endHold = () => { clearTimeout(holdTimer); $('kid').classList.remove('holding'); };
@@ -1405,6 +1309,7 @@ function unlock() {
   sheet('unlockSheet', false);
   setKid(false);
   store.set(NIGHT_KEY, null);
+  if (session) stopSession();
   if (!$('night').hidden) {
     sheet('night', false);
     resume();
@@ -1412,8 +1317,8 @@ function unlock() {
     music.fadeTo(1, 0.1);
   }
 }
-// Tapping outside a card closes it, except the unlock, which only closes on a wrong colour or after 20 seconds.
-for (const id of ['timerSheet', 'kidSheet', 'endSheet']) $(id).addEventListener('click', (e) => { if (e.target === $(id) && id !== 'endSheet') sheet(id, false); });
+// Tapping outside the Little hands card closes it. The unlock only closes on a wrong colour or after 20 seconds.
+$('kidSheet').addEventListener('click', (e) => { if (e.target === $('kidSheet')) sheet('kidSheet', false); });
 
 // ---------- No zooming, pull-to-refresh or text selection, anywhere ----------
 for (const t of ['gesturestart', 'gesturechange', 'dblclick', 'contextmenu']) document.addEventListener(t, (e) => e.preventDefault(), { passive: false });
@@ -1439,7 +1344,7 @@ if (store.get(KID_KEY) === '1') {
 try {
   const saved = JSON.parse(store.get(SESSION_KEY) || 'null');
   if (saved && !frozen) {
-    if (saved.endAt > Date.now()) session = { ...saved, fading: false };
+    if (saved.endAt > Date.now() && kid) session = { ...saved, fading: false };
     else if (kid) { started = true; frozen = true; $('welcome')?.remove(); store.set(NIGHT_KEY, '1'); showNight(); store.set(SESSION_KEY, null); }
     else store.set(SESSION_KEY, null);
   }
@@ -1452,8 +1357,7 @@ if (dye) {
   const loop = (now) => {
     const dt = Math.min((now - last) / 1000, 1 / 30);
     last = now;
-    const frac = tickSession();
-    drawBottle(frac);
+    tickSession();
     if (!document.hidden) {
       // While watching, a bead of polish lands now and then.
       if (started && !painting && !frozen && !session?.fading && simTime > nextDrip) {
@@ -1470,8 +1374,6 @@ if (dye) {
     requestAnimationFrame(loop);
   };
   requestAnimationFrame(loop);
-} else {
-  drawBottle(1);
 }
 })();
 </script>
