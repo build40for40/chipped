@@ -1,0 +1,101 @@
+{
+  "source": "CPSC National Electronic Injury Surveillance System (NEISS). Keyword matches on case narratives; estimate is the sum of case weights (national ER visits).",
+  "caveat": "Keyword matching over free-text narratives: counts are indicative, not official product-code totals. 2024 not yet processed.",
+  "matchers": {
+    "nail-guns": "\\bNAIL ?GUNS?\\b|\\bNAILGUNS?\\b|\\bNAILERS?\\b",
+    "nail-cosmetics": "MANICUR|PEDICUR|NAIL POLISH|NAIL SALON|ACRYLIC NAIL|GEL NAIL|NAIL GLUE|FAKE NAIL|ARTIFICIAL NAIL|PRESS ?ON NAIL|NAIL FILE|NAIL CLIPPER",
+    "potato-chips": "POTATO CHIP|TORTILLA CHIP|\\bCHIPS?\\b.*\\b(CHOK|ATE|EATING)|\\b(CHOK|ATE|EATING)\\w*\\b.*\\bCHIPS\\b",
+    "wood-chippers": "WOOD ?CHIPPER|\\bCHIPPER\\b",
+    "poker-chips": "POKER CHIP|CASINO CHIP"
+  },
+  "years": {
+    "2020": {
+      "nail-guns": {
+        "cases": 175,
+        "estimate": 7812
+      },
+      "nail-cosmetics": {
+        "cases": 278,
+        "estimate": 10781
+      },
+      "potato-chips": {
+        "cases": 14,
+        "estimate": 321
+      },
+      "wood-chippers": {
+        "cases": 20,
+        "estimate": 918
+      },
+      "poker-chips": {
+        "cases": 1,
+        "estimate": 5
+      }
+    },
+    "2021": {
+      "nail-guns": {
+        "cases": 152,
+        "estimate": 6874
+      },
+      "nail-cosmetics": {
+        "cases": 338,
+        "estimate": 12292
+      },
+      "potato-chips": {
+        "cases": 10,
+        "estimate": 292
+      },
+      "wood-chippers": {
+        "cases": 19,
+        "estimate": 878
+      },
+      "poker-chips": {
+        "cases": 1,
+        "estimate": 16
+      }
+    },
+    "2022": {
+      "nail-guns": {
+        "cases": 158,
+        "estimate": 7878
+      },
+      "nail-cosmetics": {
+        "cases": 308,
+        "estimate": 12415
+      },
+      "potato-chips": {
+        "cases": 12,
+        "estimate": 256
+      },
+      "wood-chippers": {
+        "cases": 26,
+        "estimate": 1400
+      },
+      "poker-chips": {
+        "cases": 1,
+        "estimate": 6
+      }
+    },
+    "2023": {
+      "nail-guns": {
+        "cases": 191,
+        "estimate": 9194
+      },
+      "nail-cosmetics": {
+        "cases": 343,
+        "estimate": 12584
+      },
+      "potato-chips": {
+        "cases": 12,
+        "estimate": 519
+      },
+      "wood-chippers": {
+        "cases": 19,
+        "estimate": 694
+      },
+      "poker-chips": {
+        "cases": 2,
+        "estimate": 15
+      }
+    }
+  }
+}

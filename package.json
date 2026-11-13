@@ -14,7 +14,8 @@
     "build-only": "rm -rf dist && vite build",
     "type-check": "vue-tsc --build",
     "wrangler": "env -u CLOUDFLARE_API_KEY -u CLOUDFLARE_EMAIL wrangler --profile 40for40",
-    "deploy": "npm run build && npm run wrangler -- deploy"
+    "deploy": "npm run build && npm run wrangler -- deploy",
+    "data:publish": "mkdir -p public/data && cp data/entries.json data/parts/*.json public/data/ && cp research/samples/bls-ces-nail-vs-hair-salons-1990-2026.json public/data/bls-salons.json"
   },
   "dependencies": {
     "@ai-sdk/anthropic": "^4.0.94",
