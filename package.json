@@ -11,7 +11,7 @@
     "build": "run-p type-check \"build-only {@}\" --",
     "preview": "vite preview",
     "test": "vitest run",
-    "build-only": "rm -rf dist && vite build",
+    "build-only": "rm -rf dist && vite build && cp cloudflare/_headers dist/_headers",
     "type-check": "vue-tsc --build",
     "wrangler": "env -u CLOUDFLARE_API_KEY -u CLOUDFLARE_EMAIL wrangler --profile 40for40",
     "deploy": "npm run build && npm run wrangler -- deploy",
